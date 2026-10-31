@@ -1,0 +1,14 @@
+{
+  "company_name": "PostHog",
+  "domain": "posthog.com",
+  "jurisdiction": "US",
+  "description": "Product analytics and developer tools",
+  "context": {
+    "origin": "investment_team",
+    "note": "Optional context is an upstream assertion, not independent proof. Include source URLs, observed dates and CrustData IDs when available."
+  },
+  "people": [],
+  "claims": [],
+  "internal_roster": [],
+  "disclosures": []
+}

@@ -5,3 +5,10 @@
 /tmp/
 /research/crustdata-sample/
 
+# Python build/runtime artifacts (case data is ignored inside heartbeat-data/)
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+

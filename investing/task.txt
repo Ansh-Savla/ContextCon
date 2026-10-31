@@ -1,1 +1,12 @@
-I am 
+I am working on a ps where I need to use create a portal for the venture capatalists and investors.
+
+here, the idea is that the investors will get a detailed overview of the company's profile and then each of its founder's profile. It will also fetch some other usefull info like financial info and recent news.
+
+Give some more features that will help them take the decision and try using relevant crustdata apis. You may also use some other apis.
+
+To start with, I will give you a list of 3 companies, send all its possible details in data.txt
+
+
+
+
+Also, in solution.txt, you can propose the overview and some good features of the solution (make it 10x valuable)

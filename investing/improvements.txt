@@ -1,0 +1,68 @@
+the webapp looks very naive
+the dasboard should look a bit premium and should have some charts and analysis (use ui ux pro max plugin for this)
+also, if present you can show some financial details about the company
+
+the input will be one comapnay, not many
+the output should look like the profile of a single company, stats, founders, stats
+dont make much emphasis on verdict, just say if its active or not
+
+the name of app should be better then diligence check
+the whole UI should look premium
+each founder can have card and details, with details, more details can be explored using clicking on it
+linkedin and all other info
+use better libraries for charts and visualizations
+
+also there is one more feature that gives you the following
+ Company research: overview, news, funding, market, competitors
+
+use tavily.txt to see and integrate it
+
+
+also, try to work in parallel for faster sprint results
+
+
+
+
+new changes
+
+in rules, remove this logic 
+Your input lowers the company's score. The medium flag here is "founder names in the input don't match". That's a mistake in our input file (it said "Sangeeta Kumar and Neil"), not a risk at qZense. It still cost 1 risk point and 1 confidence point. It should only count against data confidence.
+
+there are lot of problems with scoring, maybe keep it blow somewhere
+
+
+Also, for the apis, use caching so that we do not use apis again and again if already done
+See any company the way an investor would.
+replace this, this should specifically for the inversters, venture capitalists, etc and general people can also see this.
+Questions for the founder call ---> remove this section
+remove the input box for why do we do that? it is not needed
+
+also see if you can get the following number for this company, this will help in analysis
+Revenue
+Less : COGS
+         Material Cost
+         Inward logistics
+         Manufacturing expenses
+Gross Margin
+as % of revenues
+
+Less: SG&A expenses
+   Employee expenses
+   sales and marketing expenses
+   Outward logistics
+   Service expenses
+   R&D
+   Office expenses
+EBITDA
+as % of revenues
+
+
+
+
+add this 2 api in tavily as backup because credit are used up fast
+
+(key moved to investing/.env)
+(key moved to investing/.env)
+
+also, if a company is not present, the data does not come first but then data in the below news and all section comes random or last, so if a comapny is not present do not give that data
+also, if crestdata says no data found, try to show that crestdata does not have but see if it additionaly tavily has it then show possible outputs of it

@@ -1,0 +1,56 @@
+{"tool": "company_identify", "body": {"names": ["Sienna Sauce", "SiennaSauce"], "fields": ["crustdata_company_id", "basic_info"]}, "key": "8ca98495649cb632"}
+{"tool": "web_search_live", "body": {"query": "Sienna Sauce official website"}, "key": "fe571af249eec45d"}
+{"tool": "web_search_live", "body": {"query": "Sienna Sauce news"}, "key": "0685af2fe468e36a"}
+{"tool": "web_search_live", "body": {"query": "Ryan’s Barkery All-natural dog treats official website"}, "key": "872e4789cd366ac4"}
+{"tool": "company_identify", "body": {"names": ["TagZ Foods", "TagZFoods"], "fields": ["crustdata_company_id", "basic_info"]}, "key": "462c1e5e2f814578"}
+{"tool": "web_search_live", "body": {"query": "TagZ Foods snack brand official website"}, "key": "73418c2dc6ba3970"}
+{"tool": "web_search_live", "body": {"query": "TagZ Foods snack brand news"}, "key": "81ba4095f85ed2a6"}
+{"tool": "company_identify", "body": {"names": ["Chill Systems", "ChillSystems"], "fields": ["crustdata_company_id", "basic_info"]}, "key": "7a23b5b857f193a3"}
+{"tool": "web_search_live", "body": {"query": "Chill Systems official website"}, "key": "08eac9300b8e2aca"}
+{"tool": "web_search_live", "body": {"query": "Chill Systems news"}, "key": "198b6b6c5ba6758d"}
+{"tool": "company_identify", "body": {"names": ["Everything Legendary", "EverythingLegendary"], "fields": ["crustdata_company_id", "basic_info"]}, "key": "23e76a826c06cf43"}
+{"tool": "web_search_live", "body": {"query": "Everything Legendary official website"}, "key": "565adbb56deafaf5"}
+{"tool": "web_search_live", "body": {"query": "Everything Legendary news"}, "key": "a020681321a70c50"}
+{"tool": "company_identify", "body": {"names": ["Banana Phone", "BananaPhone"], "fields": ["crustdata_company_id", "basic_info"]}, "key": "d70ae690dbcecea3"}
+{"tool": "web_search_live", "body": {"query": "Banana Phone official website"}, "key": "d4fd4c5e3b5be169"}
+{"tool": "web_search_live", "body": {"query": "Banana Phone news"}, "key": "97297afc5f53bd7a"}
+{"tool": "company_identify", "body": {"names": ["odoo"], "fields": ["crustdata_company_id", "basic_info"]}, "key": "5b5ce31d403060b8"}
+{"tool": "web_search_live", "body": {"query": "odoo software official website"}, "key": "0a8e82bac3fdc7e1"}
+{"tool": "web_search_live", "body": {"query": "odoo software news"}, "key": "57b59cd380e76404"}
+{"tool": "company_identify", "body": {"names": ["batterysmart"], "fields": ["crustdata_company_id", "basic_info"]}, "key": "5cc5a33cbb53de93"}
+{"tool": "web_search_live", "body": {"query": "batterysmart ev mobility official website"}, "key": "8397e356670611d2"}
+{"tool": "web_search_live", "body": {"query": "batterysmart ev mobility news"}, "key": "f357010d373883ff"}
+{"tool": "company_identify", "body": {"names": ["sparkcharge"], "fields": ["crustdata_company_id", "basic_info"]}, "key": "5d9dae91dd305a6a"}
+{"tool": "web_search_live", "body": {"query": "sparkcharge banana chips official website"}, "key": "8bdf90b5cdd233b8"}
+{"tool": "web_search_live", "body": {"query": "sparkcharge banana chips news"}, "key": "150852119eec3487"}
+{"tool": "company_identify", "body": {"names": ["flated"], "fields": ["crustdata_company_id", "basic_info"]}, "key": "6860d0c1aa95af5a"}
+{"tool": "web_search_live", "body": {"query": "flated banana chips official website"}, "key": "0e7c9137a09f3fa3"}
+{"tool": "web_search_live", "body": {"query": "flated banana chips news"}, "key": "62654991c323b6c3"}
+{"tool": "company_identify", "body": {"names": ["atomberg"], "fields": ["crustdata_company_id", "basic_info"]}, "key": "cdbf8e0fe1377aa9"}
+{"tool": "web_search_live", "body": {"query": "atomberg banana chips official website"}, "key": "7f6b268e676d49b2"}
+{"tool": "web_search_live", "body": {"query": "atomberg banana chips news"}, "key": "a5d30bbd8b0a6737"}
+{"tool": "company_identify", "body": {"domains": ["atomberg.com"], "fields": ["crustdata_company_id", "basic_info"]}, "key": "25446c14b59bf510"}
+{"tool": "company_identify", "body": {"names": ["— banana chips", "—bananachips"], "fields": ["crustdata_company_id", "basic_info"]}, "key": "728c47eab3922a61"}
+{"tool": "web_search_live", "body": {"query": "— banana chips official website"}, "key": "c67ca0000816f2a7"}
+{"tool": "web_search_live", "body": {"query": "— banana chips news"}, "key": "2fbbff7a55de8936"}
+{"tool": "company_identify", "body": {"names": ["rig strips", "rigstrips"], "fields": ["crustdata_company_id", "basic_info"]}, "key": "99344bff068e3bb4"}
+{"tool": "web_search_live", "body": {"query": "rig strips banana chips official website"}, "key": "a94257d95ae2d616"}
+{"tool": "web_search_live", "body": {"query": "rig strips banana chips news"}, "key": "9a19a43ec1fad3d4"}
+{"tool": "company_identify", "body": {"names": ["the smart tire company", "thesmarttirecompany"], "fields": ["crustdata_company_id", "basic_info"]}, "key": "e7bedc2b70cf02d2"}
+{"tool": "web_search_live", "body": {"query": "the smart tire company banana chips official website"}, "key": "11a7f1125ae8d05b"}
+{"tool": "web_search_live", "body": {"query": "the smart tire company banana chips news"}, "key": "ea558ca3a4a2f5bb"}
+{"tool": "company_identify", "body": {"names": ["ride fresh", "ridefresh"], "fields": ["crustdata_company_id", "basic_info"]}, "key": "233ffa1801bbda66"}
+{"tool": "web_search_live", "body": {"query": "ride fresh banana chips official website"}, "key": "ff023946586e7483"}
+{"tool": "web_search_live", "body": {"query": "ride fresh banana chips news"}, "key": "d299226634075a4c"}
+{"tool": "company_identify", "body": {"names": ["shipbob"], "fields": ["crustdata_company_id", "basic_info"]}, "key": "0dbaeb31151c2240"}
+{"tool": "web_search_live", "body": {"query": "shipbob official website"}, "key": "9a94edc9c603123e"}
+{"tool": "web_search_live", "body": {"query": "shipbob news"}, "key": "a66d9aa59de1cf9b"}
+{"tool": "company_identify", "body": {"names": ["whatnot"], "fields": ["crustdata_company_id", "basic_info"]}, "key": "490833cdfe07bf9a"}
+{"tool": "web_search_live", "body": {"query": "whatnot official website"}, "key": "d9699ae448b9fa70"}
+{"tool": "web_search_live", "body": {"query": "whatnot news"}, "key": "6be4c09fa12a8711"}
+{"tool": "company_identify", "body": {"names": ["riveter"], "fields": ["crustdata_company_id", "basic_info"]}, "key": "f4408abe062d88a2"}
+{"tool": "web_search_live", "body": {"query": "riveter official website"}, "key": "edb0e78c89330031"}
+{"tool": "web_search_live", "body": {"query": "riveter news"}, "key": "2c7a444061997f04"}
+{"tool": "company_identify", "body": {"names": ["flycode"], "fields": ["crustdata_company_id", "basic_info"]}, "key": "e988a7b237f74c9d"}
+{"tool": "web_search_live", "body": {"query": "flycode official website"}, "key": "3da4711bf8517201"}
+{"tool": "web_search_live", "body": {"query": "flycode news"}, "key": "85cc77dc94ac16ff"}

@@ -1,0 +1,5 @@
+# Edge cases — ambiguity, invented companies, odd formatting
+# A name shared by two real companies with no description, a company that does not exist, and a name in odd formatting.
+Geek Chic
+Zyntrix Quantum Bakeries — Priya Raman and Dev Shah; AI-powered bakery
+   QZENSE LABS   :   food quality IoT

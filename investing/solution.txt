@@ -1,0 +1,234 @@
+DILIGENCE AGENT FOR VCs — Solution Proposal (v2, grounded in the 5-company test run)
+==================================================================================
+Theme: Investing. Track rule: Crustdata identity graph is the core data layer.
+
+ONE-LINE PITCH
+--------------
+Give it a company in any messy form (name, domain, LinkedIn URL) and it returns a finished
+investment memo: company, founders, traction, funding, news, red flags and a score. Every claim is
+cross-checked and links to the Crustdata record or dated web page it came from.
+
+Why this matters: an associate spends 1-2 days on first-pass diligence. This takes about a minute,
+and it catches what a quick database lookup misses.
+
+
+0. WHAT THE TEST RUN ON THE 5 COMPANIES TAUGHT US (see data.txt)
+----------------------------------------------------------------
+We ran the real pipeline on VerbalizeIt, Tom + Chee, Ryan's Barkery, Stella Valle and Geek Chic.
+Total cost: ~33 credits. The findings change the product:
+
+  1. A database alone is wrong on the most important question: is the company still alive?
+     Crustdata marks all 4 companies it resolved as "active".
+       - Geek Chic closed in June 2017 (Chapter 7, <$300 in the bank). Crustdata still shows
+         41 employees, $2.5-5M revenue and a growing headcount in 2023-24.
+       - VerbalizeIt was acquired by Smartling in 2016. Status "active", $2.5-5M revenue, and
+         Smartling's $27K/mo ad spend attributed to it.
+  2. Revenue estimates can be wildly off. Tom + Chee: $500M-$1B with ~107 employees.
+  3. Identity resolution is messy:
+       - Geek Chic returns TWO matches at confidence 1.0 (US furniture maker vs Spanish jeweller).
+       - Tom + Chee returns per-franchise-store pages next to the parent company.
+       - Ryan's Barkery is not in the graph at all.
+  4. Founder data is incomplete or mislinked:
+       - 2 of 7 known founders are missing (Trew Quackenbush, Robert Gifford).
+       - Paige Dellavalle's Stella Valle role is under her married name (Walker) and is not linked
+         to the company id.
+       - People with no press record are tagged "Co-Founder".
+  5. News is polluted by name collisions. 6 of 7 "Geek Chic" news items are about the fashion trend.
+     Tom + Chee news was about Tom Brady.
+  6. A model-supplied guess breaks searches. A guessed founder name returned zero useful results.
+     Names must come from sources, never from the model.
+
+  => The product's edge is NOT "we called an API". It is "we tell you which data is wrong, and why".
+     That maps directly to the judging criteria: data integrity, verification, robustness.
+
+  SECOND RUN: 7 Shark Tank India companies (Set B in data.txt, ~30 credits). These are live, funded
+  companies. They show the traction features working and add new lessons:
+  7. The INPUT itself is unreliable. Founder names in the list were wrong for 3 of 6 companies
+     (e.g. qZense "Sangeeta Kumar and Neil" -> really Srishti Batra and Rubal Chib). One company
+     ("Jugaad Life") appears not to exist. Input names are hints to check, not facts.
+  8. Names need fallbacks: "Hair Originals" only resolves via its domain; "BluePine Industries" is
+     really "BluePine Foods"; "Skippi Ice Pops" scores only 0.6 among ice-cream lookalikes.
+  9. Announced deals vs recorded funding: Beyond Snack's and BluePine's Shark Tank money is missing
+     from Crustdata's funding rounds. Skippi's terms are reported two ways (₹1 Cr/15% vs ₹1.2 Cr/18%).
+ 10. Founder movement is the richest signal, and it is all in Crustdata's job histories:
+       - qZense's CEO co-founder left in June 2026 (current key-person risk)
+       - HairOriginals' early co-founder left just before the episode and ran a similar hair business
+       - TagZ's CEO now works at the acquirer (an acqui-hire inside a distress sale)
+       - BluePine's co-founder left in 2023
+ 11. Exit math needs care: TagZ raised ~$4.2M and sold for ₹28 Cr (~$3.3M), only slightly above
+     its Shark Tank valuation (~₹25.5 Cr). Most likely a down exit for later investors.
+ 12. Mislinked profiles inflate headcount in odd places (Skippi "Brazil", qZense "Kyiv").
+
+
+1. THE END-TO-END WORKFLOW
+--------------------------
+  Input (messy) -> Resolve -> Research -> RECONCILE -> Score -> Memo (+ optional Watch)
+
+  1. INTAKE       Normalise: strip tracking params, detect name / domain / LinkedIn URL. Batch input
+                  allowed (a pasted table like comapanies.txt, with its stray "|" columns and suffixes
+                  such as "sharktankseason").
+  2. RESOLVE      company_identify (free). Rules learned from the test run:
+                    - Several matches -> rank by description/industry similarity to the user's hint.
+                      If two are still tied, show both and ask (Geek Chic case).
+                    - Collapse franchise / location pages ("Tom + Chee - Lancaster") into the parent.
+                    - No match by name -> retry by domain and LinkedIn URL -> still none: mark
+                      UNRESOLVED and continue on web evidence only (Ryan's Barkery case).
+  3. RESEARCH     In parallel, on the resolved id:
+                    company_enrich       profile, funding, acquisition, headcount timeseries, revenue
+                                         estimate, web traffic, SEO, employee reviews, people, news
+                    person_search        founders / execs, current AND past employer = id. Use
+                                         mode "exact" and re-check the employer id on every row
+                                         (managed mode returned off-company "Geek Chic" profiles).
+                    job_search           open roles (all 4 companies: 0)
+                    web_search_live      status, deal and press queries built from SOURCED names only
+                    web_enrich_live      fetch key articles so quotes are exact
+  4. RECONCILE    The core of the product (section 2-A). Every important field gets a verdict:
+                  CONFIRMED / CONFLICT / STALE / UNVERIFIED, with the evidence for each side.
+  5. SCORE        Rubric per dimension. Each score links to evidence. Conflicts lower confidence.
+  6. DELIVER      Memo (HTML) + JSON evidence trace + questions for the founder call.
+  7. MONITOR      Optional Crustdata watch (preview first; creating one commits recurring spend).
+
+
+2. FEATURES (ordered by value, informed by the test run)
+--------------------------------------------------------
+A. Reality Check — "is this company actually alive, and who owns it?"     [HEADLINE FEATURE]
+   - Combines signals into one status: OPERATING / ACQUIRED / DORMANT / DEFUNCT / UNKNOWN:
+       Crustdata acquisition_status + acquired_by + date
+       headcount trend vs the last-departure dates of known operational staff
+       web traffic going to zero; the domain redirecting to an acquirer (all_domains contains the
+         acquirer's domain); SEO competitors unrelated to the industry (= lapsed domain)
+       dated web evidence of closure, bankruptcy or acquisition
+   - Test-run result: catches Geek Chic (defunct 2017), VerbalizeIt (acquired 2016),
+     Stella Valle (dormant: 1 employee, both founders gone in 2022), Ryan's Barkery (defunct, web only).
+
+B. Plausibility guard on numbers
+   - Revenue per employee checked against an industry band (restaurants ~$50-100K per employee).
+     Tom + Chee's $500M-1B fails -> shown as "estimate rejected" with the reason.
+   - Headcount that grows after a dated closure, or a size bucket far from the observed count
+     (501-1000 vs 107) -> STALE / CONFLICT.
+   - Revenue and web metrics are never shown without their source and a confidence label.
+
+C. Founder deep-dive
+   - Resolve founders from three places: Crustdata people.founders, person_search on
+     title + employer id, and names in press articles. Then search Crustdata for each press name.
+   - Fuzzy matching for name changes (Dellavalle -> Walker), backed by a second signal: dates, school,
+     a source that states both names. The match confidence is shown.
+   - Timeline: start/end per role; flag any founder departure (Stella Valle: both left in 2022).
+   - "Founder afterlife": what founders did next. Repeat founders are the best signal for a VC.
+     (VerbalizeIt: Frankel -> CEO of Workup; Sarda -> healthcare startup; Walker -> The Brightwood.)
+   - Background fit: prior roles and education vs the company's industry (from experience records).
+   - Disputed titles (e.g. "Co-Founder" with no press support) are marked UNVERIFIED, not dropped.
+   - Privacy: if a founder was a minor (Ryan's Barkery), say so and stop profiling.
+
+C2. Founder-movement radar (from Set B; Crustdata job histories only)
+   - Flags: co-founder departed (when, and where to); a departed founder now at a competitor or
+     look-alike company; a founder now employed by the acquirer (acqui-hire); late co-founders
+     (joined after funding); exec turnover in one function (Beyond Snack: two marketing heads in
+     ~18 months).
+   - Each flag cites person id + role dates. No model guessing.
+
+D. Deal-history reconciliation (announced vs closed)
+   - Public deals (TV, press, accelerator) vs the funding rounds Crustdata recorded.
+   - Test run: VerbalizeIt's on-air O'Leary deal never closed; Tom + Chee's Cuban stake was unwound.
+     The portal shows "announced" and "closed" separately. Many headline deals don't close.
+
+E. Traction from alternative data
+   - Headcount 6/12/24-month growth and role mix; web traffic trend and traffic sources; follower
+     growth; job openings. Each is labelled with how fresh and reliable it is (see A, B).
+
+F. Exit and comparable outcomes
+   - Acquirer, date and amount (if known); time from first round to exit; total raised.
+     VerbalizeIt: $2.45M seed over 3 rounds -> acquired 5 years after founding.
+   - Useful for pricing a deal against historical outcomes in the same category.
+
+G. News with collision filtering
+   - Keep an article only if it mentions the company AND one anchor (founder name, domain, city,
+     product). This drops "geek chic fashion" and "Tom Brady" noise.
+   - Tag each kept item: funding / acquisition / closure / legal / product / press.
+
+H. Investment score with traceable reasoning
+   - Dimensions: Team, Traction, Market, Funding health, Risk, plus Data Confidence.
+   - A company that is DEFUNCT or ACQUIRED gets "Not investable", with the reason, instead of a score.
+
+I. Founder-call questions generated from conflicts
+   - e.g. "Public sources list 2 founders; LinkedIn shows a third co-founder. What is her role
+     and equity?"
+
+J. Batch / compare mode
+   - Paste a list (like comapanies.txt) -> one table: status, owner, founders, raised, headcount
+     trend, red flags, verdict.
+
+K. Monitoring (stretch)
+   - Crustdata entity watch on live companies and their founders: headcount drop, founder job change.
+
+L. Deck claim verification (stretch; dropped from the main pitch)
+   - Extract claims from a deck and check each against A-D.
+
+
+3. VERIFICATION RULES (mapped to judging criteria)
+--------------------------------------------------
+- Every fact carries: source tool, record id or URL, field, date. Labels: SOURCED / DERIVED / INFERENCE.
+- When two sources disagree, show both values. Never quietly pick one.
+- Dated evidence beats undated model estimates. A 2017 bankruptcy article overrides a 2026
+  "active" flag.
+- Empty results say WHY: not in graph / plan-gated field / no matches / tool error.
+- The model can summarise and phrase. It cannot introduce a name, number or date that isn't in
+  the evidence store.
+- Credit guardrail: about 7 credits per company in the test run. Show the estimate before a batch.
+
+
+4. OTHER APIs (free / keyless)
+------------------------------
+- SEC EDGAR: Form D filings to cross-check private raises and dates.
+- Wayback Machine availability API: when a site stopped updating or changed owner (supports the
+  Reality Check).
+- Claude API: phrasing the memo, classifying news, extracting claims. Never a source of facts.
+
+
+5. ARCHITECTURE (shippable today)
+---------------------------------
+- Python: FastAPI + httpx (async, parallel stages). Crustdata REST at https://api.crustdata.com with
+  `authorization: Bearer $CRUSTDATA_API_KEY` and `x-api-version: 2025-11-01`. Key in .env (gitignored).
+- Each stage returns {data, evidence[], conflicts[], errors[]}. The reconcile stage is plain Python
+  rules, so it is deterministic and explainable.
+- Cache raw responses on disk. Seed the cache from this test run, so the demo is free and repeatable.
+- Frontend: one page. Input box -> live stage ticker -> memo with clickable evidence and red
+  CONFLICT / STALE badges.
+
+
+6. KNOWN CONSTRAINTS AND CORRECTIONS
+------------------------------------
+- Correction to v1: Crustdata DOES return estimated revenue ranges. They are model estimates and
+  were wrong or stale for 3 of 4 companies, so they are shown only with the plausibility guard (B).
+  Real private financials (audited revenue, burn, margins) are still unavailable.
+- Plan gates: batch_* endpoints (except jobs / social list) are disabled; technographics,
+  hiring.recent_openings and crunchbase links come back empty on enrich; social-post fields
+  (actor, date, engagement) are gated.
+- Demo data now covers both cases. Set A (US, 2013) is mostly dead or acquired: good for showing
+  verification. Set B (India, 2021) is mostly live and funded: good for showing traction, founder
+  movement and valuation step-ups.
+- Currency: Crustdata funding is in USD; Indian press reports INR (lakh / crore). Store both, and
+  state the conversion rate used. Never compare a USD figure against an INR figure silently.
+- Code freeze 3:30 PM. Build order:
+    MVP:     intake, resolve, research, Reality Check (A), plausibility guard (B), founders (C),
+             memo with citations, batch table (J), cached demo.
+    Next:    deal reconciliation (D), news filter (G), score (H), call questions (I).
+    Stretch: monitoring (K), deck verification (L), EDGAR / Wayback.
+
+
+7. TWO-MINUTE DEMO SCRIPT
+-------------------------
+ 0:00  Paste the Shark Tank India list as-is (7 lines, wrong founder names, one fake company).
+ 0:10  Stage ticker:
+         - 6 resolved: HairOriginals via domain fallback; BluePine renamed from the input
+         - "Jugaad Life" UNRESOLVED, with the reason
+         - input founder names corrected, with evidence
+ 0:30  Ranked table: Beyond Snack, HairOriginals, Skippi (live, growing); qZense (risk); BluePine (tiny);
+       TagZ (ACQUIRED, distress sale).
+ 0:45  Open qZense: founder-movement radar shows "CEO co-founder left June 2026", with person record and
+       dates. Generated question for the founder call.
+ 1:00  Open TagZ: Shark Tank valuation -> rounds -> ₹28 Cr Reliance exit; the CEO is now at Reliance
+       (acqui-hire). The exit-math card.
+ 1:20  Switch to Set A (US): Geek Chic "41 employees, $2.5-5M revenue" vs "Chapter 7, June 2017".
+       STALE badge with both citations.
+ 1:45  Close: "Every number has a source; every conflict is shown."

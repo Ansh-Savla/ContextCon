@@ -1,0 +1,8 @@
+# Mixed identifiers — URLs, bare domains, duplicates
+# One company per line in different forms: a LinkedIn URL with tracking parameters, a bare domain, a website URL, a duplicate line and a separator row.
+- https://www.linkedin.com/company/tagz-foods/?utm_source=share&utm_medium=member_desktop
+2. beyondsnack.in
+https://www.hairoriginals.com/collections/all
+|----------|----------|
+Beyond Snack — Manas Madhu; banana-chip brand.
+Beyond Snack — Manas Madhu; banana-chip brand.

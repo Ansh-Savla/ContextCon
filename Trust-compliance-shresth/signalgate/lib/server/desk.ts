@@ -372,7 +372,7 @@ export async function runDesk(raw: string, onEvent: (e: TraceEvent) => void = ()
     const rounds = (fund.milestones ?? []).map((m: any) => ({ date: m.funding_date ?? m.date, round: m.round_type, amountUsd: m.amount_usd, investors: m.investors }));
     const est = co.revenue?.estimated ?? {};
     const baseMetrics: Metric[] = [
-      { label: "Headcount", value: `${hc.total ?? "—"}`, hint: hc.growth_percent?.yoy !== undefined && hc.growth_percent?.yoy !== null ? `${hc.growth_percent.yoy > 0 ? "+" : ""}${hc.growth_percent.yoy}% YoY` : b.employee_count_range ? `band ${b.employee_count_range}` : undefined, evidenceIds: [coEv] },
+      { label: "Headcount", value: `${hc.total ?? "—"}`, hint: hc.growth_percent?.yoy !== undefined && hc.growth_percent?.yoy !== null ? `${hc.growth_percent.yoy > 0 ? "+" : ""}${Math.round(hc.growth_percent.yoy * 10) / 10}% YoY` : b.employee_count_range ? `band ${b.employee_count_range}` : undefined, evidenceIds: [coEv] },
       { label: "Web visits / mo", value: tr?.monthly_visitors ? Number(tr.monthly_visitors).toLocaleString("en-US") : "—", hint: typeof tr?.qoq_pct === "number" ? `${Math.round(tr.qoq_pct)}% QoQ${acquiredBy ? " · acquirer's site" : ""}` : undefined, evidenceIds: [coEv] },
       { label: "Revenue (estimate)", value: est.upper_bound_usd ? `${usd(est.lower_bound_usd)}–${usd(est.upper_bound_usd)}` : "—", hint: "provider model, unaudited", evidenceIds: [coEv] },
       { label: "Roles posted (90d)", value: jobs90 === null ? "—" : String(jobs90), evidenceIds: [jobsEv].filter(Boolean) },

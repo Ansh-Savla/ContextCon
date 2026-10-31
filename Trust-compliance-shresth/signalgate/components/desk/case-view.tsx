@@ -192,7 +192,7 @@ export function CaseView({ c, replay }: { c: CaseResult; replay: boolean }) {
             <div className="grid gap-3 md:grid-cols-2">
               {c.people.map(p => (
                 <Card key={(p.id ?? p.name) + p.name} className="gap-3">
-                  <CardHeader className="flex-row items-start gap-3">
+                  <CardHeader className="flex flex-row items-start gap-3">
                     <PersonAvatar name={p.name} photo={p.photo} size={44} />
                     <div className="min-w-0 flex-1">
                       <CardTitle className="text-base">{p.name.replace(/^MasterChef\s+/, "")}</CardTitle>
@@ -368,7 +368,7 @@ function TraceCard({ c }: { c: CaseResult }) {
   return (
     <div className="grid gap-4 lg:grid-cols-[1fr_300px]">
       <Card>
-        <CardHeader className="flex-row items-center justify-between"><div><CardTitle>Agent trace</CardTitle><CardDescription>{c.trace.length} steps · {s.seconds}s</CardDescription></div><Button variant="ghost" size="sm" onClick={() => setDetails(d => !d)}>{details ? "Hide" : "Show"} API detail</Button></CardHeader>
+        <CardHeader className="flex flex-row items-center justify-between"><div><CardTitle>Agent trace</CardTitle><CardDescription>{c.trace.length} steps · {s.seconds}s</CardDescription></div><Button variant="ghost" size="sm" onClick={() => setDetails(d => !d)}>{details ? "Hide" : "Show"} API detail</Button></CardHeader>
         <CardContent>
           <ol className="space-y-1.5">
             {c.trace.filter(e => details || e.agent !== "investigator" || e.status !== "ok" || !/^(company_|person_|job_|web_)/.test(e.step)).map((e, i) => (
@@ -470,7 +470,7 @@ function ParentCard({ c }: { c: CaseResult }) {
   const p = c.parent!;
   return (
     <Card>
-      <CardHeader className="flex-row items-start gap-3">
+      <CardHeader className="flex flex-row items-start gap-3">
         <CompanyAvatar name={p.name} logo={p.logo} size={40} />
         <div className="min-w-0 flex-1"><CardTitle className="text-base">Parent company · {p.name}</CardTitle><CardDescription>{[p.domain, p.hq].filter(Boolean).join(" · ")}</CardDescription></div>
         <CrustChip />
@@ -488,7 +488,7 @@ function MonitoringCard({ c }: { c: CaseResult }) {
   const m = c.monitoring!;
   return (
     <Card>
-      <CardHeader className="flex-row items-start justify-between gap-3"><div><CardTitle className="text-base">Post-closing monitoring</CardTitle><CardDescription>{m.note}</CardDescription></div><CrustChip /></CardHeader>
+      <CardHeader className="flex flex-row items-start justify-between gap-3"><div><CardTitle className="text-base">Post-closing monitoring</CardTitle><CardDescription>{m.note}</CardDescription></div><CrustChip /></CardHeader>
       <CardContent>
         <ul className="space-y-1.5 text-sm">{m.track.map(x => <li key={x} className="flex items-center gap-2"><span className="size-1.5 rounded-full bg-primary" />Alert on: {x}</li>)}</ul>
         <p className="mt-3 text-xs text-muted-foreground">{m.status === "validated" ? "CrustData Watcher preview built a sample notification for this rule (deliver=false: no watch created, nothing sent, no credits)." : "Spec stored locally."}</p>

@@ -45,6 +45,7 @@ function summarize(s: SeriesPoint[], unit: string) {
 
 export function TrendChart({ title, data, unit, events = [], kind = "line", note }: { title: string; data: SeriesPoint[]; unit: string; events?: TimelineEvent[]; kind?: "line" | "area"; note?: string }) {
   const s = summarize(data, unit);
+  const gid = "g" + title.replace(/[^a-z0-9]/gi, "");
   const first = data[0]?.date, last = data[data.length - 1]?.date;
   const marks = events.filter(e => first && last && e.date >= first && e.date <= last && ["funding", "acquired", "left"].includes(e.kind)).slice(0, 4);
   const common = (
@@ -61,9 +62,9 @@ export function TrendChart({ title, data, unit, events = [], kind = "line", note
       <ResponsiveContainer width="100%" height="100%">
         {kind === "area" ? (
           <AreaChart data={data} margin={{ top: 8, right: 8, bottom: 0, left: 0 }}>
-            <defs><linearGradient id={`g-${title}`} x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor={ACCENT} stopOpacity={0.22} /><stop offset="100%" stopColor={ACCENT} stopOpacity={0.02} /></linearGradient></defs>
+            <defs><linearGradient id={gid} x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor={ACCENT} stopOpacity={0.22} /><stop offset="100%" stopColor={ACCENT} stopOpacity={0.02} /></linearGradient></defs>
             {common}
-            <Area type="monotone" dataKey="v" stroke={ACCENT} strokeWidth={2} fill={`url(#g-${title})`} activeDot={{ r: 4 }} />
+            <Area type="monotone" dataKey="v" stroke={ACCENT} strokeWidth={2} fill={`url(#${gid})`} activeDot={{ r: 4 }} />
           </AreaChart>
         ) : (
           <LineChart data={data} margin={{ top: 8, right: 8, bottom: 0, left: 0 }}>
@@ -85,7 +86,7 @@ export function RevenueBand({ data }: { data: SeriesPoint[] }) {
         <AreaChart data={d} margin={{ top: 8, right: 8, bottom: 0, left: 0 }}>
           <CartesianGrid stroke={GRID} vertical={false} />
           <XAxis dataKey="date" tickFormatter={fmtD} tick={{ fontSize: 11, fill: MUTED }} tickLine={false} axisLine={false} minTickGap={28} />
-          <YAxis tickFormatter={v => `$${fmtN(v)}`} tick={{ fontSize: 11, fill: MUTED }} tickLine={false} axisLine={false} width={48} />
+          <YAxis tickFormatter={v => `${fmtN(v)}`} tick={{ fontSize: 11, fill: MUTED }} tickLine={false} axisLine={false} width={64} />
           <Tooltip content={<Tip band />} cursor={{ stroke: MUTED, strokeDasharray: "3 3" }} />
           <Area type="stepAfter" dataKey="band" stroke={ACCENT} strokeWidth={1.5} fill={ACCENT} fillOpacity={0.15} />
         </AreaChart>
@@ -114,7 +115,7 @@ export function BarList({ title, data, unit }: { title: string; data: Array<{ la
 }
 
 export function PeerBars({ peers }: { peers: PeerCompany[] }) {
-  const d = peers.filter(p => typeof p.headcount === "number").map(p => ({ name: p.name.replace(/[®©™]/g, "").trim().slice(0, 22), v: p.headcount!, target: !!p.isTarget }));
+  const d = peers.filter(p => typeof p.headcount === "number").map(p => ({ name: p.name.replace(/[®©™]/g, "").trim().slice(0, 22), v: p.headcount!, hl: !!p.isTarget }));
   return (
     <ChartFrame title="Headcount vs peers" sub="Target highlighted · peers from CrustData company search" empty={d.length < 2}>
       <ResponsiveContainer width="100%" height="100%">
@@ -122,7 +123,7 @@ export function PeerBars({ peers }: { peers: PeerCompany[] }) {
           <XAxis type="number" tickFormatter={fmtN} tick={{ fontSize: 11, fill: MUTED }} tickLine={false} axisLine={false} />
           <YAxis type="category" dataKey="name" width={130} tick={{ fontSize: 11, fill: "var(--foreground)" }} tickLine={false} axisLine={false} interval={0} />
           <Tooltip cursor={{ fill: "var(--accent)" }} content={({ active, payload }: any) => active && payload?.length ? <div className="rounded-md border bg-popover px-2.5 py-1.5 text-xs shadow-md"><div className="font-medium">{payload[0].payload.name}</div><div className="tabular-nums">{payload[0].payload.v.toLocaleString("en-US")} staff</div></div> : null} />
-          <Bar dataKey="v" radius={[0, 4, 4, 0]}>{d.map(x => <Cell key={x.name} fill={x.target ? ACCENT : "var(--idle)"} fillOpacity={x.target ? 1 : 0.35} />)}</Bar>
+          <Bar dataKey="v" radius={[0, 4, 4, 0]}>{d.map(x => <Cell key={x.name} fill={x.hl ? ACCENT : "var(--idle)"} fillOpacity={x.hl ? 1 : 0.35} />)}</Bar>
         </BarChart>
       </ResponsiveContainer>
     </ChartFrame>

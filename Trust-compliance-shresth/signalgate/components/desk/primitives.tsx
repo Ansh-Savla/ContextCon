@@ -85,3 +85,26 @@ export function PulseLine({ score, className }: { score: number | null; classNam
 }
 
 export const fmtTime = (iso?: string) => (iso ? new Date(iso).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", second: "2-digit" }) : "");
+
+/** Provenance chip. CrustData gets the accent treatment so judges can see what came from the identity graph. */
+export function SourceChip({ provider, className }: { provider?: string; className?: string }) {
+  const p = provider ?? "Rule";
+  const crust = p === "CrustData";
+  const cls = crust ? "border-primary/25 bg-primary/8 text-primary" : p === "Tavily" || p === "CrustData web" ? "border-info/25 bg-info-bg text-info" : "border-border bg-muted text-muted-foreground";
+  return <span className={cn("inline-flex shrink-0 items-center gap-1 rounded-full border px-1.5 py-px text-[10px] font-semibold tracking-wide whitespace-nowrap", cls, className)}>{crust && <span className="size-1.5 rounded-full bg-primary" aria-hidden />}{p === "Rule" ? "RULE" : p === "Request" ? "REQUEST" : p.toUpperCase()}</span>;
+}
+export const CrustChip = ({ className }: { className?: string }) => <SourceChip provider="CrustData" className={className} />;
+
+export function PersonAvatar({ name, photo, size = 40 }: { name: string; photo?: string; size?: number }) {
+  const [ok, setOk] = useState(false);
+  const initials = name.replace(/^MasterChef\s+/, "").split(/\s+/).filter(Boolean).slice(0, 2).map(w => w[0]?.toUpperCase()).join("");
+  return (
+    <div className="relative shrink-0 overflow-hidden rounded-full border bg-secondary text-secondary-foreground grid place-items-center font-semibold" style={{ width: size, height: size, fontSize: size * 0.36 }} aria-hidden>
+      {initials}
+      {photo && photo.startsWith("https://") && (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img src={photo} alt="" referrerPolicy="no-referrer" className={cn("absolute inset-0 size-full object-cover transition-opacity", ok ? "opacity-100" : "opacity-0")} onLoad={e => { if ((e.target as HTMLImageElement).naturalWidth > 8) setOk(true); }} onError={() => setOk(false)} />
+      )}
+    </div>
+  );
+}

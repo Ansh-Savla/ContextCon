@@ -11,7 +11,10 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
 import type { CaseResult, Check, Evidence, Section } from "@/lib/types";
-import { CompanyAvatar, DECISION_TONE, DecisionPill, PulseLine, Stat, StatusBadge, fmtTime } from "./primitives";
+import { CompanyAvatar, CrustChip, DECISION_TONE, DecisionPill, PersonAvatar, PulseLine, SourceChip, Stat, StatusBadge, fmtTime } from "./primitives";
+import { BarList, PeerBars, RevenueBand, TrendChart } from "./charts";
+import { Timeline } from "./timeline";
+import { HelpButton } from "./help";
 
 const SECTION: Record<Section, { label: string; Icon: typeof Building2 }> = {
   kyb: { label: "Entity & KYB", Icon: Building2 }, people: { label: "People", Icon: Users }, fraud: { label: "Payment fraud", Icon: AlertTriangle },
@@ -61,10 +64,13 @@ export function CaseView({ c, replay }: { c: CaseResult; replay: boolean }) {
           </div>
         </div>
         <div className="flex gap-2">
+          <HelpButton variant="outline" />
           <Button variant="outline" size="sm" className="gap-1.5" onClick={() => download(`${c.id}-memo.md`, toMarkdown(c), "text/markdown")}><FileText className="size-4" />Memo</Button>
           <Button variant="outline" size="sm" className="gap-1.5" onClick={() => download(`${c.id}.json`, JSON.stringify(c, null, 2), "application/json")}><Download className="size-4" />JSON</Button>
         </div>
       </div>
+
+      <Provenance c={c} />
 
       {/* decisions */}
       <div className="mt-6 grid items-start gap-4 lg:grid-cols-[1.6fr_1fr]">
@@ -114,6 +120,7 @@ export function CaseView({ c, replay }: { c: CaseResult; replay: boolean }) {
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="compliance">Compliance & KYB <span className="ml-1 text-xs text-muted-foreground">{bySection(["kyb", "people", "fraud", "screening"]).length}</span></TabsTrigger>
           <TabsTrigger value="case">{investor ? "Investment case" : "Credit case"}</TabsTrigger>
+          <TabsTrigger value="story">Story <span className="ml-1 text-xs text-muted-foreground">{c.events.length}</span></TabsTrigger>
           <TabsTrigger value="people">People <span className="ml-1 text-xs text-muted-foreground">{c.people.length}</span></TabsTrigger>
           <TabsTrigger value="sources">Sources <span className="ml-1 text-xs text-muted-foreground">{c.evidence.length}</span></TabsTrigger>
           <TabsTrigger value="trace">Agent trace</TabsTrigger>
@@ -148,11 +155,36 @@ export function CaseView({ c, replay }: { c: CaseResult; replay: boolean }) {
         </TabsContent>
 
         <TabsContent value="compliance" className="mt-4 grid gap-4">
-          {(["kyb", "people", "fraud", "screening"] as Section[]).map(s => bySection([s]).length ? <ChecksCard key={s} title={SECTION[s].label} Icon={SECTION[s].Icon} checks={bySection([s])} open={open} /> : null)}
+          {(["kyb", "people", "fraud", "screening"] as Section[]).map(s => bySection([s]).length ? <ChecksCard key={s} title={SECTION[s].label} Icon={SECTION[s].Icon} checks={bySection([s])} open={open} evidence={c.evidence} /> : null)}
         </TabsContent>
 
         <TabsContent value="case" className="mt-4 grid gap-4">
           {investor ? <InvestmentPanel c={c} open={open} /> : <CreditPanel c={c} open={open} />}
+        </TabsContent>
+
+        <TabsContent value="story" className="mt-4 grid gap-4 lg:grid-cols-[1.3fr_1fr]">
+          <Card>
+            <CardHeader><CardTitle>Company timeline</CardTitle><CardDescription>Every dated fact we hold — founding, rounds, people joining and leaving, acquisition, coverage</CardDescription></CardHeader>
+            <CardContent><Timeline events={c.events} /></CardContent>
+          </Card>
+          <div className="grid content-start gap-4">
+            {c.pressImages.length > 0 && (
+              <Card>
+                <CardHeader><CardTitle>In the press</CardTitle><CardDescription>Images found by web search (Tavily) for this company&apos;s coverage — for context only, linked to source</CardDescription></CardHeader>
+                <CardContent className="grid grid-cols-2 gap-2">
+                  {c.pressImages.slice(0, 4).map(im => (
+                    <a key={im.url} href={im.url} target="_blank" rel="noreferrer" className="group relative block overflow-hidden rounded-lg border bg-muted">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={im.url} alt={im.caption ?? "Press image"} referrerPolicy="no-referrer" className="aspect-video w-full object-cover transition group-hover:scale-[1.02]" onError={e => { (e.target as HTMLImageElement).closest("a")!.style.display = "none"; }} />
+                      <span className="absolute bottom-1 left-1 rounded bg-background/85 px-1.5 py-px text-[10px] text-muted-foreground">{im.source}</span>
+                    </a>
+                  ))}
+                </CardContent>
+              </Card>
+            )}
+            {c.parent && <ParentCard c={c} />}
+            {c.monitoring && c.monitoring.status !== "not_applicable" && <MonitoringCard c={c} />}
+          </div>
         </TabsContent>
 
         <TabsContent value="people" className="mt-4">
@@ -161,7 +193,7 @@ export function CaseView({ c, replay }: { c: CaseResult; replay: boolean }) {
               {c.people.map(p => (
                 <Card key={(p.id ?? p.name) + p.name} className="gap-3">
                   <CardHeader className="flex-row items-start gap-3">
-                    <CompanyAvatar name={p.name} size={36} />
+                    <PersonAvatar name={p.name} photo={p.photo} size={44} />
                     <div className="min-w-0 flex-1">
                       <CardTitle className="text-base">{p.name.replace(/^MasterChef\s+/, "")}</CardTitle>
                       <CardDescription>{p.title ?? "Role not on record"}{p.since ? ` · since ${p.since}` : ""}</CardDescription>
@@ -179,7 +211,8 @@ export function CaseView({ c, replay }: { c: CaseResult; replay: boolean }) {
           ) : <p className="text-sm text-muted-foreground">No people on record — the company was not resolved.</p>}
         </TabsContent>
 
-        <TabsContent value="sources" className="mt-4">
+        <TabsContent value="sources" className="mt-4 grid gap-4">
+          <CrustDataUsed c={c} />
           <Card className="py-2">
             <Table>
               <TableHeader><TableRow><TableHead className="w-16">ID</TableHead><TableHead>Source</TableHead><TableHead>Record / query</TableHead><TableHead className="w-28 text-right">Retrieved</TableHead></TableRow></TableHeader>
@@ -187,7 +220,7 @@ export function CaseView({ c, replay }: { c: CaseResult; replay: boolean }) {
                 {c.evidence.map(e => (
                   <TableRow key={e.id} className="cursor-pointer" onClick={() => open(undefined, e.id)}>
                     <TableCell className="font-mono text-xs">{e.id}</TableCell>
-                    <TableCell><div className="font-medium">{e.provider ?? e.kind}</div><div className="font-mono text-xs text-muted-foreground">{e.endpoint}</div></TableCell>
+                    <TableCell><SourceChip provider={e.provider} /><div className="mt-1 font-mono text-xs text-muted-foreground">{e.endpoint}</div></TableCell>
                     <TableCell className="max-w-[520px] whitespace-normal text-sm">{e.note ?? e.fieldPath}{e.recordId ? <span className="ml-1 font-mono text-xs text-muted-foreground">#{String(e.recordId)}</span> : null}</TableCell>
                     <TableCell className="text-right font-mono text-xs text-muted-foreground">{fmtTime(e.retrievedAt)}{e.cached ? " · cache" : ""}</TableCell>
                   </TableRow>
@@ -221,7 +254,8 @@ function linkify(text: string, onSrc: (id: string) => void) {
   });
 }
 
-function ChecksCard({ title, Icon, checks, open }: { title: string; Icon: typeof Building2; checks: Check[]; open: (c: Check) => void }) {
+function ChecksCard({ title, Icon, checks, open, evidence }: { title: string; Icon: typeof Building2; checks: Check[]; open: (c: Check) => void; evidence?: Evidence[] }) {
+  const prov = (k: Check) => [...new Set(k.evidenceIds.map(id => evidence?.find(e => e.id === id)?.provider).filter(Boolean))] as string[];
   return (
     <Card className="gap-2 py-4">
       <CardHeader className="pb-1"><CardTitle className="flex items-center gap-2 text-base"><Icon className="size-4 text-primary" />{title}</CardTitle></CardHeader>
@@ -234,7 +268,7 @@ function ChecksCard({ title, Icon, checks, open }: { title: string; Icon: typeof
               <TableCell className="whitespace-normal text-sm">{k.submitted ?? <span className="text-muted-foreground">—</span>}</TableCell>
               <TableCell className="whitespace-normal text-sm">{k.observed}<div className="mt-0.5 text-xs text-muted-foreground">{k.reason}</div></TableCell>
               <TableCell><StatusBadge status={k.status} /></TableCell>
-              <TableCell className="pr-6 font-mono text-xs text-primary">{k.evidenceIds.join(" ") || <span className="text-muted-foreground">—</span>}</TableCell>
+              <TableCell className="pr-6"><div className="flex flex-wrap gap-1">{prov(k).map(p => <SourceChip key={p} provider={p} />)}</div><div className="mt-1 font-mono text-[11px] text-primary">{k.evidenceIds.join(" ") || <span className="text-muted-foreground">—</span>}</div></TableCell>
             </TableRow>
           ))}
         </TableBody>
@@ -275,6 +309,7 @@ function InvestmentPanel({ c, open }: { c: CaseResult; open: (k?: Check, id?: st
   return (
     <>
       {inv && <MetricsGrid metrics={inv.metrics} />}
+      <TrendsGrid c={c} credit={false} />
       <div className="grid gap-4 lg:grid-cols-2">
         <Card>
           <CardHeader><CardTitle>Thesis fit</CardTitle><CardDescription>Kept separate from trust and compliance evidence</CardDescription></CardHeader>
@@ -287,7 +322,7 @@ function InvestmentPanel({ c, open }: { c: CaseResult; open: (k?: Check, id?: st
           </CardContent>
         </Card>
       </div>
-      {c.checks.some(k => k.section === "investment") && <ChecksCard title="Investment claims" Icon={Sparkles} checks={c.checks.filter(k => k.section === "investment")} open={k => open(k)} />}
+      {c.checks.some(k => k.section === "investment") && <ChecksCard title="Investment claims" Icon={Sparkles} checks={c.checks.filter(k => k.section === "investment")} open={k => open(k)} evidence={c.evidence} />}
       {c.heartbeat && <HeartbeatCard c={c} open={id => open(undefined, id)} />}
     </>
   );
@@ -320,7 +355,8 @@ function CreditPanel({ c, open }: { c: CaseResult; open: (k?: Check, id?: string
         </Card>
       </div>
       <MetricsGrid metrics={cr.metrics} />
-      {c.checks.some(k => k.section === "credit") && <ChecksCard title="Credit checks" Icon={Landmark} checks={c.checks.filter(k => k.section === "credit")} open={k => open(k)} />}
+      <TrendsGrid c={c} credit />
+      {c.checks.some(k => k.section === "credit") && <ChecksCard title="Credit checks" Icon={Landmark} checks={c.checks.filter(k => k.section === "credit")} open={k => open(k)} evidence={c.evidence} />}
       {c.heartbeat && <HeartbeatCard c={c} open={id => open(undefined, id)} />}
     </>
   );
@@ -391,6 +427,100 @@ function SourceDetail({ check, evId, evById }: { check?: Check; evId?: string; e
           </div>
         ))}
       </div>
+    </>
+  );
+}
+
+
+function Provenance({ c }: { c: CaseResult }) {
+  const crust = c.evidence.filter(e => e.provider === "CrustData");
+  const endpoints = [...new Set(crust.map(e => e.endpoint).filter(Boolean))];
+  return (
+    <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2 rounded-xl border border-primary/15 bg-primary/[0.04] px-4 py-2.5 text-sm">
+      <CrustChip />
+      {c.identity.status === "resolved" ? <span>Verified against the <b>CrustData identity graph</b> · company <span className="font-mono">#{c.identity.company!.id}</span> · match confidence {c.identity.company!.score}</span> : <span>CrustData identity graph: <b>{c.identity.status}</b></span>}
+      <span className="text-muted-foreground">{crust.length} CrustData records · {endpoints.length} endpoints · {c.spend.crustdataCredits} credits ({c.spend.cacheHits} cached)</span>
+    </div>
+  );
+}
+
+function CrustDataUsed({ c }: { c: CaseResult }) {
+  const crust = c.evidence.filter(e => e.provider === "CrustData");
+  const groups = new Map<string, Evidence[]>();
+  for (const e of crust) { const k = e.endpoint ?? "?"; groups.set(k, [...(groups.get(k) ?? []), e]); }
+  const usedIn = (id: string) => c.checks.filter(k => k.evidenceIds.includes(id)).length;
+  return (
+    <Card>
+      <CardHeader><CardTitle className="flex items-center gap-2"><CrustChip />CrustData data used in this case</CardTitle><CardDescription>{crust.length} records from {groups.size} endpoints · {c.spend.crustdataCredits} credits this run · everything about identity, ownership, size, people, funding and activity comes from here</CardDescription></CardHeader>
+      <CardContent className="grid gap-3 md:grid-cols-2">
+        {[...groups.entries()].map(([ep, list]) => (
+          <div key={ep} className="rounded-lg border p-3">
+            <div className="font-mono text-xs font-semibold">POST {ep}</div>
+            <ul className="mt-2 space-y-1.5 text-sm">
+              {list.slice(0, 6).map(e => <li key={e.id} className="flex gap-2"><span className="font-mono text-xs text-primary">{e.id}</span><span className="min-w-0 flex-1"><span className="break-words">{e.note ?? e.fieldPath}</span>{e.fieldPath && e.note && <span className="block font-mono text-[11px] text-muted-foreground break-all">{e.fieldPath}</span>}</span><span className="shrink-0 text-xs text-muted-foreground">{usedIn(e.id)} checks{e.cached ? " · cache" : ""}</span></li>)}
+            </ul>
+          </div>
+        ))}
+      </CardContent>
+    </Card>
+  );
+}
+
+function ParentCard({ c }: { c: CaseResult }) {
+  const p = c.parent!;
+  return (
+    <Card>
+      <CardHeader className="flex-row items-start gap-3">
+        <CompanyAvatar name={p.name} logo={p.logo} size={40} />
+        <div className="min-w-0 flex-1"><CardTitle className="text-base">Parent company · {p.name}</CardTitle><CardDescription>{[p.domain, p.hq].filter(Boolean).join(" · ")}</CardDescription></div>
+        <CrustChip />
+      </CardHeader>
+      <CardContent className="grid grid-cols-3 gap-3 text-sm">
+        <div><div className="text-xs text-muted-foreground">CrustData ID</div><div className="font-mono">#{p.id}</div></div>
+        <div><div className="text-xs text-muted-foreground">Headcount</div><div className="tabular-nums">{p.headcount?.toLocaleString("en-US") ?? "—"}</div></div>
+        <div><div className="text-xs text-muted-foreground">Funding</div><div className="tabular-nums">{p.fundingUsd ? fmtUsd(p.fundingUsd) : "—"}</div></div>
+      </CardContent>
+    </Card>
+  );
+}
+
+function MonitoringCard({ c }: { c: CaseResult }) {
+  const m = c.monitoring!;
+  return (
+    <Card>
+      <CardHeader className="flex-row items-start justify-between gap-3"><div><CardTitle className="text-base">Post-closing monitoring</CardTitle><CardDescription>{m.note}</CardDescription></div><CrustChip /></CardHeader>
+      <CardContent>
+        <ul className="space-y-1.5 text-sm">{m.track.map(x => <li key={x} className="flex items-center gap-2"><span className="size-1.5 rounded-full bg-primary" />Alert on: {x}</li>)}</ul>
+        <p className="mt-3 text-xs text-muted-foreground">{m.status === "validated" ? "CrustData Watcher preview built a sample notification for this rule (deliver=false: no watch created, nothing sent, no credits)." : "Spec stored locally."}</p>
+      </CardContent>
+    </Card>
+  );
+}
+
+function TrendsGrid({ c, credit }: { c: CaseResult; credit: boolean }) {
+  const s = c.series;
+  if (!s) return null;
+  return (
+    <>
+      <div className="grid gap-4 lg:grid-cols-2">
+        <TrendChart title="Measured headcount" data={s.headcount} unit="people" events={c.events} />
+        <TrendChart title={`Web visits / month${s.trafficDomain ? " · " + s.trafficDomain : ""}`} data={s.traffic} unit="visits" kind="area" note={s.trafficExcluded ? `Not counted in activity — ${s.trafficExcluded}` : undefined} />
+        {credit ? <RevenueBand data={s.revenue} /> : <TrendChart title="Followers" data={s.followers} unit="followers" />}
+        {credit ? <TrendChart title="Followers" data={s.followers} unit="followers" /> : (s.openJobs.length > 1 ? <TrendChart title="Open jobs" data={s.openJobs} unit="openings" /> : <RevenueBand data={s.revenue} />)}
+      </div>
+      <div className="grid gap-4 lg:grid-cols-[1.4fr_1fr]">
+        {c.peers?.companies.length ? (
+          <div className="grid gap-2">
+            <PeerBars peers={c.peers.companies} />
+            <p className="px-1 text-xs text-muted-foreground">Peer set: {c.peers.basis} (CrustData company search)</p>
+          </div>
+        ) : <div className="rounded-xl border bg-card p-4 text-sm text-muted-foreground">No peer set — industry or country not on record.</div>}
+        <div className="grid content-start gap-4">
+          <BarList title="Team mix (by role)" data={s.roles} unit="people" />
+          <BarList title="Where the team is (by region)" data={s.regions.slice(0, 6)} unit="people" />
+        </div>
+      </div>
+      {c.parent && <ParentCard c={c} />}
     </>
   );
 }

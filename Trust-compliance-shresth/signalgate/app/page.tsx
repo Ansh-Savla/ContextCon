@@ -10,6 +10,7 @@ import { Composer } from "@/components/desk/composer";
 import { CaseView } from "@/components/desk/case-view";
 import { LiveFeed, StageRail } from "@/components/desk/run-progress";
 import { DECISION_TONE } from "@/components/desk/primitives";
+import { HelpButton } from "@/components/desk/help";
 
 type Status = {
   credits: number | null; brain: string; tavily: boolean;
@@ -48,7 +49,7 @@ export default function Home() {
 
   async function openRun(id: string) {
     const r = await fetch(`/api/runs/${id}`); if (!r.ok) return;
-    const c: CaseResult = await r.json(); setResult(c); setEvents(c.trace); setText(c.intake.raw); setReplay(true); setError(null);
+    const raw = await r.json(); const c: CaseResult = { ...raw, events: raw.events ?? [], pressImages: raw.pressImages ?? [], people: raw.people ?? [] }; setResult(c); setEvents(c.trace); setText(c.intake.raw); setReplay(true); setError(null);
   }
   const reset = () => { setResult(null); setEvents([]); setError(null); setReplay(false); };
 
@@ -77,6 +78,7 @@ export default function Home() {
             }) : <li className="px-2 text-xs text-muted-foreground">No cases yet.</li>}
           </ul>
         </nav>
+        <div className="px-3 pb-2"><HelpButton variant="outline" /></div>
         <div className="space-y-2 border-t p-4 text-xs">
           <div className="flex items-center justify-between"><span className="flex items-center gap-1.5 text-muted-foreground"><Inbox className="size-3.5" />Exceptions inbox</span><span className="font-medium tabular-nums">{status?.inbox ?? 0}</span></div>
           <div className="flex items-center justify-between"><span className="flex items-center gap-1.5 text-muted-foreground"><Coins className="size-3.5" />Credits used / cap</span><span className="font-medium tabular-nums">{status ? Math.round(status.ledger.crustdataCredits) : "—"} / {status?.budget.total ?? "—"}</span></div>

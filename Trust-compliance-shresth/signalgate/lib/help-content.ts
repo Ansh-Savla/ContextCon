@@ -1,0 +1,106 @@
+/** Static Help content: guide, decision language, data sources, Heartbeat, glossary. Edit freely. */
+
+export const GUIDE = [
+  { h: "What SignalGate does", p: "Paste a request exactly as you received it: a forwarded pitch, a loan application, or an email asking you to wire money. Agents identify the company and its people in CrustData's identity graph, check every claim, screen for payment fraud and adverse news, and then finish the work: a decision, an investment-committee or credit memo, the deal pipeline or credit file updated, conditions listed, and a wire held if fraud is suspected. A human only handles the exceptions." },
+  { h: "Investor or lender: detected automatically", p: "Investor requests (cheques, term sheets, SAFEs, theses) get equity diligence plus compliance clearance. Lender requests (loans, credit lines, working capital, net-60 terms) get KYB plus a credit-readiness grade and an indicative exposure cap. The case header shows which desk handled it." },
+  { h: "How to read a case", p: "Top: the decision and the compliance clearance, with reasons. Below: four tiles (identity, checks, company activity, thesis fit or credit grade). Tabs: Overview (memo, what needs attention, conditions), Compliance & KYB (every check with its rule), Investment or Credit case (charts, peers, funding, exposure), Story (dated timeline and press), People, Sources (every record used) and Agent trace (every step, model and credit)." },
+  { h: "Every claim is cited", p: "Each check lists source IDs (S1, S2 …). Click a check or an ID to see the exact record: CrustData endpoint, company or person ID, field path, value and retrieval time; or the web page URL. Chips show the source: CRUSTDATA (identity graph), TAVILY / CRUSTDATA WEB (web search), RULE (derived by a deterministic rule)." },
+  { h: "Simulated · local only", p: "SignalGate never emails, calls, pays or files anything. 'Actions' are JSON records written on this machine (pipeline, closing checklist, credit file, KYB register, wire holds, exceptions inbox) and are labelled as simulations." },
+  { h: "Who decides", p: "Decisions and statuses are produced by deterministic rules with rule IDs. The language model (Gemini, with fallbacks) only parses the request, judges whether an article is about this company, and drafts the memo from cited checks. If the model fails, rules take over and the trace says so." },
+];
+
+export const DECISIONS = [
+  { term: "Proceed to term sheet", def: "Investor desk: claims check out against the evidence; standard confirmations may still be listed as conditions." },
+  { term: "Proceed only with conditions", def: "Investor desk: material contradictions exist (e.g. a co-founder left, headcount overstated). Proceed only after the listed conditions precedent are satisfied." },
+  { term: "Decline — not an independent company", def: "The company has been acquired; equity would be in a subsidiary." },
+  { term: "Decline — outside thesis", def: "Two or more thesis criteria fail." },
+  { term: "Stop the wire — suspected payment fraud", def: "A request to send money to new bank details came from a lookalike domain or a person not found at the company. A wire hold is recorded and a call-back is prepared." },
+  { term: "Ready for underwriting", def: "Lender desk: KYB clear, grade A/B, request within the indicative policy cap." },
+  { term: "Refer to credit officer", def: "Lender desk: grade C, material contradictions, or the request exceeds the indicative cap." },
+  { term: "Decline (credit)", def: "Grade D, misrepresented ownership, or fraud signals." },
+  { term: "Insufficient evidence", def: "The company could not be identified with confidence (e.g. a name that matches 25 companies). No company-specific conclusions are drawn." },
+  { term: "Cleared / Cleared with conditions / Not cleared", def: "Compliance clearance. Not cleared = fraud signals or misrepresented ownership. With conditions = contradictions or review items that documents can resolve." },
+];
+
+export const STATUSES = [
+  { term: "Verified", def: "The cited record supports this specific claim. It does not mean the company is safe." },
+  { term: "Contradicted", def: "The cited record disagrees with what was submitted; both values are shown." },
+  { term: "Review", def: "Something a human should look at, e.g. a status inconsistency or a request above the policy cap." },
+  { term: "Unverified", def: "No source could confirm or refute it. Not a negative finding." },
+  { term: "Not run", def: "The check was outside this build's data (e.g. sanctions lists) or skipped by credit rationing." },
+  { term: "Info", def: "Context only, e.g. leadership on record or a parent company." },
+];
+
+export const SOURCES = [
+  { term: "POST /company/identify (CrustData, free)", def: "Resolves a website or name to one canonical company with a confidence score, or returns candidates when ambiguous." },
+  { term: "POST /company/enrich (CrustData, 2 credits)", def: "Profile, HQ and locations, ownership/acquirer, measured headcount and its history, self-reported size band, funding rounds and investors, revenue estimate, web traffic, ad spend, followers, news, founders and officers, logo." },
+  { term: "POST /person/search (CrustData)", def: "Whether a named person currently works, or used to work, at the company — with titles and start/end dates." },
+  { term: "POST /job/search (CrustData, free with limit 0)", def: "Distinct roles posted in the last 90 days (hiring activity)." },
+  { term: "POST /company/search (CrustData)", def: "Peer companies in the same industry and country with a similar headcount band." },
+  { term: "POST /watch/company/test (CrustData Watcher, free preview)", def: "Validates a post-closing monitoring rule (headcount, funding, status changes) without creating a watch or delivering anything." },
+  { term: "POST /web/search/live (CrustData web)", def: "Fallback news search when Tavily is not configured." },
+  { term: "Tavily search (secondary)", def: "Adverse-media and press corroboration, plus press images. Labelled TAVILY; never used for identity." },
+  { term: "Gemini (optional)", def: "Parses the request, judges article relevance and drafts the memo from cited checks. Never decides." },
+  { term: "Credits & rationing", def: "Per run: 25 CrustData credits and per-endpoint call caps; app-wide cap 1,500. Exact charges come from the API's x-credits-used header. Identical calls are served from a 24-hour cache at 0 credits." },
+];
+
+export const HEARTBEAT = {
+  intro: "Company activity (Heartbeat) is a 0–100 summary of observable operating activity. It is context, never a fraud or legitimacy signal: small, real companies can score low.",
+  formula: "Heartbeat = weighted mean of the components that have data. Coverage = share of total weight that had data. Missing data is left out — never counted as zero.",
+  parts: [
+    ["Team momentum (25)", "Headcount growth over 6 months (or 12)."],
+    ["Hiring (20)", "Distinct roles posted in the last 90 days."],
+    ["Digital demand (20)", "Web-traffic growth; weight halved if traffic swings >3× (volatile); excluded if the site belongs to an acquirer."],
+    ["Audience momentum (10)", "Follower growth quarter on quarter."],
+    ["News recency (15)", "Days since the latest article that is about this company."],
+    ["Capital recency (10)", "Months since the last funding round."],
+  ],
+  bands: "70+ Strong pulse · 40–69 Steady · 20–39 Faint · below 20 Flatline signals · coverage under 50% = Low signal.",
+};
+
+export const GLOSSARY: Array<{ term: string; def: string; tag: "Compliance" | "Investing" | "Lending" | "Metrics" | "India" | "SignalGate" }> = [
+  { term: "KYB", def: "Know Your Business — verifying a company is real, who owns it and who runs it.", tag: "Compliance" },
+  { term: "KYC", def: "Know Your Customer — identity verification of individuals.", tag: "Compliance" },
+  { term: "AML", def: "Anti-Money-Laundering — controls to detect and report suspicious money flows.", tag: "Compliance" },
+  { term: "PEP", def: "Politically Exposed Person — someone in a prominent public role; needs enhanced checks.", tag: "Compliance" },
+  { term: "Sanctions screening", def: "Checking names against government sanctions lists (e.g. OFAC). Not connected in this build — shown as Not run.", tag: "Compliance" },
+  { term: "Adverse media", def: "News about fraud, lawsuits, regulators or scandals. Allegations are not findings.", tag: "Compliance" },
+  { term: "BEC / wire fraud", def: "Business Email Compromise — a fraudster imitates a company (often from a lookalike domain) to redirect a payment.", tag: "Compliance" },
+  { term: "Lookalike domain", def: "A domain that imitates a real one: extra words (brand-payments), a different ending (.in vs .com), hyphens or swapped letters.", tag: "Compliance" },
+  { term: "Shell company", def: "A company with little real operation. Thin public footprint is a reason to ask for documents, not proof.", tag: "Compliance" },
+  { term: "Beneficial owner", def: "The person who ultimately owns or controls a company. Not determinable from public profiles.", tag: "Compliance" },
+  { term: "IC / IC memo", def: "Investment Committee — the group that approves investments; the memo summarises the case and the recommendation.", tag: "Investing" },
+  { term: "Due diligence", def: "Verifying a company's claims, team, finances and risks before investing or lending.", tag: "Investing" },
+  { term: "Term sheet", def: "Non-binding summary of investment terms (amount, valuation, rights) agreed before final documents.", tag: "Investing" },
+  { term: "CP — conditions precedent", def: "Things that must be satisfied before money moves, e.g. a clean cap table or exit documents.", tag: "Investing" },
+  { term: "SAFE", def: "Simple Agreement for Future Equity — an investment that converts into shares at a later priced round.", tag: "Investing" },
+  { term: "Cap table", def: "Capitalisation table — who owns what percentage of the company.", tag: "Investing" },
+  { term: "Pre-money / post-money valuation", def: "Company value before / after the new investment is added.", tag: "Investing" },
+  { term: "Dilution", def: "Existing owners' percentage shrinking when new shares are issued.", tag: "Investing" },
+  { term: "Seed / Series A / B", def: "Successive funding rounds as a startup matures.", tag: "Investing" },
+  { term: "Bridge round", def: "Short-term funding to reach the next priced round.", tag: "Investing" },
+  { term: "Follow-on", def: "An existing investor investing again in a later round.", tag: "Investing" },
+  { term: "Thesis", def: "An investor's focus: sectors, geographies, stages and sizes it invests in.", tag: "Investing" },
+  { term: "Shark Tank deal vs closed deal", def: "A deal agreed on TV often changes or never closes; the funding record and cap table show what actually happened.", tag: "Investing" },
+  { term: "Underwriting", def: "A lender's detailed assessment of whether, and on what terms, to lend.", tag: "Lending" },
+  { term: "Credit line / working capital", def: "A revolving facility to fund day-to-day needs such as inventory.", tag: "Lending" },
+  { term: "Term loan", def: "A fixed loan repaid over a set period.", tag: "Lending" },
+  { term: "Exposure", def: "How much a lender stands to lose if the borrower defaults.", tag: "Lending" },
+  { term: "Indicative policy cap", def: "SignalGate's illustrative triage rule: at most 10% of the lower bound of the provider's revenue estimate. Not an approved limit.", tag: "Lending" },
+  { term: "Credit readiness grade (A–D)", def: "Rule-based triage from operating history, measured headcount, activity, revenue signal and ownership.", tag: "Lending" },
+  { term: "Parent guarantee", def: "The parent company promising to repay if its subsidiary cannot.", tag: "Lending" },
+  { term: "Covenant", def: "A condition a borrower must keep, e.g. minimum cash.", tag: "Lending" },
+  { term: "Net-60", def: "Payment due 60 days after invoice — trade credit.", tag: "Lending" },
+  { term: "NBFC", def: "Non-Banking Financial Company — an Indian lender regulated by the RBI but not a bank.", tag: "India" },
+  { term: "Lakh / crore", def: "₹1 lakh (L) = 100,000; ₹1 crore (Cr) = 10,000,000 = 100 lakh.", tag: "India" },
+  { term: "Pvt Ltd", def: "Private limited company (India).", tag: "India" },
+  { term: "ARR", def: "Annual Recurring Revenue.", tag: "Metrics" },
+  { term: "MoM / QoQ / YoY", def: "Month-on-month / quarter-on-quarter / year-on-year change.", tag: "Metrics" },
+  { term: "Measured headcount vs self-reported band", def: "Measured = people CrustData observes at the company; band (e.g. 51–200) = what the company profile claims.", tag: "Metrics" },
+  { term: "Revenue estimate", def: "A provider model range, not audited financials.", tag: "Metrics" },
+  { term: "CrustData identity graph", def: "CrustData's canonical record of companies and people, resolved to one ID each (e.g. CrustData #12347153).", tag: "SignalGate" },
+  { term: "Confidence score", def: "How strongly a lookup matched a company (1.0 = exact website match).", tag: "SignalGate" },
+  { term: "Source ID (S#)", def: "A citation to a specific record in the Sources tab.", tag: "SignalGate" },
+  { term: "Rule IDs", def: "KYB- entity checks · PPL- people · FRAUD- payment fraud · SCR- screening · FIN- financial claims · INV- investment · CR- credit.", tag: "SignalGate" },
+  { term: "Company activity (Heartbeat)", def: "0–100 activity summary; see the Heartbeat tab. Never a fraud signal.", tag: "SignalGate" },
+];

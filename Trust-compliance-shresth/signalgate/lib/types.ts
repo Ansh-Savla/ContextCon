@@ -89,7 +89,14 @@ export type TraceEvent = {
 
 export type CompanyCandidate = { id: number; name?: string; domain?: string; score: number; size?: string; industry?: string; description?: string };
 
-export type Person = { id?: number; name: string; title?: string; since?: string; until?: string; current: boolean; profileUrl?: string; priorFounder?: string[]; headline?: string; evidenceId?: string };
+export type Person = { id?: number; photo?: string; name: string; title?: string; since?: string; until?: string; current: boolean; profileUrl?: string; priorFounder?: string[]; headline?: string; evidenceId?: string };
+
+export type SeriesPoint = { date: string; v: number; v2?: number };
+export type Series = { headcount: SeriesPoint[]; traffic: SeriesPoint[]; followers: SeriesPoint[]; revenue: SeriesPoint[]; openJobs: SeriesPoint[]; roles: Array<{ label: string; v: number }>; regions: Array<{ label: string; v: number }>; trafficDomain?: string; trafficExcluded?: string };
+export type TimelineEvent = { date: string; kind: "founded" | "funding" | "joined" | "left" | "acquired" | "news" | "press"; title: string; detail?: string; source: "CrustData" | "Tavily" | "CrustData web"; evidenceId?: string; url?: string };
+export type PeerCompany = { id: number; name: string; domain?: string; logo?: string; headcount?: number; growth6m?: number | null; funding?: number | null; country?: string; isTarget?: boolean };
+export type Monitoring = { status: "validated" | "spec_only" | "not_applicable"; track: string[]; note: string; evidenceId?: string };
+export type PressImage = { url: string; source: string; caption?: string };
 
 export type LocalAction = { system: string; file: string; summary: string; detail?: string };
 
@@ -108,6 +115,12 @@ export type CaseResult = {
   heartbeat?: Heartbeat;
   investment?: { fit: Array<{ criterion: string; expected: string; observed: string; result: "pass" | "fail" | "unknown" }>; metrics: Metric[]; funding: Array<{ date?: string; round?: string; amountUsd?: number | null; investors?: string }>; competitors: string[] };
   credit?: { grade: "A" | "B" | "C" | "D" | "—"; metrics: Metric[]; indicativeExposure?: { amount: number; currency: "USD" | "INR"; basis: string }; requested?: { amount: number; currency: "USD" | "INR" }; policy: string[] };
+  series?: Series;
+  events: TimelineEvent[];
+  parent?: { id: number; name: string; domain?: string; logo?: string; headcount?: number; hq?: string; fundingUsd?: number | null; evidenceId?: string };
+  peers?: { basis: string; companies: PeerCompany[]; evidenceId?: string };
+  monitoring?: Monitoring;
+  pressImages: PressImage[];
   memo: string;
   memoBy: string;
   actions: LocalAction[];

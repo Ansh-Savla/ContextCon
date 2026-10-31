@@ -14,7 +14,7 @@ import { compareDomain, normalizeDomain } from "./domain";
 import { computeHeartbeat } from "./heartbeat";
 import { llmJson, llmLabel } from "./llm";
 import { tavilySearch, tavilyEnabled, type WebHit } from "./tavily";
-import type { CaseResult, Check, CheckStatus, CompanyCandidate, Decision, Evidence, Intake, LocalAction, Metric, Person, Section, Stage, TraceEvent } from "../types";
+import type { CaseResult, Check, CheckStatus, CompanyCandidate, Decision, Evidence, Intake, LocalAction, Metric, Person, PressImage, Section, Stage, TimelineEvent, TraceEvent } from "../types";
 
 const norm = (s = "") => s.toLowerCase().replace(/[®©™]/g, "").replace(/\b(pvt|private|ltd|limited|inc|llc|corp|co|the|industries|technologies|tech)\b\.?/g, "").replace(/[^a-z0-9]+/g, " ").trim();
 const nameMatch = (a = "", b = "") => { const x = norm(a), y = norm(b); return !!x && !!y && (x === y || x.includes(y) || y.includes(x)); };
@@ -109,6 +109,14 @@ export async function runDesk(raw: string, onEvent: (e: TraceEvent) => void = ()
   let investment: CaseResult["investment"];
   let credit: CaseResult["credit"];
   let acquiredBy: string | undefined;
+  let acquiredOn: string | undefined;
+  let series: CaseResult["series"];
+  const events: TimelineEvent[] = [];
+  let parent: CaseResult["parent"];
+  let peers: CaseResult["peers"];
+  let monitoring: CaseResult["monitoring"];
+  const pressImages: PressImage[] = [];
+  const hostOf = (u: string) => { try { return new URL(u).hostname.replace(/^www\./, ""); } catch { return "web"; } };
 
   if (identity.status === "resolved") {
     go("profile", "Building the company profile");
@@ -129,7 +137,7 @@ export async function runDesk(raw: string, onEvent: (e: TraceEvent) => void = ()
       const a0 = acq[0] ?? {};
       acquiredBy = a0.name ?? a0.acquirer_name ?? a0.acquiring_company_name ?? (typeof a0 === "string" ? a0 : "an acquirer");
       const when = a0.announced_date ?? a0.acquired_on ?? a0.date ?? "";
-      if (when) acquiredBy += ` (${String(when).slice(0, 10)})`;
+      if (when) { acquiredOn = String(when).slice(0, 10); acquiredBy += ` (${acquiredOn})`; }
     }
     profile = { name: b.name, domain: b.primary_domain, founded: b.year_founded, hq: [L.city, L.state, L.country].filter(Boolean).join(", "), country: L.country, headcount: co.headcount?.total, range: b.employee_count_range, description: b.description, linkedin: b.professional_network_url, logo: b.logo_permalink, industry: (co.taxonomy?.professional_network_industries ?? [])[0], status: b.status, acquiredBy };
 
@@ -204,7 +212,7 @@ export async function runDesk(raw: string, onEvent: (e: TraceEvent) => void = ()
       const atCo = rr.filter(r => r.companyId === b.crustdata_company_id);
       const cur = atCo.find(r => r.current && !r.end);
       const prior = rr.filter(r => r.companyId !== b.crustdata_company_id && /founder|co-founder|ceo/i.test(r.title ?? "")).map(r => `${r.title} · ${r.company}${r.start ? ` (${ym(r.start)}${r.end ? "–" + ym(r.end) : ""})` : ""}`).slice(0, 3);
-      people.push({ id: p.crustdata_person_id, name: personName(p), title: cur?.title ?? atCo[0]?.title ?? p.basic_profile?.current_title, since: ym(cur?.start ?? atCo[0]?.start), until: cur ? undefined : ym(atCo[0]?.end), current: !!cur || !atCo.length, profileUrl: profileUrl(p), priorFounder: prior, headline: p.basic_profile?.headline, evidenceId: coEv });
+      people.push({ id: p.crustdata_person_id, photo: (p.basic_profile?.profile_picture_permalink ?? p.professional_network?.profile_picture_permalink ?? undefined), name: personName(p), title: cur?.title ?? atCo[0]?.title ?? p.basic_profile?.current_title, since: ym(cur?.start ?? atCo[0]?.start), until: cur ? undefined : ym(atCo[0]?.end), current: !!cur || !atCo.length, profileUrl: profileUrl(p), priorFounder: prior, headline: p.basic_profile?.headline, evidenceId: coEv });
       if (people.length >= 5) break;
     }
     for (const c of intake.claims.filter(x => x.kind === "person_role" && x.person)) {
@@ -224,7 +232,7 @@ export async function runDesk(raw: string, onEvent: (e: TraceEvent) => void = ()
       }
       const rr = atCo(person);
       const cur = rr.find(x => x.current && !x.end);
-      if (!people.some(p => p.id === person.crustdata_person_id)) people.push({ id: person.crustdata_person_id, name: personName(person), title: (cur ?? rr[0]).title, since: ym((cur ?? rr[0]).start), until: cur ? undefined : ym(rr[0].end), current: !!cur, profileUrl: profileUrl(person), evidenceId: e });
+      if (!people.some(p => p.id === person.crustdata_person_id)) people.push({ id: person.crustdata_person_id, photo: person.basic_profile?.profile_picture_permalink ?? undefined, name: personName(person), title: (cur ?? rr[0]).title, since: ym((cur ?? rr[0]).start), until: cur ? undefined : ym(rr[0].end), current: !!cur, profileUrl: profileUrl(person), evidenceId: e });
       if (cur) check({ section: "people", title: personName(person), claim: c.text, submitted: who, observed: `${cur.title} since ${ym(cur.start)}`, status: "verified", rule: "PPL-ROLE", reason: "Currently at the company", evidenceIds: [e] });
       else {
         const last = rr.sort((x, y) => String(y.end ?? "").localeCompare(String(x.end ?? "")))[0];
@@ -258,7 +266,7 @@ export async function runDesk(raw: string, onEvent: (e: TraceEvent) => void = ()
       let got: WebHit[] = [];
       let provider: "Tavily" | "CrustData web" = "Tavily";
       const tv = await tavilySearch(q, budget, emit, why === "adverse media" ? "general" : "news");
-      if (tv.ok) got = tv.hits;
+      if (tv.ok) { got = tv.hits; if (why === "deal corroboration") for (const im of tv.images.slice(0, 4)) pressImages.push({ url: im.url, source: hostOf(im.url), caption: im.description }); }
       else {
         provider = "CrustData web";
         const w = await cd.webSearch(q.replace(/ regulator$/, ""), ["news"]);
@@ -304,6 +312,61 @@ export async function runDesk(raw: string, onEvent: (e: TraceEvent) => void = ()
     emit({ agent: "analyst", step: "Company activity (Heartbeat)", detail: `${heartbeat.score ?? "—"} · ${heartbeat.band} · ${Math.round(heartbeat.coverage * 100)}% coverage`, status: "ok" });
 
     const hc = co.headcount ?? {};
+    // ---- time series for charts (already fetched; 0 credits)
+    {
+      const dom = Object.keys(co.web_traffic?.domain_traffic ?? {})[0];
+      const td = dom ? co.web_traffic.domain_traffic[dom] : undefined;
+      const pts = (a: any[] | undefined, key: string, key2?: string) => (a ?? []).filter(x => x?.date && typeof x[key] === "number").map(x => ({ date: String(x.date).slice(0, 10), v: x[key], ...(key2 && typeof x[key2] === "number" ? { v2: x[key2] } : {}) })).slice(-36);
+      const top = (o: Record<string, number> | undefined, n = 8) => Object.entries(o ?? {}).filter(([, v]) => typeof v === "number" && v > 0).sort((a, b) => b[1] - a[1]).slice(0, n).map(([label, v]) => ({ label, v }));
+      series = {
+        headcount: pts(hc.timeseries, "employee_count"), traffic: pts(td?.monthly_visitors_timeseries, "monthly_visitors"), followers: pts(co.followers?.timeseries, "follower_count"),
+        revenue: pts(co.revenue?.estimated?.timeseries, "revenue_lower_bound_usd", "revenue_upper_bound_usd"), openJobs: pts(co.hiring?.open_jobs_timeseries, "open_jobs"),
+        roles: top(hc.by_role_absolute), regions: top(hc.by_region_absolute, 30), trafficDomain: dom, trafficExcluded: acquiredBy ? `traffic likely belongs to ${acquiredBy}` : undefined,
+      };
+    }
+    // ---- events timeline (CrustData dates + Tavily press dates)
+    if (b.year_founded) events.push({ date: `${b.year_founded}-01-01`, kind: "founded", title: "Founded", source: "CrustData", evidenceId: coEv });
+    for (const m of co.funding?.milestones ?? []) { const d = m.funding_date ?? m.date; if (d) events.push({ date: String(d).slice(0, 10), kind: "funding", title: `${String(m.round_type ?? "Funding").replace(/_/g, " ")} round${m.amount_usd ? " · " + usd(m.amount_usd) : ""}`, detail: m.investors ?? undefined, source: "CrustData", evidenceId: coEv }); }
+    if (acquiredOn) events.push({ date: acquiredOn, kind: "acquired", title: `Acquired by ${(acquiredBy ?? "").replace(/ \(.*\)$/, "")}`, source: "CrustData", evidenceId: coEv });
+    for (const p of people) {
+      if (p.since) events.push({ date: p.since + "-01", kind: "joined", title: `${p.name.replace(/^MasterChef\s+/, "")} joined · ${p.title ?? "role"}`, source: "CrustData", evidenceId: p.evidenceId });
+      if (!p.current && p.until) events.push({ date: p.until + "-01", kind: "left", title: `${p.name} left · ${p.title ?? "role"}`, source: "CrustData", evidenceId: p.evidenceId });
+    }
+    for (const n of relevant.filter(x => x.provider === "CrustData web" && x.date).slice(0, 6)) events.push({ date: String(n.date).slice(0, 10), kind: "news", title: n.title, detail: hostOf(n.url), source: "CrustData", url: n.url, evidenceId: newsEv || coEv });
+    for (const h of relevant.filter(x => x.provider === "Tavily" && x.date).slice(0, 4)) { const d = new Date(h.date!); if (!isNaN(d.getTime())) events.push({ date: d.toISOString().slice(0, 10), kind: "press", title: h.title, detail: hostOf(h.url), source: "Tavily", url: h.url }); }
+    events.sort((x, y) => x.date.localeCompare(y.date));
+
+    // ---- parent company (if acquired): identify (free) + light enrich (2 cr)
+    if (acquiredBy) {
+      const pname = acquiredBy.replace(/ \(.*\)$/, "");
+      const pr = await cd.identifyByName(pname);
+      const pc = pr.ok ? candidatesOf(pr.data).find(x => nameMatch(pname, x.name)) : undefined;
+      if (pc) {
+        const pe = await cd.enrich(pc.id, ["basic_info", "headcount", "funding", "locations"]);
+        const p0 = pe.ok ? pe.data?.[0]?.matches?.[0]?.company_data : undefined;
+        const pev = ev({ kind: "crustdata", provider: "CrustData", endpoint: "/company/enrich", recordId: pc.id, fieldPath: "basic_info, headcount, funding, locations", note: `Parent company: ${pc.name}`, cached: pe.ok ? pe.cached : undefined });
+        parent = { id: pc.id, name: pc.name ?? pname, domain: p0?.basic_info?.primary_domain ?? pc.domain, logo: p0?.basic_info?.logo_permalink, headcount: p0?.headcount?.total, hq: [p0?.locations?.city, p0?.locations?.country].filter(Boolean).join(", "), fundingUsd: p0?.funding?.total_investment_usd ?? null, evidenceId: pev };
+        check({ section: "kyb", title: "Parent company", observed: `${parent.name} · CrustData #${parent.id}${parent.headcount ? ` · ${parent.headcount.toLocaleString("en-US")} staff` : ""}${parent.hq ? " · " + parent.hq : ""}`, status: "info", rule: "KYB-PARENT", reason: investor ? "Any investment would be into a subsidiary of this group" : "Guarantor candidate: the credit decision depends on the parent", evidenceIds: [pev] });
+        if (!investor) cond(`Parent guarantee from ${parent.name} (CrustData #${parent.id}${parent.headcount ? `, ${parent.headcount.toLocaleString("en-US")} staff` : ""})`);
+      }
+    }
+
+    // ---- peers: same industry + country, similar size (company search, ~0.3 cr)
+    {
+      const ind = (co.taxonomy?.professional_network_industries ?? [])[0];
+      const country = L.country;
+      const size = typeof hc.total === "number" ? hc.total : undefined;
+      if (ind && country) {
+        const conds: any[] = [{ field: "taxonomy.professional_network_industry", type: "=", value: ind }, { field: "locations.country", type: "=", value: country }];
+        if (size !== undefined) { conds.push({ field: "headcount.total", type: "=>", value: Math.max(1, Math.floor(size / 3)) }); conds.push({ field: "headcount.total", type: "=<", value: Math.max(10, size * 3) }); }
+        const sr = await cd.companySearch({ op: "and", conditions: conds }, 8);
+        if (sr.ok) {
+          const list = ((sr.data?.companies ?? []) as any[]).filter(x => x.crustdata_company_id !== b.crustdata_company_id).slice(0, 8).map(x => ({ id: x.crustdata_company_id, name: x.basic_info?.name ?? "?", domain: x.basic_info?.primary_domain, logo: x.basic_info?.logo_permalink, headcount: x.headcount?.total, growth6m: x.headcount?.growth_percent?.six_months ?? null, funding: x.funding?.total_investment_usd ?? null, country: x.locations?.country }));
+          const pev = ev({ kind: "crustdata", provider: "CrustData", endpoint: "/company/search", value: { industry: ind, country, results: list.length }, note: `${list.length} peers: ${ind}, ${country}`, cached: sr.cached });
+          peers = { basis: `${ind} · ${country}${size ? ` · ${Math.max(1, Math.floor(size / 3))}–${Math.max(10, size * 3)} staff` : ""}`, companies: [{ id: b.crustdata_company_id, name: b.name, domain: b.primary_domain, logo: b.logo_permalink, headcount: hc.total, growth6m: hc.growth_percent?.six_months ?? null, funding: co.funding?.total_investment_usd ?? null, country, isTarget: true }, ...list], evidenceId: pev };
+        }
+      }
+    }
     const tr = Object.values<any>(co.web_traffic?.domain_traffic ?? {})[0];
     const fund = co.funding ?? {};
     const rounds = (fund.milestones ?? []).map((m: any) => ({ date: m.funding_date ?? m.date, round: m.round_type, amountUsd: m.amount_usd, investors: m.investors }));
@@ -392,6 +455,15 @@ export async function runDesk(raw: string, onEvent: (e: TraceEvent) => void = ()
   }
   emit({ agent: "verifier", brain: "rules", step: "Decision", detail: decisions.map(d => `${d.track}: ${d.label}`).join(" · "), status: "ok" });
 
+  // ---------------- post-decision monitoring (CrustData Watcher preview: deliver=false, no credit, nothing created) ----------------
+  if (identity.status === "resolved" && ["proceed", "ready", "conditions", "refer"].includes(decisions[0].code) && !fraud) {
+    const track = { op: "or", conditions: [{ field: "headcount.total", type: "changed" }, { field: "funding.last_fundraise_date", type: "changed" }, { field: "basic_info.status", type: "changed" }] };
+    const labels = ["Headcount changes", "New funding round", "Company status changes (acquired, closed)"];
+    const w = await cd.watchTest(track, ["basic_info", "headcount", "funding"]);
+    const wev = ev({ kind: "crustdata", provider: "CrustData", endpoint: "/watch/company/test", recordId: identity.company!.id, value: { track, deliver: false, ok: w.ok, message: w.ok ? "sample built" : (w as any).message }, note: w.ok ? "Watch spec validated by CrustData (preview only: nothing created or delivered)" : "Watch preview unavailable: spec stored locally" });
+    monitoring = { status: w.ok ? "validated" : "spec_only", track: labels, note: w.ok ? "Validated with the CrustData Watcher preview, ready to activate after closing" : "Spec stored locally; activate with the Watch API after closing", evidenceId: wev };
+  } else monitoring = { status: "not_applicable", track: [], note: "No monitoring: the case did not proceed" };
+
   // ---------------- memo ----------------
   const name = profile?.name ?? intake.company?.value ?? "the company";
   const primary = decisions[0];
@@ -430,7 +502,7 @@ export async function runDesk(raw: string, onEvent: (e: TraceEvent) => void = ()
   emit({ agent: "clerk", step: "Work completed", detail: actions.map(a => a.summary).join(" · "), status: "ok" });
 
   const result: CaseResult = {
-    id, createdAt: new Date().toISOString(), intake, identity, profile, people, checks, decisions, conditions, heartbeat, investment, credit, memo, memoBy, actions, evidence, trace,
+    id, createdAt: new Date().toISOString(), intake, identity, profile, people, checks, series, events, parent, peers, monitoring, pressImages, decisions, conditions, heartbeat, investment, credit, memo, memoBy, actions, evidence, trace,
     spend: { crustdataCredits: round(budget.credits), crustdataCalls: budget.calls, cacheHits: budget.cacheHits, tavilyCalls: budget.tavilyCalls, llmCalls: budget.llmCalls, llmTokens: budget.llmTokens, budgetPerRun: budget.creditsCap, seconds: Math.round((Date.now() - t0) / 100) / 10 },
   };
   emit({ agent: "system", step: "Done", detail: `${round(budget.credits)} CrustData credits · ${budget.cacheHits} cache hits · ${budget.tavilyCalls} Tavily · ${budget.llmCalls} LLM calls · ${result.spend.seconds}s`, status: "ok" });

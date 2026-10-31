@@ -35,6 +35,8 @@ export const config = {
       "/job/search": 2,
       "/web/search/live": 3,
       "/web/enrich/live": 2,
+      "/company/search": 1,
+      "/watch/company/test": 1,
     } as Record<string, number>,
     llmCallsPerRun: num(process.env.LLM_MAX_CALLS_PER_RUN, 6),
     llmTokensPerRun: num(process.env.LLM_MAX_TOKENS_PER_RUN, 30_000),
@@ -55,6 +57,8 @@ export function estimateCredits(path: string, body: any): number {
     case "/person/enrich": return 1 * (body?.professional_network_profile_urls?.length ?? 1);
     case "/job/search": return (body?.limit ?? 0) * 0.03;
     case "/web/search/live": return 1;
+    case "/company/search": return (body?.limit ?? 0) * 0.25;
+    case "/watch/company/test": return 0;
     case "/web/enrich/live": return 1 * (body?.urls?.length ?? 1);
     default: return 0;
   }

@@ -149,6 +149,14 @@ export class Crustdata {
       aggregations: [{ type: "group_by", field: "job_details.title", agg: "count", size: 200 }],
     }, `job_search count since ${since}`);
   }
+  /** Peer discovery: companies in the same industry/country/size band (0.03 credits per result). */
+  companySearch(filters: unknown, limit = 10) {
+    return this.call<any>("POST", "/company/search", { filters, fields: ["crustdata_company_id", "basic_info", "headcount"], limit }, `company_search (${limit} peers)`);
+  }
+  /** Watcher preview: builds a sample notification for a track spec. deliver:false → no run, no credit, nothing persisted. */
+  watchTest(track: unknown, fields: string[]) {
+    return this.call<any>("POST", "/watch/company/test", { track, fields, deliver: false }, "watch_company_test (preview, not delivered)");
+  }
   webSearch(query: string, sources: string[] = ["news"]) {
     return this.call<any>("POST", "/web/search/live", { query, sources }, `web_search("${query.slice(0, 60)}")`);
   }

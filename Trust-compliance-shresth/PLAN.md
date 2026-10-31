@@ -20,12 +20,87 @@ The user picked the **Investment + Trust & Compliance** scope. **All work on thi
 
 You paste a messy request and get back a finished, cited case report with a bounded outcome. The agent never asks a follow-up question, never contacts anyone and never takes an external action.
 
-**No LLM API.** The user dropped Gemini on 2026-10-31: its project's prepaid credits had run out, and every model returned 402. Every stage is therefore deterministic code running on CrustData data:
-- Intake parsing uses rules, with free CrustData calls to resolve names.
-- Checks and triage use rules.
-- The written report comes from templates.
+**One-liner:** *SignalGate is an AI diligence desk. Paste any deal or vendor request and its agents investigate through CrustData's identity graph. Then they finish the job in your local systems: an IC-ready memo, an auditor-ready vendor file, or a payment held with a complaint-ready case file. A human sees only the exceptions.*
 
-This makes every step reproducible and auditable, and it means only one API key is needed.
+## Service, not tool: what "finished work" means
+
+The event brief says: "Parts delivered rather than suppliers listed… Fraud caught rather than flagged… Bring in a human only for the exceptions, make every decision cite its reasons." A report alone is a flag. To count as a service, every run **ends with an action in a local system of record**, which the brief allows ("interact only with the team's local environment"). Nothing is ever sent outside.
+
+| Service (paid today by) | Agent's finished work | Local action (simulated system of record) | Human only when |
+|---|---|---|---|
+| Pre-investment screen (VC analyst) | IC memo with thesis fit, Heartbeat, claim matrix and diligence questions | Deal added to `data/pipeline.json` as **Advance** or **Pass (reason)** | Hold: a contradiction needs a founder call |
+| Founder verification (angel, syndicate) | Founder dossier with cited work history | Note on the syndicate deal record | Conflicting claims |
+| Vendor onboarding / KYB-lite (procurement) | Auditor-ready vendor file | Vendor master `data/vendors.json` → **Approved**, **Rejected (reason)** or **Exception** | Identity unresolved or contradicted |
+| Payment-change / BEC check (AP) | Complaint-ready case file | **Payment hold** written to `data/ap-queue.json`, plus a prepared (unsent) verification-callback task | Always an exception, by policy |
+| Adverse-media check (compliance) | Dated dossier with allegation and finding labels | Compliance log entry | Relevant adverse hit |
+
+All outputs are **prepared or simulated actions, clearly labelled**. There are no emails, calls or payments. The UI has an **Exceptions inbox**: the only screen a human has to open.
+
+## Agents and the "brain" provision
+
+Same tools, same guardrails, two brains you can swap:
+
+```
+                ┌───────────────────────── SignalGate ──────────────────────────┐
+ messy request ─►  INTAKE AGENT        parse request → lens, entities, claims   │
+ (email/form/   │       │              (LLM if enabled, else rules)             │
+  pitch/tip)    │       ▼                                                       │
+                │  INVESTIGATOR AGENT ──tools──► CrustData: identify · enrich · │
+                │   plans next call,              person search/enrich · jobs · │
+                │   stops on budget               web search/fetch              │
+                │       │  evidence ledger (every fact → record ID / URL)       │
+                │       ▼                                                       │
+                │  VERIFIER (deterministic rules + Heartbeat) ── statuses, outcome
+                │       │      LLM may *propose*, rules *dispose*               │
+                │       ▼                                                       │
+                │  CASE CLERK AGENT ──► memo / vendor file / case file          │
+                │       │               + local action (pipeline, vendor master,│
+                │       ▼                 AP hold) ── Exceptions inbox ► human  │
+                └───────────────────────────────────────────────────────────────┘
+   brain = LLM_PROVIDER: none (rules playbook) | openrouter | gemini
+   guardrail on every tool call: allow-list, credit budget, no outbound comms
+```
+
+- **Rules brain (`LLM_PROVIDER=none`, the default and demo-safe):** a fixed playbook calls the tools in a set order. It always works, costs nothing, and gives the same result every time.
+- **LLM brain (`openrouter` or `gemini`):** the LLM picks tools and drives the steps. It reads the messy intake, plans which CrustData calls to make next (including follow-up searches), and judges whether a news hit is about the same company or a namesake; that judgement must quote its evidence. It also writes the narrative from evidence IDs.
+  - **It never sets a finding status, the Heartbeat or the outcome.** Those stay deterministic in the Verifier.
+  - If an LLM call fails or runs out of budget, that step falls back to the rules brain, and the trace shows it.
+- The trace shows **which brain made each decision**, with the tool name and arguments, plus tokens and credits used.
+- `lib/llm.ts`: one OpenAI-compatible chat interface.
+  - **OpenRouter:** `https://openrouter.ai/api/v1/chat/completions` with `tools` and `response_format`.
+  - **Gemini:** direct REST, `generateContent` with function declarations.
+  - Env: `LLM_PROVIDER`, `LLM_MODEL`, `OPENROUTER_API_KEY`, `GEMINI_API_KEY`, `LLM_MAX_CALLS_PER_RUN` (default 12).
+
+**Allowed by the hackathon?** Yes. The event page FAQ says: "Build with any model, framework or tool, with or without Crustdata. Every project is judged on the same criteria either way." The PS rules require using CrustData's keys and identity graph, which we do, and require agents to interact only with the local environment and authorized APIs. An LLM API under our own key is an authorized API. Never send keys to the LLM, and never ask it to contact anyone.
+
+**Gemini status (2026-10-31):** the key is valid, but the project's prepaid credits are depleted (402 on every model), and `gemini-2.5-flash` is closed to new users. To use Gemini, either top up AI Studio billing and use `gemini-3.8-flash`, or go through OpenRouter as `google/gemini-3.8-flash`.
+
+**OpenRouter models**, verified live from `openrouter.ai/api/v1/models` on 2026-10-31. All support tool calling and structured output. Prices are USD per 1M input/output tokens.
+
+| Role | Model | Price | Est. per run |
+|---|---|---|---|
+| **Agent brain (recommended)** | `anthropic/claude-sonnet-5.5` | $2 / $10 | ~$0.05–0.15 |
+| Budget brain, intake + relevance judging | `anthropic/claude-haiku-5.5` (or `openai/gpt-6-luna`) | $0.10 / $0.50 | <$0.01 |
+| Gemini via OpenRouter | `google/gemini-3.8-flash` | $0.83 / $4.13 | ~$0.03 |
+| Free fallback (rate-limited) | `google/gemma-4-31b-it:free` | $0 | 50 req/day, or 1,000/day after buying ≥$10 |
+
+**Setting up OpenRouter (the user does this; never paste keys in chat):**
+1. Sign in at openrouter.ai.
+2. Go to **Settings → Credits** (`openrouter.ai/settings/credits`) and choose **Add credits**.
+   - Payment: card (Stripe), AliPay or USDC. A platform fee is shown at checkout.
+   - **$10 is enough for the whole hackathon**, and it also lifts free-model limits to 1,000 requests a day.
+   - Unused credits can be refunded within 24 hours (fees excluded).
+   - Indian cards must have international online transactions enabled. If a card is declined, try another card or USDC.
+3. Go to **Settings → Keys** (`openrouter.ai/settings/keys`), create a key named `signalgate-hackathon`, and give it a credit limit (for example $10) if the form offers one. Copy it, because it is shown only once.
+4. Add to `Trust-compliance-shresth/app/.env.local`:
+
+   ```dotenv
+   LLM_PROVIDER=openrouter
+   LLM_MODEL=anthropic/claude-sonnet-5.5
+   OPENROUTER_API_KEY=...
+   ```
+
+5. Preflight checks `GET https://openrouter.ai/api/v1/key` (remaining limit) without printing the key.
 
 ## Preflight results (2026-10-31, read-only)
 
@@ -156,7 +231,10 @@ Trust-compliance-shresth/
   PLAN.md          ← this plan (replaces SignalGate v1; old version stays in git history)
   EXAMPLES.md      ← table above with full input texts
   app/             ← Next.js 16 + React 19 + TS, no Tailwind, no DB
-    .env.local     ← user-created: CRUSTDATA_API_KEY (ignored by root .env.*)
+    .env.local     ← user-created: CRUSTDATA_API_KEY; optional LLM_PROVIDER, LLM_MODEL, OPENROUTER_API_KEY, GEMINI_API_KEY (ignored by root .env.*)
+    lib/llm.ts            optional brain: OpenRouter / Gemini adapter, tool-calling loop, per-run call cap, falls back to rules
+    lib/agents/           intake.ts, investigator.ts (tool loop over lib/crustdata), clerk.ts (deliverable + local action)
+    lib/actions.ts        local system-of-record writes: data/pipeline.json, data/vendors.json, data/ap-queue.json, exceptions inbox
     .env.example   ← blank placeholders only
     lib/crustdata.ts      adapted request/pace/spend/filters + identify/enrich/personSearch/personEnrich/jobCount/webSearch/webFetch/credits
     lib/founders.ts       adapted from deal-sourcing-agent
@@ -196,6 +274,7 @@ Trust-compliance-shresth/
   - The UI shows a **Parsed intake** panel listing each extracted field next to the text it came from. Anything the parser could not extract is shown as "not provided", never guessed.
 - **Report (`lib/report.ts`):** templated sentences per finding status and rule ID. Each sentence cites evidence IDs. There is no generated prose.
 - Status labels, Heartbeat and outcome are all deterministic.
+- **With an LLM brain enabled:** the LLM's intake extraction must quote a source span for each field, or that field is dropped. Its tool calls go through the same allow-list and budget guard. The rules parser runs alongside it, and the UI shows any disagreement between the two.
 - Missing input never blocks the run. The check is reported as "not checked: input absent".
 - Ambiguity: name-only with more than one candidate within 0.15 of the top score, or no domain agreement, counts as ambiguous. Company-specific checks are then skipped and the result is Insufficient.
 - Every finding has the form `{claim, submitted, observed, status ∈ supported|conflicting|potential_issue|insufficient|not_checked, evidenceIds[], reason}`.
@@ -212,7 +291,14 @@ Trust-compliance-shresth/
    - Run `/account/credits` and `/account/endpoints` (shows enabled paths and per-endpoint prices, key masked).
    - Pick the E3 Indian company from 2–3 candidates by identify and enrich coverage.
 3. **Scaffold (15 min):** Next app with the pinned versions, crustdata client, evidence ledger, domain utilities.
-4. **Engine (≈75 min):** intake → resolve → retrieve once → checks → triage → case JSON. Get E5 and E6 working first (the hero and the robustness case), then E1, E2, E4, then E3 and E7.
+4. **Engine (≈75 min):** intake → resolve → retrieve once → checks → triage → case JSON. Build it as agents (intake, investigator, clerk) with the rules brain first. Get E5 and E6 working first (the hero and the robustness case), then E1, E2, E4, then E3 and E7.
+   - Clerk writes local actions: pipeline, vendor master, AP hold, exceptions inbox.
+4b. **LLM brain (≈30 min, only if an OpenRouter or Gemini key with credit is present):**
+   - `lib/llm.ts` adapter.
+   - LLM intake with span quotes.
+   - LLM investigator tool loop over the same tool registry and guards.
+   - Namesake judging.
+   - The demo shows the same case with both brains.
 5. **UI (≈60 min):** SSE trace, verdict, claim matrix, fit checklist, source ledger, export, example chips, FIXTURE fallback. Follow the `frontend-craft` skill.
 6. **Record fixtures and README (20 min):** run E1–E7 live, save the fixtures, write the README (run instructions, architecture, examples).
 7. **Demo (≈30 min before 3:30):** E3 or E1 (investment, advance) → E5 (impersonation, hold) → E6 (ambiguous, insufficient). Total under 2 minutes.
@@ -235,6 +321,14 @@ Git:
   - null components are excluded and the coverage figure reflects that
   - E4 (2 staff) shows Faint or Low signal with no trust penalty
   - E2's "1,000 staff" claim gets `potential_issue` only if T-HB conditions hold
+- Agents and actions:
+  - Every run ends with a local action, written to the system-of-record JSON, plus a deliverable.
+  - Hold cases appear in the Exceptions inbox.
+  - Nothing is sent outside the machine.
+- Brain swap:
+  - Run E5 with `LLM_PROVIDER=none`, then with `openrouter`. Both must reach the same outcome.
+  - The trace shows which brain decided each step.
+  - Kill the LLM key mid-run: the run falls back to rules and the fallback is visible.
 - Edge checks:
   - bad CrustData key: partial report showing the error
   - E6: no company-specific claims

@@ -1,0 +1,7 @@
+node_modules/
+.next/
+next-env.d.ts
+*.tsbuildinfo
+# Raw API cache and run outputs stay local (may contain personal profile data)
+data/cache/
+data/runs/

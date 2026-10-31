@@ -55,7 +55,9 @@ export async function runResearch(name: string, category = "", domain = ""): Pro
     sections.push({ key, label: LABELS[key], items: items.slice(0, 6), note });
     if (key === "funding" || key === "news" || key === "overview") {
       for (const it of items) {
-        for (const s of it.snippet.split(/(?<=[.!?])\s+/)) {
+        for (const raw of it.snippet.split(/(?<=[.!?])\s+|\n+/)) {
+          const s = raw.replace(/^#+\s*/, "").trim();
+          if (s.length < 40 || /comment|\blike\b|alternative text|##|\|/i.test(s)) continue;
           if (!/(revenue|turnover|sales|loss|profit|ebitda|valuation|raised|arr)/i.test(s)) continue;
           if (!/(₹|rs\.?\s?\d|inr|\$\s?\d|crore|lakh|million|billion|\bcr\b)/i.test(s)) continue;
           const metric = /valuation/i.test(s) ? "Valuation" : /raised|funding|round/i.test(s) ? "Funding" : /loss/i.test(s) ? "Loss" : /profit|ebitda/i.test(s) ? "Profit / EBITDA" : "Revenue";

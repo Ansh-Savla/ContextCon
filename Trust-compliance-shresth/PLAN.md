@@ -22,7 +22,7 @@ You paste a messy request and get back a finished, cited case report with a boun
 
 **One-liner:** *SignalGate is an AI diligence desk. Paste any deal or vendor request and its agents investigate through CrustData's identity graph. Then they finish the job in your local systems: an IC-ready memo, an auditor-ready vendor file, or a payment held with a complaint-ready case file. A human sees only the exceptions.*
 
-**Concept visuals:** see [concept/CONCEPT.md](concept/CONCEPT.md) and the mockup image [concept/ui-mockup.png](concept/ui-mockup.png).
+**Concept visuals:** see [concept/CONCEPT.md](concept/CONCEPT.md) and [concept/ui-mockup.png](concept/ui-mockup.png). The implementation visual contract is [UI-DESIGN.md](UI-DESIGN.md); Codex and Claude Code should follow it.
 
 ## LLM in use: Gemini, with fallbacks everywhere (2026-10-31, 12:10)
 

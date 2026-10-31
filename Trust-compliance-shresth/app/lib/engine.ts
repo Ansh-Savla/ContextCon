@@ -152,7 +152,11 @@ export async function runCase(raw: string, onEvent: (e: TraceEvent) => void = ()
       const e = ctx.ev({ kind: "crustdata", endpoint: "/company/enrich", recordId: b.crustdata_company_id, fieldPath: "funding.acquired_by / revenue.acquisition_status", value: { acquired_by: acq.slice(0, 2), acquisition_status: company.revenue?.acquisition_status } });
       const foreign = canon.filter(d => !d.startsWith(norm(b.name).split(" ")[0]));
       acquirerNote = `acquired by ${who}${foreign.length ? `; domains also include ${foreign.join(", ")}` : ""}`;
-      ctx.find({ check: "Independent company", claim: "Operating as an independent company (implied by request)", observed: `Acquired by ${who}${when ? " on " + String(when).slice(0, 10) : ""}`, status: "conflicting", evidenceIds: [e], rule: "R-ACQUIRED", reason: "an acquired company is not an independent investment target; its signals may belong to the acquirer", material: true });
+      // Investment: an acquired company is not an independent target (material). Trust: the vendor may still trade as a
+      // subsidiary — confirm the contracting entity (review, not a contradiction).
+      const inv = intake.lenses[0] === "investment";
+      ctx.find({ check: "Independent company", claim: inv ? "Operating as an independent company (implied by request)" : "Contracting entity", observed: `Acquired by ${who}${when ? " on " + String(when).slice(0, 10) : ""}`, status: inv ? "conflicting" : "potential_issue", evidenceIds: [e], rule: "R-ACQUIRED", reason: inv ? "an acquired company is not an independent investment target; its signals may belong to the acquirer" : `now part of ${who} — confirm which legal entity invoices and holds the bank account`, material: inv });
+      if (!inv) questions.push(`Confirm the contracting legal entity (the brand was acquired by ${who}).`);
       if (/active/i.test(b.status ?? "")) ctx.find({ check: "Provider status", claim: "—", observed: `status "${b.status}" alongside acquisition`, status: "potential_issue", evidenceIds: [e], rule: "R-STATUS-CONFLICT", reason: "the provider's own fields disagree; treat 'active' with caution" });
     }
 
@@ -201,7 +205,10 @@ export async function runCase(raw: string, onEvent: (e: TraceEvent) => void = ()
         };
         const obsToks = new Set(norm(obs).split(" "));
         const obsStr = " " + norm(obs) + " ";
-        const toks = norm(String(c.value)).split(" ").filter(t => t.length > 1);
+        // Country words only count when the claim names nothing more specific.
+        const COUNTRY = new Set(["usa", "us", "india", "ind", "united", "states", "uk"]);
+        const all = norm(String(c.value)).split(" ").filter(t => t.length > 1);
+        const toks = all.some(t => !COUNTRY.has(t)) ? all.filter(t => !COUNTRY.has(t)) : all;
         const hit = toks.some(t => obsToks.has(t) || (REGION[t] ?? []).some(a => obsStr.includes(" " + a + " ")));
         const country = (s: string) => (/\b(ind|india)\b/i.test(s) ? "IN" : /\b(usa|us|united states)\b/i.test(s) ? "US" : "");
         const countryClash = !!country(String(c.value)) && !!country(obs) && country(String(c.value)) !== country(obs);
@@ -271,8 +278,10 @@ export async function runCase(raw: string, onEvent: (e: TraceEvent) => void = ()
     const wantShark = intake.claims.some(c => c.kind === "shark_deal");
     const wantAdverse = intake.asks.includes("adverse");
     const queries: string[] = [];
-    if (wantShark) queries.push(`${b.name.replace(/[®©™]/g, "").trim()} Shark Tank deal`);
-    if (wantAdverse) queries.push(`${b.name.replace(/[®©™]/g, "").trim()} fraud OR lawsuit OR regulator OR complaint`);
+    // Plain keywords: the live web search returned 0 results for boolean OR queries.
+    const shortName = String(b.name).replace(/[®©™]/g, "").replace(/\b(pvt|private|ltd|limited|inc|llc)\b\.?/gi, "").replace(/\s+/g, " ").trim();
+    if (wantShark) queries.push(`${shortName} Shark Tank deal`);
+    if (wantAdverse) queries.push(`${shortName} fraud lawsuit complaint`);
     let webEv = "";
     for (const q of queries) {
       const w = await cd.webSearch(q, ["news", "web"].slice(0, 1));
@@ -302,11 +311,12 @@ export async function runCase(raw: string, onEvent: (e: TraceEvent) => void = ()
       const rounds = (fund.milestones ?? []).map((m: any) => `${m.round_type ?? "?"} ${String(m.funding_date ?? m.date ?? "").slice(0, 7)}${m.investors ? " (" + m.investors + ")" : ""}`);
       const fe = ctx.ev({ kind: "crustdata", endpoint: "/company/enrich", recordId: b.crustdata_company_id, fieldPath: "funding.total_investment_usd · funding.milestones", value: { total: fund.total_investment_usd, rounds } });
       const sharkInCD = (fund.investors ?? []).some((i: any) => /shark|aman|ashneer|vineeta|namita|anupam|peyush|cuban|o'?leary|corcoran|greiner|herjavec|john/i.test(String(i)));
-      const webSays = relevant.filter(n => /shark/i.test(n.title + " " + (n.snippet ?? "")));
+      // A web item only "reports the deal" if it names Shark Tank AND deal terms — an "update" video is not deal evidence.
+      const webSays = relevant.filter(n => { const s = n.title + " " + (n.snippet ?? ""); return /shark/i.test(s) && /(deal|invest|secured|offer|accepted|closed|raised|lakh|crore|\$\s?\d|for \d+\s?%)/i.test(s); });
       const selfDesc = /shark ?tank/i.test(b.description ?? "");
       if (selfDesc) ctx.find({ check: "Shark Tank appearance", claim: "Appeared on Shark Tank", observed: `company self-description: "${(b.description ?? "").slice(0, 90)}"`, status: "supported", evidenceIds: [enrichEv], rule: "R-SELF-DESC", reason: "self-reported by the company — supports the appearance, not the deal terms" });
       const st: Status = sharkInCD ? "supported" : webSays.length ? "conflicting" : "insufficient";
-      ctx.find({ check: "Shark deal / funding", claim: c.text, submitted: c.span, observed: `CrustData funding: total $${fund.total_investment_usd ?? "?"}; rounds: ${rounds.join("; ") || "none"}${webSays.length ? ` · web: "${webSays[0].title.slice(0, 80)}"` : ""}`, status: st, evidenceIds: [fe, webEv].filter(Boolean), rule: "R-FUNDING-GAP", reason: st === "supported" ? "a Shark investor appears in the funding record" : st === "conflicting" ? "web coverage reports the deal but the funding record does not show it — the deal may not have closed as aired" : "no source confirms the deal; a funding total of 0 is not proof either way", material: st === "conflicting" });
+      ctx.find({ check: "Shark deal / funding", claim: c.text, submitted: c.text, observed: `CrustData funding: total $${fund.total_investment_usd ?? "?"}; rounds: ${rounds.join("; ") || "none"}${webSays.length ? ` · web: "${webSays[0].title.slice(0, 80)}"` : ""}`, status: st, evidenceIds: [fe, webEv].filter(Boolean), rule: "R-FUNDING-GAP", reason: st === "supported" ? "a Shark investor appears in the funding record" : st === "conflicting" ? "web coverage reports the deal but the funding record does not show it — the deal may not have closed as aired; neither source is overruled (ask for the cap table)" : "no source confirms the deal; a funding total of 0 is not proof either way", material: false });
       if (st !== "supported") questions.push("Share the cap table and the signed Shark Tank term sheet / closing documents.");
     }
 

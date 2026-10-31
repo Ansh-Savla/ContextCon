@@ -22,6 +22,58 @@ You paste a messy request and get back a finished, cited case report with a boun
 
 **One-liner:** *SignalGate is an AI diligence desk. Paste any deal or vendor request and its agents investigate through CrustData's identity graph. Then they finish the job in your local systems: an IC-ready memo, an auditor-ready vendor file, or a payment held with a complaint-ready case file. A human sees only the exceptions.*
 
+**Concept visuals:** see [concept/CONCEPT.md](concept/CONCEPT.md) and the mockup image [concept/ui-mockup.png](concept/ui-mockup.png).
+
+## LLM in use: Gemini, with fallbacks everywhere (2026-10-31, 12:10)
+
+**Live test on the E5 text (`gemini-3.8-flash`):**
+- Structured JSON extraction returned 200 in about 6.7 s, with a correct span for every field, using about 735 tokens.
+- Function calling returned 200 in about 4.5 s and chose `company_identify`.
+- Lesson: the model put `domains` and `names` in one identify call. CrustData accepts only one identifier type per call, so the tool wrapper must split them into two calls, domain first.
+
+**Configured in `.env.local`:**
+- `LLM_PROVIDER=gemini`
+- `LLM_MODEL=gemini-3.8-flash`
+- `LLM_FALLBACK_MODELS=gemini-flash-lite-latest`
+
+**Fallback rule, applied to every LLM use:**
+- Each LLM call runs `primary → fallback model(s) → OpenRouter (if key) → rules`.
+- It falls back on 402, 429, any 5xx, a 20 s timeout, invalid JSON, or a schema or span-quote failure.
+- Every fallback is recorded in the trace.
+
+| LLM use | What Gemini does | Fallback (always present) |
+|---|---|---|
+| Intake | Schema extraction with span quotes and lens choice | Regex/rules parser. Both always run, and the UI shows where they disagree. |
+| Investigator plan | Chooses the next tool calls and writes targeted web/news queries | Fixed rules playbook per lens |
+| Namesake / other-event judging | Classifies each web hit as relevant, namesake, or a different event, quoting the evidence | Name+domain string-match rules (R-OTHER-EVENT) |
+| Memo / case narrative | Prose built only from evidence IDs | Templated sentences |
+| Never | Finding statuses, Heartbeat, outcome | Always rules |
+
+**Budget:**
+- At most 6 LLM calls per run, run in parallel where possible.
+- About $0.01 per run.
+- Expected latency is +10–20 s per run. The demo shows a streamed trace, so the wait is visible as progress.
+
+## Time-boxed cut (critique, 12:10: about 3h20m left, nothing built yet)
+
+The plan is larger than the remaining time. If the clock slips, things are cut in this order, and the build order already follows it:
+
+1. **Must have (by about 1:45):**
+   - Engine with the rules brain plus Gemini intake.
+   - Cases E5, E3, E8 and E6 end to end, with local actions and the case JSON.
+   - A CLI as the demo fallback.
+2. **Must have (by about 2:45):** a single-page UI matching the mockup:
+   - verdict
+   - claim matrix
+   - trace
+   - Heartbeat
+   - evidence ledger
+3. **Should have:**
+   - E1, E2, E4 and E7. The engine is the same, so these are mostly free once the rules exist.
+   - Gemini investigator planning and namesake judging.
+4. **Cut first if late:** E9 conflict of interest, OpenRouter, export polish, Exceptions inbox as a separate screen (it becomes a counter instead).
+5. **Hard stop at 3:00:** record the video. Live runs are preferred, with fixtures as backup.
+
 ## Service, not tool: what "finished work" means
 
 The event brief says: "Parts delivered rather than suppliers listed… Fraud caught rather than flagged… Bring in a human only for the exceptions, make every decision cite its reasons." A report alone is a flag. To count as a service, every run **ends with an action in a local system of record**, which the brief allows ("interact only with the team's local environment"). Nothing is ever sent outside.

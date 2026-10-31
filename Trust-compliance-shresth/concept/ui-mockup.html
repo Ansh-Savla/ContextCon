@@ -1,0 +1,177 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SignalGate concept</title>
+<style>
+  :root {
+    --paper: #f6f3ec; --card: #fffdf8; --ink: #1b1d22; --muted: #5d6270; --rule: #ddd6c7;
+    --hold: #b3261e; --hold-bg: #fbe9e7; --ok: #1f6f43; --ok-bg: #e5f3ea; --warn: #8a5a00; --warn-bg: #fdf1d8;
+    --na: #4a5568; --na-bg: #eceef2; --accent: #0f4c81;
+    --mono: ui-monospace, "Cascadia Mono", Consolas, monospace;
+    --sans: "Segoe UI", system-ui, sans-serif; --serif: Georgia, "Times New Roman", serif;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--paper); color: var(--ink); font: 14px/1.45 var(--sans); }
+  header { display: flex; align-items: center; gap: 16px; padding: 12px 20px; border-bottom: 2px solid var(--ink); background: var(--card); }
+  .brand { font: 700 20px var(--serif); letter-spacing: .3px; }
+  .brand small { font: 500 12px var(--sans); color: var(--muted); margin-left: 8px; }
+  .chips { margin-left: auto; display: flex; gap: 8px; flex-wrap: wrap; }
+  .chip { font: 12px var(--mono); padding: 3px 8px; border: 1px solid var(--rule); border-radius: 999px; background: var(--paper); }
+  .chip.brain { border-color: var(--accent); color: var(--accent); }
+  .chip.fixture { background: #222; color: #fff; border-color: #222; }
+  .banner { font: 12px var(--mono); background: #fff3c4; padding: 4px 20px; border-bottom: 1px solid var(--rule); }
+  main { display: grid; grid-template-columns: 300px 1fr 330px; gap: 16px; padding: 16px 20px; }
+  section.card { background: var(--card); border: 1px solid var(--rule); border-radius: 6px; padding: 14px; margin-bottom: 16px; }
+  h2 { font: 600 11px var(--sans); text-transform: uppercase; letter-spacing: 1.2px; color: var(--muted); margin: 0 0 10px; }
+  pre.intake { font: 12px/1.5 var(--mono); white-space: pre-wrap; margin: 0; background: var(--paper); padding: 10px; border-radius: 4px; }
+  mark { background: #ffe58a; padding: 0 2px; border-radius: 2px; }
+  dl { margin: 0; display: grid; grid-template-columns: 105px 1fr; gap: 4px 8px; font-size: 13px; }
+  dt { color: var(--muted); } dd { margin: 0; }
+  .src { font: 11px var(--mono); color: var(--muted); }
+  .verdict { display: flex; align-items: center; gap: 16px; border: 2px solid var(--hold); background: var(--hold-bg); border-radius: 6px; padding: 14px 16px; margin-bottom: 16px; }
+  .stamp { font: 800 26px var(--serif); color: var(--hold); border: 3px solid var(--hold); padding: 2px 12px; transform: rotate(-3deg); }
+  .verdict p { margin: 0; } .verdict .why { color: var(--muted); font-size: 13px; }
+  .action { display: flex; gap: 12px; align-items: flex-start; border-left: 4px solid var(--accent); background: #eef4fa; padding: 10px 12px; border-radius: 4px; margin-bottom: 16px; }
+  .action b { color: var(--accent); }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th { text-align: left; font: 600 11px var(--sans); text-transform: uppercase; letter-spacing: .8px; color: var(--muted); border-bottom: 1px solid var(--rule); padding: 6px; }
+  td { border-bottom: 1px solid var(--rule); padding: 8px 6px; vertical-align: top; }
+  .st { font: 700 11px var(--mono); padding: 2px 6px; border-radius: 3px; white-space: nowrap; }
+  .st.conf { color: var(--hold); background: var(--hold-bg); } .st.sup { color: var(--ok); background: var(--ok-bg); }
+  .st.ins { color: var(--warn); background: var(--warn-bg); } .st.nc { color: var(--na); background: var(--na-bg); }
+  a.ev { font: 11px var(--mono); color: var(--accent); text-decoration: none; border: 1px solid #c7d6e6; padding: 0 4px; border-radius: 3px; margin-right: 2px; }
+  .hb-score { display: flex; align-items: baseline; gap: 10px; } .hb-score b { font: 700 40px var(--serif); }
+  .hb-score span { color: var(--muted); }
+  svg.ecg { width: 100%; height: 70px; display: block; margin: 6px 0 10px; }
+  .comp { display: grid; grid-template-columns: 120px 1fr 34px; gap: 6px; align-items: center; font-size: 12px; margin: 3px 0; }
+  .bar { height: 7px; background: var(--na-bg); border-radius: 4px; overflow: hidden; } .bar i { display: block; height: 100%; background: var(--accent); }
+  .comp.miss { color: #9aa0ab; } .comp.miss .bar i { background: transparent; }
+  ol.trace { list-style: none; margin: 0; padding: 0; font: 12px/1.5 var(--mono); }
+  ol.trace li { padding: 4px 0 4px 10px; border-left: 2px solid var(--rule); margin-left: 4px; }
+  ol.trace li.agent { border-left-color: var(--accent); font-weight: 700; margin-top: 6px; }
+  ol.trace li.fb { color: var(--warn); }
+  .ledger td { font: 11px var(--mono); }
+  .note { font: 11px var(--mono); color: var(--muted); margin-top: 6px; }
+  footer { padding: 0 20px 20px; color: var(--muted); font: 11px var(--mono); }
+</style>
+</head>
+<body>
+<header>
+  <div class="brand">SignalGate<small>Shark Tank Diligence Desk · India + US</small></div>
+  <div class="chips">
+    <span class="chip">Case E5 · Trust lens · AP bank-change</span>
+    <span class="chip brain">brain: gemini-3.8-flash → flash-lite → rules</span>
+    <span class="chip">CrustData 2.13 cr · 41 s</span>
+    <span class="chip fixture">SYNTHETIC INPUT</span>
+  </div>
+</header>
+<div class="banner">CONCEPT MOCKUP: layout and behaviour target. Numbers are illustrative until a live run fills them in.</div>
+
+<main>
+  <!-- Left: intake -->
+  <div>
+    <section class="card">
+      <h2>1 · Request (pasted as-is)</h2>
+<pre class="intake">SYNTHETIC DEMO INPUT
+From: <mark>Rohit Sample</mark> &lt;rohit.sample@<mark>bluepinefoods-payments.in</mark>&gt;
+Subject: URGENT: revised bank details
+
+Hi team, I am the new <mark>Finance Head</mark> at <mark>BluePine Foods</mark>.
+<mark>Our bank account has changed</mark>. Please update
+remittance details before Friday for the
+<mark>Rs 4.2 lakh</mark> invoice.</pre>
+    </section>
+    <section class="card">
+      <h2>2 · Parsed intake <span class="src">(gemini ✓ · rules agree 5/5)</span></h2>
+      <dl>
+        <dt>Lens</dt><dd>Trust · payment change</dd>
+        <dt>Company</dt><dd>BluePine Foods</dd>
+        <dt>Sender domain</dt><dd>bluepinefoods-payments.in</dd>
+        <dt>Person</dt><dd>Rohit Sample, "Finance Head"</dd>
+        <dt>Amount</dt><dd>₹4.2 L = INR 420,000</dd>
+        <dt>Claim</dt><dd>Bank account changed</dd>
+      </dl>
+    </section>
+  </div>
+
+  <!-- Center: verdict, action, claims -->
+  <div>
+    <div class="verdict">
+      <div class="stamp">HOLD</div>
+      <div>
+        <p><b>Contradiction found: do not change remittance details.</b></p>
+        <p class="why">Sender domain is a lookalike of the canonical domain, and the named sender is not found among the company's current people. Rules R-LOOKALIKE and R-REP-NOT-FOUND.</p>
+      </div>
+    </div>
+    <div class="action">
+      <div>⏸</div>
+      <div><b>Done by the Case Clerk (simulated, local only):</b> payment hold <code>AP-0042</code> written to <code>data/ap-queue.json</code> · complaint-ready case file exported · verification callback <i>prepared, not sent</i> → Exceptions inbox (1)</div>
+    </div>
+    <section class="card">
+      <h2>3 · Claim matrix: every row cites evidence</h2>
+      <table>
+        <thead><tr><th>Check</th><th>Submitted</th><th>Observed (CrustData / web)</th><th>Status</th><th>Evidence</th></tr></thead>
+        <tbody>
+          <tr><td>Company identity</td><td>BluePine Foods</td><td>BluePine Foods Pvt Ltd · id 12347153 · conf 1.0 · bluepinefoods.com</td><td><span class="st sup">SUPPORTED</span></td><td><a class="ev" href="#">E1</a><a class="ev" href="#">E2</a></td></tr>
+          <tr><td>Sender domain</td><td>bluepinefoods-payments.in</td><td>Not in company's domains. Brand + "-payments", TLD .in vs .com</td><td><span class="st conf">CONFLICTING</span></td><td><a class="ev" href="#">E2</a><a class="ev" href="#">E3</a></td></tr>
+          <tr><td>Representative</td><td>Rohit Sample, Finance Head</td><td>No current employee by that name at id 12347153 (people search, 0 results)</td><td><span class="st conf">CONFLICTING</span></td><td><a class="ev" href="#">E4</a></td></tr>
+          <tr><td>Company operating</td><td>(implied)</td><td>Heartbeat 41 · Steady · headcount 4</td><td><span class="st sup">SUPPORTED</span></td><td><a class="ev" href="#">E2</a><a class="ev" href="#">E5</a></td></tr>
+          <tr><td>Payment authority</td><td>New bank account</td><td>Cannot be established from public data, by design</td><td><span class="st nc">NOT CHECKED</span></td><td>n/a</td></tr>
+        </tbody>
+      </table>
+    </section>
+    <section class="card ledger">
+      <h2>Evidence ledger</h2>
+      <table>
+        <tbody>
+          <tr><td>E1</td><td>POST /company/identify · domains:[bluepinefoods-payments.in] → 0 matches</td><td>12:31:04</td></tr>
+          <tr><td>E2</td><td>POST /company/enrich · id 12347153 · basic_info.primary_domain = bluepinefoods.com</td><td>12:31:07</td></tr>
+          <tr><td>E3</td><td>rule R-LOOKALIKE · tokens [bluepinefoods] + [payments] · TLD .in ≠ .com</td><td>derived</td></tr>
+          <tr><td>E4</td><td>POST /person/search · current.crustdata_company_id=12347153 ∧ name~"Rohit Sample" → 0</td><td>12:31:09</td></tr>
+          <tr><td>E5</td><td>headcount.timeseries · followers.qoq_percent · web_traffic (volatile, weight ½)</td><td>12:31:07</td></tr>
+        </tbody>
+      </table>
+    </section>
+  </div>
+
+  <!-- Right: heartbeat + trace -->
+  <div>
+    <section class="card">
+      <h2>Heartbeat: is the company alive?</h2>
+      <div class="hb-score"><b>41</b><span>Steady · coverage 0.65 · as of 2026-09</span></div>
+      <svg class="ecg" viewBox="0 0 300 70" aria-label="headcount pulse line">
+        <polyline fill="none" stroke="#0f4c81" stroke-width="2" points="0,40 40,40 55,40 62,20 70,58 78,30 86,40 140,40 150,38 157,14 165,60 173,34 181,40 240,40 250,39 257,26 265,52 273,37 281,40 300,40"/>
+      </svg>
+      <div class="comp"><span>Team momentum</span><div class="bar"><i style="width:50%"></i></div><span>50</span></div>
+      <div class="comp"><span>Hiring (90d jobs)</span><div class="bar"><i style="width:0%"></i></div><span>0</span></div>
+      <div class="comp"><span>Digital demand ½</span><div class="bar"><i style="width:62%"></i></div><span>62</span></div>
+      <div class="comp"><span>Audience</span><div class="bar"><i style="width:55%"></i></div><span>55</span></div>
+      <div class="comp"><span>News recency</span><div class="bar"><i style="width:75%"></i></div><span>75</span></div>
+      <div class="comp miss"><span>Capital recency</span><div class="bar"><i></i></div><span>n/a</span></div>
+      <p class="note">Missing data is excluded, never counted as 0. Activity only: never a fraud signal.</p>
+    </section>
+    <section class="card">
+      <h2>Agent trace</h2>
+      <ol class="trace">
+        <li class="agent">Intake agent · gemini-3.8-flash · 6.7 s</li>
+        <li>extracted 6 fields with source spans; rules parser agrees</li>
+        <li class="agent">Investigator · gemini plans → tools</li>
+        <li>company_identify(domain) → no match · free</li>
+        <li>company_identify(name) → 12347153 · free</li>
+        <li>company_enrich(12347153) · 2 cr</li>
+        <li>person_search(name @ 12347153) → 0 · 0.13 cr</li>
+        <li>job_search count (limit 0) · free</li>
+        <li class="fb">web_search skipped: not needed for this lens</li>
+        <li class="agent">Verifier · rules (deterministic)</li>
+        <li>R-LOOKALIKE ✗ · R-REP-NOT-FOUND ✗ · R-ID ✓</li>
+        <li class="agent">Case Clerk · local actions</li>
+        <li>AP-0042 hold · case file · inbox +1</li>
+      </ol>
+    </section>
+  </div>
+</main>
+<footer>If Gemini fails (402/429/timeout), each step falls back to flash-lite, then OpenRouter if a key is set, then the rules brain. The trace marks every fallback. Statuses and the outcome are always rule-decided.</footer>
+</body>
+</html>

@@ -73,7 +73,7 @@ Same tools, same guardrails, two brains you can swap:
 
 **Allowed by the hackathon?** Yes. The event page FAQ says: "Build with any model, framework or tool, with or without Crustdata. Every project is judged on the same criteria either way." The PS rules require using CrustData's keys and identity graph, which we do, and require agents to interact only with the local environment and authorized APIs. An LLM API under our own key is an authorized API. Never send keys to the LLM, and never ask it to contact anyone.
 
-**Gemini status (2026-10-31):** the key is valid, but the project's prepaid credits are depleted (402 on every model), and `gemini-2.5-flash` is closed to new users. To use Gemini, either top up AI Studio billing and use `gemini-3.8-flash`, or go through OpenRouter as `google/gemini-3.8-flash`.
+**Gemini status (re-checked 2026-10-31, later):** **working**: `gemini-3.8-flash` and `gemini-flash-lite-latest` return 200 after the billing top-up. `gemini-2.5-flash` is closed to new users. Recommended LLM brain: `LLM_PROVIDER=gemini`, `LLM_MODEL=gemini-3.8-flash`. OpenRouter stays optional.
 
 **OpenRouter models**, verified live from `openrouter.ai/api/v1/models` on 2026-10-31. All support tool calling and structured output. Prices are USD per 1M input/output tokens.
 
@@ -166,22 +166,47 @@ From `.codex/crustdata-repos/vercel-crustdata-template/`:
 - Next 16.3.6, React 19.3.0, TS 5.9.3 versions.
 - `lib/crustdata.ts` `normalizeDomain()`.
 
-## Concrete end-to-end examples (these become `Trust-compliance-shresth/EXAMPLES.md` and demo fixtures)
+## Concrete end-to-end examples: US + India, built on Shark Tank companies
 
-Companies marked ✅ were **already resolved live** by the teammate (domain → ID, confidence 1.0). The Indian startup is chosen at preflight from well-covered candidates. Synthetic inputs are labelled `SYNTHETIC DEMO INPUT`, use obviously fictitious representatives, and never allege wrongdoing by a real person or company.
+**Demo theme: the Shark Tank Diligence Desk.**
+- Every company below appeared on Shark Tank US or Shark Tank India. That gives public claims (asks, deals, founders) to check against CrustData's graph.
+- The core question, "did the deal hold up, and is the company still alive?", is what an investor, vendor desk or credit desk actually pays to have answered.
+- The examples are paired across both markets.
+- Full input texts are in [EXAMPLES.md](EXAMPLES.md).
 
-| # | Persona | Pasted request (abridged) | CrustData work | Expected outcome |
-|---|---|---|---|---|
-| **E1** | **VC associate** at a seed fund, investment lens | "Screening Misto (mistobox.com). Coffee subscription, founded 2012, ~10 people, backed on Shark Tank. Thesis: US consumer subscription, <50 staff, founded before 2015." | identify(domain) ✅ → enrich → founders from `people` → job count → news search | Fit checklist: sector ✓, geo ✓, size ✓ (9 measured), founded ✓, Heartbeat vs min 40 (computed live). Funding claim → **insufficient evidence** (provider total 0, which is not proof). **Advance to human diligence** plus open questions. |
-| **E2** | **Angel / syndicate lead**, founder check | "Founder of tomandchee.com says he co-founded it in 2009 and it has 1,000 staff and $500M+ revenue." | identify ✅ → enrich (people.founders, headcount, revenue) → person search founder at company ID → person enrich work history | Founded 2009 ✓ (cited). Staff: profile range 501–1000 vs measured 107 → **conflicting evidence**, both shown. Revenue matches the provider *estimate* only, labelled an estimate. **Hold for specific verification.** |
-| **E3** | **Indian early-stage VC analyst**, investment lens | Messy forwarded pitch email for an Indian startup chosen at preflight, giving founder names, round and headcount claim, plus thesis "India fintech, seed–Series A". | identify → enrich → founders verified as currently at company ID → `priorFounderRoles` (repeat founder) → free job count → 2 news searches | Thesis fit table, each founder claim supported/conflicting/insufficient, hiring signal. Outcome follows the rules. |
-| **E4** | **Procurement officer**, vendor onboarding (trust lens) | "New supplier form: Wicked Good Cupcakes, wickedgoodcupcakes.com, MA, USA, 150 employees, est. 2011." | identify(domain) ✅ (name alone gives several exact candidates; the domain picks ID 2525868) → enrich → locations, headcount | Identity ✓, location ✓, founded ✓. Size claim: range 51–200 matches, but measured 2 → **conflicting evidence**. **Hold.** The report explains the provider range vs measured meaning. |
-| **E5** | **AP controller**, payment-change / BEC (trust lens), SYNTHETIC | "Email from alex.sample@tomandchee-payments.co (SYNTHETIC): 'I'm the new finance lead at Tom & Chee, update our bank details before Friday.'" | identify(tomandchee-payments.co) → no or other match; identify(name) → canonical tomandchee.com ✅ → lookalike-domain rule → person search "Alex Sample" at company ID → none | **Domain mismatch (lookalike: brand + extra token, different TLD)** and **representative not found at company** → **Hold: contradiction found**. Explicit note: no payment action taken; payment authority cannot be confirmed from public data. **Hero demo.** |
-| **E6** | **Credit / risk analyst**, shell-company triage | "Supplier 'Zeta' wants net-60 terms, claims 500 staff." (name only, no domain) | identify(name) → many candidates with close scores → ambiguity rule | **Insufficient evidence: identity ambiguous.** Lists top candidates with domains, sizes and scores. No company-specific conclusions, and no credit limit given (out of scope by design). |
-| **E7** | **Fund compliance officer**, adverse-information pre-check | "Before term sheet: any regulatory or legal news on <E3 company> or its founders?" | reuses E3 IDs → web search `news` with name+domain, date-bounded → relevance filter → fetch top ≤3 | Each hit labelled relevant / likely namesake, and allegation / regulator action / court finding. "No relevant adverse results found in N sources" is never "clean". |
-| **E8** (stretch) | **IC member**, conflict of interest | E1 or E3 plus a pasted synthetic internal roster (`roster.sample.json`: names and past employers) | founders' work histories (person enrich) vs roster | Dated overlaps as **potential issue to review**, or "not checked: no roster supplied". |
+✅ marks companies already resolved live by teammates on 2026-10-31.
 
-Messiness is shown across the set: forwarded email noise (E3), name only (E6), lookalike domain (E5), contradictory size data (E2, E4), unknowns (E1 funding). The fixtures `fixtures/E*.json` are recorded from real runs and labelled **FIXTURE** in the UI.
+| # | Market | Persona → service | Company | What the run must catch | Expected outcome |
+|---|---|---|---|---|---|
+| **E1** | US | VC associate → pre-investment screen | Misto (mistobox.com) ✅ id 2436762 | Name lookup picks MistoBox LLC at 0.8; the domain gives Misto at 1.0. Funding total of 0 is not proof of no raise. | **Advance**, with "Shark deal: insufficient evidence" |
+| **E2** | US | Angel → founder-claim check | Tom + Chee (tomandchee.com) ✅ id 1228597 | "1,000 staff": profile range 501–1000 vs measured 107. Revenue $500M–1B is only an estimate. | **Hold**: conflicting evidence |
+| **E3** | **India** | India VC analyst → screen of a messy forwarded pitch | BluePine Foods (bluepinefoods.com) ✅ id 12347153 | Input names it "BluePine Industries" (no match) and the agent recovers it by domain. The ₹75L Shark Tank India deal is **absent from CrustData funding** but present on the web. Co-founder Naveen Panwar **left in Oct 2023**. Headcount is 4 against a claimed ~20. | **Hold**, with an ask for the cap table |
+| **E4** | US | Procurement officer → vendor onboarding | Wicked Good Cupcakes (wickedgoodcupcakes.com) ✅ id 2525868 | Name alone gives several exact candidates, so the domain decides. Range 51–200 vs measured 2. | **Exception (Hold)**: size conflict, entered in the vendor master as Exception |
+| **E5** | **India** | AP controller → bank-change / BEC check (**SYNTHETIC**) | BluePine Foods vs `bluepinefoods-payments.in` | Lookalike domain (brand plus extra token, different TLD). The fictitious "Rohit Sample" is not found at company id 12347153. | **Hold**: payment hold written to the AP queue, plus a complaint-ready case file |
+| **E6** | **India** | Credit analyst → supplier triage | "Zeta" (name only) | Many close identify candidates | **Insufficient**: candidates listed, no conclusions |
+| **E7** | **India** | Compliance → adverse-info pre-check | BluePine Foods (reuses E3 IDs) | A web hit about "₹50L for 20% with Varun Alagh" is **a different pitch**, so it must be rejected. Relevant hits are labelled. | Dossier with labelled hits, never "clean" |
+| **E8** | US | VC → follow-on / zombie check | VerbalizeIt (verbalizeit.com) id 1919920 | **Acquired by Smartling in 2016**, yet `status=active` (a contradiction). The 45 "employees" are stale profiles. The ~700K visits and $27K/mo ads belong to the acquirer's redirect. Founders left within 0–5 months of the acquisition. | **Pass: not an independent company**. Heartbeat shows ghost signals that are excluded. |
+| **E9** (stretch) | US/India | IC member → conflict of interest | E1 or E3 plus a synthetic roster | Overlaps between founder history and roster | Potential issue, or "not checked" |
+
+Messiness covered: wrong company name (E3), forwarded-email noise (E3), name only (E6), lookalike domain (E5), contradictory size (E2, E4), missing funding (E1, E3), acquired zombie (E8), a different event about the same company (E7), mixed ₹/$ units (E3, E5).
+
+The fixtures `fixtures/E*.json` are recorded from real runs and labelled **FIXTURE** in the UI.
+
+### Data-quality rules learned from the live research (apply in `lib/checks/`)
+
+- **R-NAME-RECOVERY:** if a name doesn't match, retry stripped variants (Industries, Pvt Ltd, Inc, LLC, Technologies), then any domain or URL found in the text. The report shows "input name differs from canonical name".
+- **R-DOMAIN-FIRST:** a domain match (confidence 1.0) beats any name match. Rejected name candidates are kept with the reason (industry or description mismatch).
+- **R-ACQUIRED:** `funding.acquired_by`, or `acquisition_status=acquired`, marks the entity as absorbed.
+  - The investment lens returns **Pass: not independent**.
+  - If `all_domains` contains the acquirer's domain, or the site redirects, web traffic and SEO are attributed to the acquirer and **excluded from Heartbeat**.
+  - Headcount is labelled "may include stale profiles".
+- **R-STATUS-CONFLICT:** `status=active` together with acquired is flagged as a conflict in the provider's own data.
+- **R-DEPARTED:** a person claimed as current but with an `end_date` on that employer is marked **conflicting**, citing the end date.
+- **R-FUNDING-GAP:** a deal claimed on the web (e.g. a Shark Tank offer) but missing from CrustData funding is marked **conflicting sources**: "deal may not have closed as aired; request cap table". Neither source is overruled.
+- **R-OTHER-EVENT:** a web hit naming the company but with different deal terms or investors is labelled **different event**, and ignored.
+- **R-SELF-DESC:** the company's own description (e.g. "pitched at #sharktankindia") is accepted as **self-reported** support only, labelled as such.
+- **R-UNITS:** ₹ lakh and crore are parsed (1 L = 100,000; 1 Cr = 10,000,000 INR) and kept in their original currency. CrustData funding is in USD. Values in different currencies are never compared numerically without a labelled conversion. Presence and absence comparisons are fine.
+- **R-VOLATILE:** web traffic that swings more than 3× within 3 months is marked volatile, and its Heartbeat weight is halved.
 
 ## Heartbeat: composite liveliness metric
 
@@ -289,7 +314,7 @@ Trust-compliance-shresth/
 2. **Keys and preflight (10 min):**
    - The user creates `app/.env.local`.
    - Run `/account/credits` and `/account/endpoints` (shows enabled paths and per-endpoint prices, key masked).
-   - Pick the E3 Indian company from 2–3 candidates by identify and enrich coverage.
+   - Done: E3 company is BluePine Foods (id 12347153). Free identify confirms the E1–E8 IDs before the first paid call.
 3. **Scaffold (15 min):** Next app with the pinned versions, crustdata client, evidence ledger, domain utilities.
 4. **Engine (≈75 min):** intake → resolve → retrieve once → checks → triage → case JSON. Build it as agents (intake, investigator, clerk) with the rules brain first. Get E5 and E6 working first (the hero and the robustness case), then E1, E2, E4, then E3 and E7.
    - Clerk writes local actions: pipeline, vendor master, AP hold, exceptions inbox.
@@ -301,7 +326,11 @@ Trust-compliance-shresth/
    - The demo shows the same case with both brains.
 5. **UI (≈60 min):** SSE trace, verdict, claim matrix, fit checklist, source ledger, export, example chips, FIXTURE fallback. Follow the `frontend-craft` skill.
 6. **Record fixtures and README (20 min):** run E1–E7 live, save the fixtures, write the README (run instructions, architecture, examples).
-7. **Demo (≈30 min before 3:30):** E3 or E1 (investment, advance) → E5 (impersonation, hold) → E6 (ambiguous, insufficient). Total under 2 minutes.
+7. **Demo (≈30 min before 3:30):** under 2 minutes:
+   - E3 BluePine (India, messy input → Hold, ask for cap table)
+   - E5 BluePine BEC (India, synthetic → AP hold plus case file)
+   - E8 VerbalizeIt (US, acquired zombie → Pass, ghost Heartbeat signals)
+   - If time allows, E6 Zeta (ambiguous → Insufficient)
 
 Git:
 - Commit to `trust-compliance` only, staging only `Trust-compliance-shresth/**`.

@@ -106,3 +106,9 @@ Thumbs.db
 
 # notes file that contains an API key
 investing/tavily.txt
+
+# Sightline runtime files (recorded fixtures stay committed for the offline demo)
+investing/fixtures/_missing.jsonl
+investing/**/screenshots/
+*.png.tmp
+.playwright/

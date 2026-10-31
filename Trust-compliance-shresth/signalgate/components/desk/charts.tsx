@@ -2,7 +2,7 @@
 
 /* Trend charts from CrustData /company/enrich time series. Single series per chart (one accent hue, no legend —
    the title names it), recessive axes, hover tooltip, labelled reference lines for dated events. */
-import { Area, AreaChart, Bar, BarChart, CartesianGrid, Cell, Line, LineChart, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import { Area, AreaChart, CartesianGrid, Line, LineChart, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import type { PeerCompany, SeriesPoint, TimelineEvent } from "@/lib/types";
 import { CrustChip } from "./primitives";
 
@@ -115,17 +115,26 @@ export function BarList({ title, data, unit }: { title: string; data: Array<{ la
 }
 
 export function PeerBars({ peers }: { peers: PeerCompany[] }) {
-  const d = peers.filter(p => typeof p.headcount === "number").map(p => ({ name: p.name.replace(/[®©™]/g, "").trim().slice(0, 22), v: p.headcount!, hl: !!p.isTarget }));
+  const d = peers.filter(p => typeof p.headcount === "number").sort((a, b) => (b.headcount ?? 0) - (a.headcount ?? 0)).slice(0, 9);
+  const max = Math.max(1, ...d.map(p => p.headcount ?? 0));
+  const rank = d.findIndex(p => p.isTarget) + 1;
   return (
-    <ChartFrame title="Headcount vs peers" sub="Target highlighted · peers from CrustData company search" empty={d.length < 2}>
-      <ResponsiveContainer width="100%" height="100%">
-        <BarChart data={d} layout="vertical" margin={{ top: 0, right: 16, bottom: 0, left: 0 }} barCategoryGap={4}>
-          <XAxis type="number" tickFormatter={fmtN} tick={{ fontSize: 11, fill: MUTED }} tickLine={false} axisLine={false} />
-          <YAxis type="category" dataKey="name" width={130} tick={{ fontSize: 11, fill: "var(--foreground)" }} tickLine={false} axisLine={false} interval={0} />
-          <Tooltip cursor={{ fill: "var(--accent)" }} content={({ active, payload }: any) => active && payload?.length ? <div className="rounded-md border bg-popover px-2.5 py-1.5 text-xs shadow-md"><div className="font-medium">{payload[0].payload.name}</div><div className="tabular-nums">{payload[0].payload.v.toLocaleString("en-US")} staff</div></div> : null} />
-          <Bar dataKey="v" radius={[0, 4, 4, 0]}>{d.map(x => <Cell key={x.name} fill={x.hl ? ACCENT : "var(--idle)"} fillOpacity={x.hl ? 1 : 0.35} />)}</Bar>
-        </BarChart>
-      </ResponsiveContainer>
-    </ChartFrame>
+    <figure className="rounded-xl border bg-card p-4 shadow-xs">
+      <figcaption className="mb-3 flex items-start justify-between gap-2">
+        <div><div className="text-sm font-medium">Headcount vs peers</div><div className="text-xs text-muted-foreground">{rank ? `Target ranks #${rank} of ${d.length} by measured headcount` : "Peers from CrustData company search"}</div></div>
+        <CrustChip />
+      </figcaption>
+      {d.length < 2 ? <div className="text-sm text-muted-foreground">Not enough peers on record</div> : (
+        <ul className="space-y-1.5">
+          {d.map(p => (
+            <li key={p.id} className={`grid grid-cols-[minmax(0,180px)_1fr_auto] items-center gap-3 rounded-md px-1.5 py-1 text-sm ${p.isTarget ? "bg-accent font-medium" : ""}`}>
+              <span className="flex min-w-0 items-center gap-2"><span className="truncate" title={p.name}>{p.name.replace(/[®©™]/g, "").trim()}</span>{p.isTarget && <span className="shrink-0 rounded bg-primary px-1 text-[10px] text-primary-foreground">TARGET</span>}</span>
+              <div className="h-2 rounded-full bg-muted"><div className={`h-2 rounded-full ${p.isTarget ? "bg-primary" : "bg-idle/45"}`} style={{ width: `${Math.max(3, ((p.headcount ?? 0) / max) * 100)}%` }} /></div>
+              <span className="w-14 text-right tabular-nums text-muted-foreground">{(p.headcount ?? 0).toLocaleString("en-US")}</span>
+            </li>
+          ))}
+        </ul>
+      )}
+    </figure>
   );
 }

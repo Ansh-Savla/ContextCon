@@ -14,6 +14,7 @@ import type { CaseResult, Check, Evidence, Section } from "@/lib/types";
 import { CompanyAvatar, CrustChip, DECISION_TONE, DecisionPill, PersonAvatar, PulseLine, SourceChip, Stat, StatusBadge, fmtTime } from "./primitives";
 import { BarList, PeerBars, RevenueBand, TrendChart } from "./charts";
 import { Timeline } from "./timeline";
+import { GeoMap } from "./geo-map";
 import { HelpButton } from "./help";
 
 const SECTION: Record<Section, { label: string; Icon: typeof Building2 }> = {
@@ -517,9 +518,10 @@ function TrendsGrid({ c, credit }: { c: CaseResult; credit: boolean }) {
         ) : <div className="rounded-xl border bg-card p-4 text-sm text-muted-foreground">No peer set — industry or country not on record.</div>}
         <div className="grid content-start gap-4">
           <BarList title="Team mix (by role)" data={s.roles} unit="people" />
-          <BarList title="Where the team is (by region)" data={s.regions.slice(0, 6)} unit="people" />
+
         </div>
       </div>
+      <GeoMap regions={s.regions} hqCountry={c.profile?.country} />
       {c.parent && <ParentCard c={c} />}
     </>
   );

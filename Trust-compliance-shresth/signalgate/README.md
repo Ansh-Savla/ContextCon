@@ -47,10 +47,11 @@ app/page.tsx                  shell: sidebar (recent cases, spend, brain) + comp
 app/api/run/route.ts          POST {text} → NDJSON stream of trace events, then the finished case
 app/api/status/route.ts       balance, ledger, brain chain, recent runs, inbox count
 app/api/runs/[id]/route.ts    replay a saved case (0 credits)
-components/desk/              composer, run-progress (stage rail + live feed), case-view (tabs, source sheet), primitives
+components/desk/              composer, run-progress, case-view (tabs, source sheet, provenance), charts, timeline, geo-map, help, primitives
 components/ui/                shadcn/ui primitives (Tailwind v4, neutral theme in app/globals.css)
 lib/types.ts                  case model: Intake, Check, Evidence, Decision, CaseResult
 lib/examples.ts               demo requests (US + India, investor + lender)
+lib/help-content.ts           Help window content: guide, decisions, data sources, Heartbeat, glossary
 lib/server/desk.ts            the pipeline: intake → resolve → profile/KYB → people → screening → analysis → decision → actions
 lib/server/intake.ts          request parser (rules + span-checked Gemini)
 lib/server/crustdata.ts       CrustData client: rationing, cache, retries, pacing, credit capture
@@ -70,6 +71,8 @@ scripts/case.ts               CLI runner
 | `POST /company/enrich` | Profile, ownership/acquirer, headcount and history, funding, revenue estimate, people, traffic, news | 2 |
 | `POST /person/search` | Is this person at the company now, or did they leave (dated) | ~0.2/result |
 | `POST /job/search` (`limit:0`) | Roles posted in the last 90 days | free |
+| `POST /company/search` | Peer companies: same industry + country, similar headcount band | ~0.5/result |
+| `POST /watch/company/test` | Validates a post-closing monitoring rule (preview, `deliver:false`: nothing created or sent) | free |
 | `POST /web/search/live` | Fallback web/news search | 1 |
 | `GET /account/credits` | Balance shown in the sidebar | free |
 

@@ -43,6 +43,32 @@ npm run dev                                   # http://localhost:3000
 
 Full developer guide (keys, credits, code map, troubleshooting): [signalgate/README.md](signalgate/README.md).
 
+## What is sourced from CrustData
+
+| What you see | CrustData endpoint · fields |
+|---|---|
+| Company identity, candidates, confidence | `/company/identify` · `matches[].confidence_score`, `basic_info` |
+| Name, website, founded, HQ, status, industry, logo | `/company/enrich` · `basic_info`, `locations`, `taxonomy` |
+| Ownership / acquirer, and the parent company | `/company/enrich` · `funding.acquired_by`, `revenue.acquisition_status`; parent via identify + enrich |
+| Measured headcount, growth, history chart, self-reported band, team mix, map | `/company/enrich` · `headcount.total`, `growth_percent`, `timeseries`, `by_role_absolute`, `by_region_absolute`, `basic_info.employee_count_range` |
+| Funding rounds, investors, timeline events | `/company/enrich` · `funding.milestones`, `funding.investors` |
+| Revenue estimate band, web traffic, followers, ad spend, news | `/company/enrich` · `revenue.estimated`, `web_traffic`, `followers`, `seo`, `news` |
+| Founders and officers, photos, tenure, departures | `/company/enrich` · `people.*`; `/person/search` · `experience.employment_details`, `basic_profile.profile_picture_permalink` |
+| Hiring (roles in 90 days) | `/job/search` (`limit:0`) |
+| Peer companies | `/company/search` |
+| Post-closing monitoring rule | `/watch/company/test` (Watcher preview) |
+| **Not CrustData** | Tavily (adverse media, press, press photos) · Gemini (parsing, relevance, memo prose) · rules (decisions, Heartbeat maths) |
+
+In the app, every check, chart and source carries a **CRUSTDATA** / **TAVILY** / **RULE** chip, and the Sources tab has a "CrustData data used" panel.
+
+## Highlights
+
+- **Help window** (sidebar and case header): guide, decisions and statuses, data sources, activity score, and a searchable glossary (KYB, SAFE, CP, term sheet, cap table, lakh/crore, NBFC…)
+- **Charts** from CrustData time series: headcount with funding and acquisition markers, web traffic, followers, revenue-estimate band, team mix, peers ranking
+- **Story tab**: dated company timeline (founded → rounds → people joining/leaving → acquisition → press) and press photos
+- **Map** of where the team is (country bubbles from headcount by region, HQ outlined)
+- **Parent company** card when the target was acquired; **post-closing monitoring** validated with the CrustData Watcher preview
+
 ## How it works
 
 ```

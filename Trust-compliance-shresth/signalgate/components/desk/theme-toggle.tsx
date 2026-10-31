@@ -13,13 +13,13 @@ export function applyTheme(mode: Mode) {
 }
 
 export function ThemeToggle({ className }: { className?: string }) {
-  const [mode, setMode] = useState<Mode>("system");
+  const [mode, setMode] = useState<Mode>("dark");
   useEffect(() => {
     let m: Mode = "system";
-    try { m = (localStorage.getItem(KEY) as Mode) || "system"; } catch { /* storage blocked */ }
+    try { m = (localStorage.getItem(KEY) as Mode) || "dark"; } catch { /* storage blocked */ }
     setMode(m);
     const mq = window.matchMedia("(prefers-color-scheme: dark)");
-    const on = () => { let cur: Mode = "system"; try { cur = (localStorage.getItem(KEY) as Mode) || "system"; } catch { /* */ } if (cur === "system") applyTheme("system"); };
+    const on = () => { let cur: Mode = "system"; try { cur = (localStorage.getItem(KEY) as Mode) || "dark"; } catch { /* */ } if (cur === "system") applyTheme("system"); };
     mq.addEventListener("change", on);
     return () => mq.removeEventListener("change", on);
   }, []);

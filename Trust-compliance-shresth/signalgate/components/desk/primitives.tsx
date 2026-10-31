@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { AlertTriangle, Ban, CheckCircle2, CircleHelp, Info, MinusCircle, XCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { CheckStatus, Decision } from "@/lib/types";
@@ -45,13 +45,15 @@ export function DecisionPill({ d, className }: { d: Decision; className?: string
 
 export function CompanyAvatar({ name, logo, size = 40 }: { name?: string; logo?: string; size?: number }) {
   const [loaded, setLoaded] = useState(false);
+  const ref = useRef<HTMLImageElement>(null);
+  useEffect(() => { const i = ref.current; if (i && i.complete && i.naturalWidth > 8) setLoaded(true); }, [logo]);
   const initials = (name ?? "?").replace(/[®©™]/g, "").split(/\s+/).filter(Boolean).slice(0, 2).map(w => w[0]?.toUpperCase()).join("");
   return (
     <div className="relative shrink-0 overflow-hidden rounded-lg border bg-gradient-to-br from-secondary to-accent text-accent-foreground grid place-items-center font-semibold" style={{ width: size, height: size, fontSize: size * 0.36 }} aria-hidden>
       {initials}
       {logo && /^https:\/\//.test(logo) && (
         // eslint-disable-next-line @next/next/no-img-element
-        <img src={logo} alt="" className={cn("absolute inset-0 size-full bg-white object-contain p-1 transition-opacity", loaded ? "opacity-100" : "opacity-0")} onLoad={e => { const i = e.target as HTMLImageElement; if (i.naturalWidth > 8) setLoaded(true); }} onError={() => setLoaded(false)} />
+        <img ref={ref} src={logo} alt="" className={cn("absolute inset-0 size-full bg-white object-contain p-1 transition-opacity", loaded ? "opacity-100" : "opacity-0")} onLoad={e => { const i = e.target as HTMLImageElement; if (i.naturalWidth > 8) setLoaded(true); }} onError={() => setLoaded(false)} />
       )}
     </div>
   );
@@ -97,13 +99,15 @@ export const CrustChip = ({ className }: { className?: string }) => <SourceChip 
 
 export function PersonAvatar({ name, photo, size = 40 }: { name: string; photo?: string; size?: number }) {
   const [ok, setOk] = useState(false);
+  const ref = useRef<HTMLImageElement>(null);
+  useEffect(() => { const i = ref.current; if (i && i.complete && i.naturalWidth > 8) setOk(true); }, [photo]);
   const initials = name.replace(/^MasterChef\s+/, "").split(/\s+/).filter(Boolean).slice(0, 2).map(w => w[0]?.toUpperCase()).join("");
   return (
     <div className="relative shrink-0 overflow-hidden rounded-full border bg-secondary text-secondary-foreground grid place-items-center font-semibold" style={{ width: size, height: size, fontSize: size * 0.36 }} aria-hidden>
       {initials}
       {photo && photo.startsWith("https://") && (
         // eslint-disable-next-line @next/next/no-img-element
-        <img src={photo} alt="" referrerPolicy="no-referrer" className={cn("absolute inset-0 size-full object-cover transition-opacity", ok ? "opacity-100" : "opacity-0")} onLoad={e => { if ((e.target as HTMLImageElement).naturalWidth > 8) setOk(true); }} onError={() => setOk(false)} />
+        <img ref={ref} src={photo} alt="" referrerPolicy="no-referrer" className={cn("absolute inset-0 size-full object-cover transition-opacity", ok ? "opacity-100" : "opacity-0")} onLoad={e => { if ((e.target as HTMLImageElement).naturalWidth > 8) setOk(true); }} onError={() => setOk(false)} />
       )}
     </div>
   );

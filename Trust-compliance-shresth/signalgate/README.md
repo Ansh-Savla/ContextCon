@@ -23,6 +23,29 @@ npm run case -- "Screen acme.in before our ₹50 lakh cheque"
 npm run typecheck
 ```
 
+## Deploy (production)
+
+```bash
+git clone https://github.com/Ansh-Savla/ContextCon.git   # Windows: git config --global core.longpaths true first
+cd ContextCon && git checkout trust-compliance
+cd Trust-compliance-shresth/signalgate
+npm ci
+npm run build
+npm start                         # serves on port 3000 (set PORT to change)
+```
+
+- **Project root:** `Trust-compliance-shresth/signalgate`. Set this as the root directory on Vercel, Render, Railway and similar hosts.
+- **Environment variables:** set them in the host, or in `.env.local` next to `package.json`.
+  - `CRUSTDATA_API_KEY` is required.
+  - Optional: `TAVILY_API_KEY`, `LLM_PROVIDER=gemini`, `LLM_MODEL=gemini-3.8-flash`, `LLM_FALLBACK_MODELS=gemini-flash-lite-latest`, `GEMINI_API_KEY`.
+  - All of them are documented in [`.env.example`](.env.example).
+- **Writable data folder:** the API cache, saved cases and simulated records go to `./data`.
+  - Override this with `SIGNALGATE_DATA_DIR=/some/writable/path`.
+  - On Vercel the app automatically uses `/tmp/signalgate-data`, which is ephemeral.
+- **Recommended host:** any Node 20+ server or container (Render, Railway, Fly, a VM). A fresh case takes 20–75 s and streams its progress.
+  - Vercel needs a plan that allows long functions; the run route sets `maxDuration = 300`.
+- **Health check:** `GET /api/status` returns JSON with the credit balance and model chain.
+
 ## 2. Keys (`.env.local`; never commit it)
 
 | Variable | Needed? | What happens without it |

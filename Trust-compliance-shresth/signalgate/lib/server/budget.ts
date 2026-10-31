@@ -7,10 +7,11 @@
  */
 import fs from "node:fs";
 import path from "node:path";
+import { DATA_DIR } from "./paths";
 import crypto from "node:crypto";
 import { config } from "./config";
 
-const DATA_DIR = path.join(process.cwd(), "data");
+
 const LEDGER = path.join(DATA_DIR, "ledger.json");
 const CACHE_DIR = path.join(DATA_DIR, "cache");
 

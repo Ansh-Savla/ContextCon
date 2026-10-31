@@ -6,6 +6,7 @@
  */
 import fs from "node:fs";
 import path from "node:path";
+import { DATA_DIR } from "./paths";
 import { Crustdata, type Emit } from "./crustdata";
 import { RunBudget, round } from "./budget";
 import { config } from "./config";
@@ -607,7 +608,7 @@ export async function runDesk(raw: string, onEvent: (e: TraceEvent) => void = ()
   const id = `SG-${new Date().toISOString().replace(/\D/g, "").slice(4, 14)}`;
   const actions: LocalAction[] = [];
   const write = (system: string, file: string, rec: Record<string, unknown>, summary: string) => {
-    const dir = path.join(process.cwd(), "data", "systems"); fs.mkdirSync(dir, { recursive: true });
+    const dir = path.join(DATA_DIR, "systems"); fs.mkdirSync(dir, { recursive: true });
     const f = path.join(dir, file); let rows: unknown[] = []; try { rows = JSON.parse(fs.readFileSync(f, "utf8")); } catch { /* new */ }
     rows.push({ ...rec, case: id, simulated: true, at: new Date().toISOString() }); fs.writeFileSync(f, JSON.stringify(rows, null, 2));
     actions.push({ system, file: `data/systems/${file}`, summary });
@@ -621,7 +622,7 @@ export async function runDesk(raw: string, onEvent: (e: TraceEvent) => void = ()
     write("KYB register", "kyb-register.json", { company: name, crustdata_company_id: identity.company?.id ?? null, status: compliance.label }, `KYB record saved as “${compliance.label}”`);
   }
   if (!["proceed", "ready"].includes(primary.code) || fraud) write("Exceptions inbox", "inbox.json", { company: name, decision: primary.label, top_reason: reasons[0] ?? primary.reasons[0] ?? "" }, "Sent to the human exceptions inbox");
-  const memoFile = path.join(process.cwd(), "data", "systems", `${id}-memo.md`);
+  const memoFile = path.join(DATA_DIR, "systems", `${id}-memo.md`);
   fs.writeFileSync(memoFile, `# ${name} — ${primary.label}\n\n${memo}\n\n## Conditions\n${conditions.map(c => `- ${c}`).join("\n")}\n`);
   actions.push({ system: investor ? "IC memo" : "Credit memo", file: `data/systems/${id}-memo.md`, summary: `${investor ? "Investment committee" : "Credit committee"} memo filed` });
   emit({ agent: "clerk", step: "Work completed", detail: actions.map(a => a.summary).join(" · "), status: "ok" });
@@ -632,7 +633,7 @@ export async function runDesk(raw: string, onEvent: (e: TraceEvent) => void = ()
   };
   emit({ agent: "system", step: "Done", detail: `${round(budget.credits)} CrustData credits · ${budget.cacheHits} cache hits · ${budget.tavilyCalls} Tavily · ${budget.llmCalls} LLM calls · ${result.spend.seconds}s`, status: "ok" });
   result.trace = trace;
-  const runs = path.join(process.cwd(), "data", "runs"); fs.mkdirSync(runs, { recursive: true });
+  const runs = path.join(DATA_DIR, "runs"); fs.mkdirSync(runs, { recursive: true });
   fs.writeFileSync(path.join(runs, `${id}.json`), JSON.stringify(result, null, 2));
   return result;
 }

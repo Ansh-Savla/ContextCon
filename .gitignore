@@ -5,3 +5,13 @@
 /tmp/
 /research/crustdata-sample/
 
+
+# Personal agent instructions/steering: never commit (keeps per-dev steering out of shared branches)
+CLAUDE.md
+CLAUDE.local.md
+.claude/
+AGENTS.local.md
+AGENTS.override.md
+*.local.md
+.codex/*.local.md
+.codex/steering.*.md

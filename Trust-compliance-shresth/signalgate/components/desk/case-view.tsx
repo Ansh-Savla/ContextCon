@@ -18,6 +18,7 @@ import { Timeline } from "./timeline";
 import { GeoMap } from "./geo-map";
 import { HelpButton } from "./help";
 import { FinancePanel, FoundersLeadership, ResearchPanel, ScoreCard } from "./extras";
+import { Fold, ReportNav, ReportSection } from "./report-nav";
 
 const SECTION: Record<Section, { label: string; Icon: typeof Building2 }> = {
   kyb: { label: "Entity & KYB", Icon: Building2 }, people: { label: "People", Icon: Users }, fraud: { label: "Payment fraud", Icon: AlertTriangle },
@@ -119,111 +120,126 @@ export function CaseView({ c, replay }: { c: CaseResult; replay: boolean }) {
       </div>
 
       {/* tabs */}
-      <Tabs defaultValue="overview" className="mt-6">
-        <TabsList className="h-10">
-          <TabsTrigger value="overview">Overview</TabsTrigger>
-          <TabsTrigger value="compliance">Compliance & KYB <span className="ml-1 text-xs text-muted-foreground">{bySection(["kyb", "people", "fraud", "screening"]).length}</span></TabsTrigger>
-          <TabsTrigger value="case">{investor ? "Investment case" : "Credit case"}</TabsTrigger>
-          <TabsTrigger value="story">Story <span className="ml-1 text-xs text-muted-foreground">{c.events.length}</span></TabsTrigger>
-          <TabsTrigger value="people">Founders &amp; leadership <span className="ml-1 text-xs text-muted-foreground">{c.people.length}</span></TabsTrigger>
-          <TabsTrigger value="finance">Financials</TabsTrigger>
-          <TabsTrigger value="research">Research</TabsTrigger>
-          <TabsTrigger value="sources">Sources <span className="ml-1 text-xs text-muted-foreground">{c.evidence.length}</span></TabsTrigger>
-          <TabsTrigger value="trace">Agent trace</TabsTrigger>
-        </TabsList>
+      <div className="mt-8 grid gap-8 xl:grid-cols-[minmax(0,1fr)_190px]">
+        <div className="min-w-0 space-y-12">
+          <ReportSection id="glance" title="Company at a glance" sub="Measured by CrustData — size, growth, demand, where the team is, and how it compares">
+            <div className="grid gap-4">
+              <TrendsGrid c={c} credit={!investor} />
+              {c.heartbeat && <HeartbeatCard c={c} open={id => open(undefined, id)} />}
+              {!c.series && <p className="text-sm text-muted-foreground">No company profile — identity was not resolved.</p>}
+            </div>
+          </ReportSection>
 
-        <TabsContent value="overview" className="mt-4 grid gap-4 lg:grid-cols-[1.5fr_1fr]">
-          <div className="grid gap-4">
-            <Card>
-              <CardHeader><CardTitle className="flex items-center gap-2"><FileText className="size-4 text-primary" />{investor ? "Investment committee memo" : "Credit committee memo"}</CardTitle><CardDescription>{c.memoBy === "rules template" ? "Written from rule templates" : `Drafted by ${c.memoBy} from cited checks only`} · sources in brackets</CardDescription></CardHeader>
-              <CardContent><p className="text-[15px] leading-7">{linkify(c.memo, id => open(undefined, id))}</p></CardContent>
-            </Card>
-            <Card>
-              <CardHeader><CardTitle>What needs attention</CardTitle><CardDescription>Contradicted and review items — select one for its sources</CardDescription></CardHeader>
-              <CardContent className="grid gap-2">
-                {top.length ? top.map(k => (
-                  <button key={k.id} onClick={() => open(k)} className="flex items-start gap-3 rounded-lg border p-3 text-left transition hover:bg-accent/60 focus-visible:outline-2 focus-visible:outline-ring">
-                    <StatusBadge status={k.status} className="mt-0.5" />
-                    <div className="min-w-0"><div className="text-sm font-medium">{k.title}</div><div className="text-sm text-muted-foreground">{k.reason}</div></div>
-                    <ArrowUpRight className="ml-auto size-4 shrink-0 text-muted-foreground" />
-                  </button>
-                )) : <p className="text-sm text-muted-foreground">Nothing contradicted or flagged for review in the evidence checked.</p>}
-              </CardContent>
-            </Card>
-          </div>
-          <div className="grid content-start gap-4">
-            <Card>
-              <CardHeader><CardTitle className="flex items-center gap-2"><ShieldCheck className="size-4 text-primary" />Conditions before money moves</CardTitle></CardHeader>
-              <CardContent>{c.conditions.length ? <ol className="list-decimal space-y-2 pl-5 text-sm">{c.conditions.map(x => <li key={x}>{x}</li>)}</ol> : <p className="text-sm text-muted-foreground">None beyond standard documentation.</p>}</CardContent>
-            </Card>
-            <ScoreCard c={c} />
-            {c.plan && <PlanCard c={c} />}
-            {c.heartbeat && <HeartbeatCard c={c} open={id => open(undefined, id)} />}
-          </div>
-        </TabsContent>
+          <ReportSection id="people" title="Founders & leadership" sub="Select a person for their profile, career and education">
+            <FoundersLeadership c={c} />
+          </ReportSection>
 
-        <TabsContent value="compliance" className="mt-4 grid gap-4">
-          {(["kyb", "people", "fraud", "screening"] as Section[]).map(s => bySection([s]).length ? <ChecksCard key={s} title={SECTION[s].label} Icon={SECTION[s].Icon} checks={bySection([s])} open={open} evidence={c.evidence} /> : null)}
-        </TabsContent>
+          <ReportSection id="attention" title="Attention & next steps" sub="What a human must look at, and what has to happen before money moves">
+            <div className="grid gap-4 lg:grid-cols-[1.5fr_1fr]">
+              <div className="grid content-start gap-4">
+                <Card>
+                  <CardHeader><CardTitle>What needs attention</CardTitle><CardDescription>Contradicted and review items — select one for its sources</CardDescription></CardHeader>
+                  <CardContent className="grid gap-2">
+                    {top.length ? top.map(k => (
+                      <button key={k.id} onClick={() => open(k)} className="flex items-start gap-3 rounded-lg border p-3 text-left transition hover:bg-accent/60 focus-visible:outline-2 focus-visible:outline-ring">
+                        <StatusBadge status={k.status} className="mt-0.5" />
+                        <div className="min-w-0"><div className="text-sm font-medium">{k.title}</div><div className="text-sm text-muted-foreground">{k.reason}</div></div>
+                        <ArrowUpRight className="ml-auto size-4 shrink-0 text-muted-foreground" />
+                      </button>
+                    )) : <p className="text-sm text-muted-foreground">Nothing contradicted or flagged for review in the evidence checked.</p>}
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardHeader><CardTitle className="flex items-center gap-2"><FileText className="size-4 text-primary" />{investor ? "Investment committee memo" : "Credit committee memo"}</CardTitle><CardDescription>{c.memoBy === "rules template" ? "Written from rule templates" : `Drafted by ${c.memoBy} from cited checks only`} · sources in brackets</CardDescription></CardHeader>
+                  <CardContent><p className="text-[15px] leading-7">{linkify(c.memo, id => open(undefined, id))}</p></CardContent>
+                </Card>
+              </div>
+              <div className="grid content-start gap-4">
+                <Card>
+                  <CardHeader><CardTitle className="flex items-center gap-2"><ShieldCheck className="size-4 text-primary" />Conditions before money moves</CardTitle></CardHeader>
+                  <CardContent>{c.conditions.length ? <ol className="list-decimal space-y-2 pl-5 text-sm">{c.conditions.map(x => <li key={x}>{x}</li>)}</ol> : <p className="text-sm text-muted-foreground">None beyond standard documentation.</p>}</CardContent>
+                </Card>
+                {c.monitoring && c.monitoring.status !== "not_applicable" && <MonitoringCard c={c} />}
+                {c.plan && <PlanCard c={c} />}
+              </div>
+            </div>
+          </ReportSection>
 
-        <TabsContent value="case" className="mt-4 grid gap-4">
-          {investor ? <InvestmentPanel c={c} open={open} /> : <CreditPanel c={c} open={open} />}
-        </TabsContent>
+          <ReportSection id="money" title={investor ? "Investment case & financials" : "Credit case & financials"} sub={investor ? "Thesis fit, funding history, financial ratios and the experimental score" : "Credit readiness, requested vs indicative exposure, financial ratios"}>
+            <div className="grid gap-4">
+              {investor ? <InvestmentPanel c={c} open={open} /> : <CreditPanel c={c} open={open} />}
+              <FinancePanel c={c} />
+              <div className="grid gap-4 lg:grid-cols-2"><ScoreCard c={c} /></div>
+            </div>
+          </ReportSection>
 
-        <TabsContent value="story" className="mt-4 grid gap-4 lg:grid-cols-[1.3fr_1fr]">
-          <Card>
-            <CardHeader><CardTitle>Company timeline</CardTitle><CardDescription>Every dated fact we hold — founding, rounds, people joining and leaving, acquisition, coverage</CardDescription></CardHeader>
-            <CardContent><Timeline events={c.events} /></CardContent>
-          </Card>
-          <div className="grid content-start gap-4">
-            {c.pressImages.length > 0 && (
-              <Card>
-                <CardHeader><CardTitle>In the press</CardTitle><CardDescription>Images found by web search (Tavily) for this company&apos;s coverage — for context only, linked to source</CardDescription></CardHeader>
-                <CardContent className="grid grid-cols-2 gap-2">
-                  {c.pressImages.slice(0, 4).map(im => (
-                    <a key={im.url} href={im.url} target="_blank" rel="noreferrer" className="group relative block overflow-hidden rounded-lg border bg-muted">
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img src={im.url} alt={im.caption ?? "Press image"} referrerPolicy="no-referrer" className="aspect-video w-full object-cover transition group-hover:scale-[1.02]" onError={e => { (e.target as HTMLImageElement).closest("a")!.style.display = "none"; }} />
-                      <span className="absolute bottom-1 left-1 rounded bg-background/85 px-1.5 py-px text-[10px] text-muted-foreground">{im.source}</span>
-                    </a>
-                  ))}
-                </CardContent>
-              </Card>
-            )}
-            {c.parent && <ParentCard c={c} />}
-            {c.monitoring && c.monitoring.status !== "not_applicable" && <MonitoringCard c={c} />}
-          </div>
-        </TabsContent>
+          <ReportSection id="story" title="Story" sub="Every dated fact — founding, rounds, people joining and leaving, acquisition, coverage">
+            <div className="grid gap-4 lg:grid-cols-[1.3fr_1fr]">
+              <Card><CardContent className="pt-6"><Timeline events={c.events} /></CardContent></Card>
+              <div className="grid content-start gap-4">
+                {c.pressImages.length > 0 && (
+                  <Card>
+                    <CardHeader><CardTitle>In the press</CardTitle><CardDescription>Images found by web search (Tavily) — context only, linked to source</CardDescription></CardHeader>
+                    <CardContent className="grid grid-cols-2 gap-2">
+                      {c.pressImages.slice(0, 4).map(im => (
+                        <a key={im.url} href={im.url} target="_blank" rel="noreferrer" className="group relative block overflow-hidden rounded-lg border bg-muted">
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img src={im.url} alt={im.caption ?? "Press image"} referrerPolicy="no-referrer" className="aspect-video w-full object-cover transition group-hover:scale-[1.02]" onError={e => { (e.target as HTMLImageElement).closest("a")!.style.display = "none"; }} />
+                          <span className="absolute bottom-1 left-1 rounded bg-background/85 px-1.5 py-px text-[10px] text-muted-foreground">{im.source}</span>
+                        </a>
+                      ))}
+                    </CardContent>
+                  </Card>
+                )}
+              </div>
+            </div>
+          </ReportSection>
 
-        <TabsContent value="people" className="mt-4"><FoundersLeadership c={c} /></TabsContent>
+          <ReportSection id="research" title="Company research" sub="On-demand web research — context only, never changes the decision">
+            <ResearchPanel c={c} />
+          </ReportSection>
 
-        <TabsContent value="finance" className="mt-4"><FinancePanel c={c} /></TabsContent>
-
-        <TabsContent value="research" className="mt-4"><ResearchPanel c={c} /></TabsContent>
-
-        <TabsContent value="sources" className="mt-4 grid gap-4">
-          <CrustDataUsed c={c} />
-          <Card className="py-2">
-            <Table>
-              <TableHeader><TableRow><TableHead className="w-16">ID</TableHead><TableHead>Source</TableHead><TableHead>Record / query</TableHead><TableHead className="w-28 text-right">Retrieved</TableHead></TableRow></TableHeader>
-              <TableBody>
-                {c.evidence.map(e => (
-                  <TableRow key={e.id} className="cursor-pointer" onClick={() => open(undefined, e.id)}>
-                    <TableCell className="font-mono text-xs">{e.id}</TableCell>
-                    <TableCell><SourceChip provider={e.provider} /><div className="mt-1 font-mono text-xs text-muted-foreground">{e.endpoint}</div></TableCell>
-                    <TableCell className="max-w-[520px] whitespace-normal text-sm">{e.note ?? e.fieldPath}{e.recordId ? <span className="ml-1 font-mono text-xs text-muted-foreground">#{String(e.recordId)}</span> : null}</TableCell>
-                    <TableCell className="text-right font-mono text-xs text-muted-foreground">{fmtTime(e.retrievedAt)}{e.cached ? " · cache" : ""}</TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="trace" className="mt-4">
-          <TraceCard c={c} />
-        </TabsContent>
-      </Tabs>
+          <ReportSection id="evidence" title="Evidence" sub="Every check, every source and every agent step — expand to inspect">
+            <div className="grid gap-3">
+              <Fold title="All checks" meta={`${c.checks.length} checks · ${counts.contradicted ?? 0} contradicted · ${counts.review ?? 0} review`}>
+                <div className="grid gap-4">{(["kyb", "people", "fraud", "screening", "investment", "credit"] as Section[]).map(sx => bySection([sx]).length ? <ChecksCard key={sx} title={SECTION[sx].label} Icon={SECTION[sx].Icon} checks={bySection([sx])} open={open} evidence={c.evidence} /> : null)}</div>
+              </Fold>
+              <Fold title="CrustData data used" meta={`${c.evidence.filter(x => x.provider === "CrustData").length} records · ${c.spend.crustdataCredits} credits`} defaultOpen>
+                <CrustDataUsed c={c} />
+              </Fold>
+              <Fold title="All sources" meta={`${c.evidence.length} sources`}>
+                <Card className="py-2">
+                  <Table>
+                    <TableHeader><TableRow><TableHead className="w-16">ID</TableHead><TableHead>Source</TableHead><TableHead>Record / query</TableHead><TableHead className="w-28 text-right">Retrieved</TableHead></TableRow></TableHeader>
+                    <TableBody>
+                      {c.evidence.map(ev => (
+                        <TableRow key={ev.id} className="cursor-pointer" onClick={() => open(undefined, ev.id)}>
+                          <TableCell className="font-mono text-xs">{ev.id}</TableCell>
+                          <TableCell><SourceChip provider={ev.provider} /><div className="mt-1 font-mono text-xs text-muted-foreground">{ev.endpoint}</div></TableCell>
+                          <TableCell className="max-w-[520px] whitespace-normal text-sm">{ev.note ?? ev.fieldPath}{ev.recordId ? <span className="ml-1 font-mono text-xs text-muted-foreground">#{String(ev.recordId)}</span> : null}</TableCell>
+                          <TableCell className="text-right font-mono text-xs text-muted-foreground">{fmtTime(ev.retrievedAt)}{ev.cached ? " · cache" : ""}</TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </Card>
+              </Fold>
+              <Fold title="Agent trace" meta={`${c.trace.length} steps · ${c.spend.seconds}s`}>
+                <TraceCard c={c} />
+              </Fold>
+            </div>
+          </ReportSection>
+        </div>
+        <ReportNav items={[
+          { id: "glance", label: "Company at a glance" },
+          { id: "people", label: "Founders & leadership", n: c.people.length },
+          { id: "attention", label: "Attention & next steps", n: top.length, warn: top.some(k => k.status === "contradicted") },
+          { id: "money", label: investor ? "Investment & financials" : "Credit & financials" },
+          { id: "story", label: "Story", n: c.events.length },
+          { id: "research", label: "Company research" },
+          { id: "evidence", label: "Evidence", n: c.evidence.length },
+        ]} />
+      </div>
 
       <Sheet open={!!sheet} onOpenChange={o => !o && setSheet(null)}>
         <SheetContent className="w-full overflow-y-auto sm:max-w-lg">
@@ -299,7 +315,6 @@ function InvestmentPanel({ c, open }: { c: CaseResult; open: (k?: Check, id?: st
   return (
     <>
       {inv && <MetricsGrid metrics={inv.metrics} />}
-      <TrendsGrid c={c} credit={false} />
       <div className="grid gap-4 lg:grid-cols-2">
         <Card>
           <CardHeader><CardTitle>Thesis fit</CardTitle><CardDescription>Kept separate from trust and compliance evidence</CardDescription></CardHeader>
@@ -313,7 +328,6 @@ function InvestmentPanel({ c, open }: { c: CaseResult; open: (k?: Check, id?: st
         </Card>
       </div>
       {c.checks.some(k => k.section === "investment") && <ChecksCard title="Investment claims" Icon={Sparkles} checks={c.checks.filter(k => k.section === "investment")} open={k => open(k)} evidence={c.evidence} />}
-      {c.heartbeat && <HeartbeatCard c={c} open={id => open(undefined, id)} />}
     </>
   );
 }
@@ -345,9 +359,7 @@ function CreditPanel({ c, open }: { c: CaseResult; open: (k?: Check, id?: string
         </Card>
       </div>
       <MetricsGrid metrics={cr.metrics} />
-      <TrendsGrid c={c} credit />
       {c.checks.some(k => k.section === "credit") && <ChecksCard title="Credit checks" Icon={Landmark} checks={c.checks.filter(k => k.section === "credit")} open={k => open(k)} evidence={c.evidence} />}
-      {c.heartbeat && <HeartbeatCard c={c} open={id => open(undefined, id)} />}
     </>
   );
 }

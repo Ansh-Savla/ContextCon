@@ -1,0 +1,6 @@
+.env
+.env.*
+
+# Local scratch files and one-off CrustData exploration
+/tmp/
+/research/crustdata-sample/

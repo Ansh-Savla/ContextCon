@@ -8,13 +8,13 @@ From the repository root, Python 3.11+:
 
 ```powershell
 python -m venv .venv
-.venv/Scripts/python.exe -m pip install -e .
-.venv/Scripts/python.exe -m heartbeat investigate --company "Your target company" --output heartbeat-data/report.json
-.venv/Scripts/python.exe -m heartbeat investigate --interactive
-.venv/Scripts/python.exe -m heartbeat investigate --input examples/structured-context.json
+../.venv/Scripts/python.exe -m pip install -e .
+../.venv/Scripts/python.exe -m heartbeat investigate --company "Your target company" --output heartbeat-data/report.json
+../.venv/Scripts/python.exe -m heartbeat investigate --interactive
+../.venv/Scripts/python.exe -m heartbeat investigate --input examples/structured-context.json
 ```
 
-The root `.env` can contain `CRUSTDATA_API_KEY`, `GEMINI_API_KEY`, and `FEATHERLESS_API_KEY`. Process environment values take precedence. For a different working directory, pass `RunConfig(env_file="/absolute/path/.env", db_path="/absolute/path/heartbeat.sqlite3")`. Keep custom data locations outside source control. Defaults store all private artifacts under ignored `heartbeat-data/`.
+Run every command from this `Trust-Compliance/` folder. The repository-root `.env` (found automatically) can contain `CRUSTDATA_API_KEY`, `GEMINI_API_KEY`, and `FEATHERLESS_API_KEY`. Process environment values take precedence. For a different working directory, pass `RunConfig(env_file="/absolute/path/.env", db_path="/absolute/path/heartbeat.sqlite3")`. Keep custom data locations outside source control. Defaults store all private artifacts under ignored `heartbeat-data/`.
 
 ```python
 from heartbeat import investigate, investigate_async, RunConfig
@@ -55,7 +55,7 @@ At least one of `company_name` or `domain` is required. Top-level keys are stric
 
 `context.company.basic_info.primary_domain` (or `context.company.domain`) can supply a domain hint when no top-level domain exists. A supplied `context.company.basic_info.year_founded` becomes a claim to compare. Raw upstream records are retained as context, not silently accepted as independently verified data or injected into the trusted response cache. Top-level values win.
 
-Structured context is now normalized into traceable assertions, including identity/location, funding amounts/dates, acquirer, acquisition status/date, workforce snapshots, revenue estimates and narrative inferences. Nested source URLs are queued for fetching, founder profiles guide person enrichment, and supplied company IDs are independently checked with CrustData. See [`../examples/investment-context.json`](../examples/investment-context.json) for an input shaped from the team's information example.
+Structured context is now normalized into traceable assertions, including identity/location, funding amounts/dates, acquirer, acquisition status/date, workforce snapshots, revenue estimates and narrative inferences. Nested source URLs are queued for fetching, founder profiles guide person enrichment, and supplied company IDs are independently checked with CrustData. See [`../examples/investment-context.json`](examples/investment-context.json) for an input shaped from the team's information example.
 
 The workflow performs initial checks, then builds a bounded claim-specific follow-up plan. The LLM sees upstream assertions, initial findings and fetched passages. It proposes priorities, literal-value normalization and targeted queries; code binds searches to the canonical name (domain as a soft anchor), researches investment-team assertions first, and limits execution to three claim queries plus one adverse query, up to three supplied references and four newly discovered pages, each fetched in its own request. All omitted or unresearched assertions remain visible. Name-only requests discover a small factual checklist from provider records and optionally company pages.
 
@@ -67,7 +67,7 @@ The library discovers public representatives without requiring them as input, us
 
 ### Investment-team Sightline memos
 
-`python -m heartbeat investigate --sightline memo.json --pick "Company"` accepts the investment team's Sightline memo (one memo or a list). [`heartbeat/sightline.py`](../heartbeat/sightline.py) maps it to a request, labelling each item `crustdata-sourced` or `web-sourced`:
+`python -m heartbeat investigate --sightline memo.json --pick "Company"` accepts the investment team's Sightline memo (one memo or a list). [`heartbeat/sightline.py`](heartbeat/sightline.py) maps it to a request, labelling each item `crustdata-sourced` or `web-sourced`:
 
 - CrustData-sourced facts (founding year, HQ country) become structured claims. Agreement with our CrustData record is consistency, never independent corroboration.
 - Status verdicts, press-announced deals, unconfirmed founder names and medium/high flags become claims to research. Flags stay inferences and are never promoted to findings.
@@ -109,9 +109,9 @@ Timeline counts cover observed public activity, not all work performed. Empty mo
 SQLite `cases` stores requests/reports; `records` indexes entities, claims, evidence, findings, activity and calls by case/kind/ID. `cache` stores original retrieval timestamps and response references; `rate_slots` coordinates request spacing for processes sharing the database. Raw API/model responses live beside the database under `raw/<case_id>/`.
 
 ```powershell
-.venv/Scripts/python.exe -m heartbeat list
-.venv/Scripts/python.exe -m heartbeat show CASE_ID
-.venv/Scripts/python.exe -m heartbeat investigate --company "Your target company" --no-cache --provider featherless
+../.venv/Scripts/python.exe -m heartbeat list
+../.venv/Scripts/python.exe -m heartbeat show CASE_ID
+../.venv/Scripts/python.exe -m heartbeat investigate --company "Your target company" --no-cache --provider featherless
 ```
 
 Default: 75-second deadline, 15 preferred credits, 50-credit ceiling, 24-hour cache. Account permissions and balance are checked every run. Identity gates require confidence ≥0.95 and a ≥0.15 candidate margin. Calls use account prices and field/filter premiums, bounded retries for 429/temporary server failures, per-endpoint spacing and wall-clock timeouts. Missing billing headers/timeouts retain the conservative request maximum; the account's final bill can differ. The preferred credit budget gates optional activity calls; the hard ceiling gates every paid request.
@@ -122,14 +122,14 @@ Provider keys stay server-side. The LLM receives bounded upstream assertions, in
 
 ```powershell
 # Synthetic end-to-end personas and controlled failures; no paid calls:
-.venv/Scripts/python.exe scripts/verify_heartbeat.py
+../.venv/Scripts/python.exe scripts/verify_heartbeat.py
 
 # Live model checks only:
-.venv/Scripts/python.exe -m heartbeat probe-models
+../.venv/Scripts/python.exe -m heartbeat probe-models
 
 # Reproducible US/India cases, alternate model, fabricated domain mismatch,
 # and fabricated unmatched-name case. Authorized APIs only; ≤100 credits:
-.venv/Scripts/python.exe scripts/verify_heartbeat.py --live
+../.venv/Scripts/python.exe scripts/verify_heartbeat.py --live
 ```
 
 Live reports and provider traces are written to `heartbeat-data/verification/`. These engineering examples do not define the investment team's eventual demo targets. See [`VERIFICATION.md`](VERIFICATION.md) for observed results.

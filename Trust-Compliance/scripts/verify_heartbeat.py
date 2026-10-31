@@ -1,6 +1,6 @@
 """Reproduce verification. Live mode spends at most 100 CrustData credits.
 
-Run from the repository root: python scripts/verify_heartbeat.py [--live]
+Run from Trust-Compliance/: python scripts/verify_heartbeat.py [--live]
 """
 import argparse
 import asyncio

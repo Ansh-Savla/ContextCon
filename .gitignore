@@ -12,3 +12,6 @@ __pycache__/
 build/
 dist/
 
+
+# Stale pre-move Heartbeat data (now under Trust-Compliance/heartbeat-data)
+/heartbeat-data/

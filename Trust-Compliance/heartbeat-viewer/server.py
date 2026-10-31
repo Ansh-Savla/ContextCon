@@ -1,4 +1,4 @@
-﻿"""Local-only Heartbeat viewer. Run from anywhere: python heartbeat-viewer/server.py"""
+"""Local-only Heartbeat viewer. Run from anywhere: python Trust-Compliance/heartbeat-viewer/server.py"""
 import json
 import sqlite3
 import sys
@@ -43,7 +43,7 @@ def run_job(job, request):
                 item.update(row)
         Investigation.stage = observed
         try:
-            report = investigate(request, config=RunConfig(db_path=str(DB), env_file=str(ROOT / '.env')))
+            report = investigate(request, config=RunConfig(db_path=str(DB), env_file=str(ROOT.parent / '.env')))
         finally:
             Investigation.stage = original
         job.update(status='complete', case_id=report['case_id'])

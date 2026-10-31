@@ -45,6 +45,9 @@ def normalize(value):
 def load_env(path=None):
     """Explicit local dotenv loading; never logs values or overrides the process."""
     p = Path(path or ".env")
+    if not p.is_file() and not p.is_absolute():
+        # Keys live in the repository-root .env; commands run from Trust-Compliance/.
+        p = next((d / p for d in Path.cwd().parents if (d / p).is_file()), p)
     if p.is_file():
         for line in p.read_text(encoding="utf-8-sig").splitlines():
             line = line.strip()

@@ -16,4 +16,4 @@ The claim-driven correction now normalizes investment-team context with original
 - Verification is explicitly authorized: synthetic personas and controlled failures plus live real-company development cases. These cases are engineering examples, not the investment team's selected demonstration targets.
 - Keep all activity read-only. No outreach, external transactions, watchers, investment decisions, fraud verdicts, global screening clearance or compliance certification.
 
-Implementation and integration guide: [`README.md`](README.md). Reproducible verification: [`../scripts/verify_heartbeat.py`](../scripts/verify_heartbeat.py).
+Implementation and integration guide: [`README.md`](README.md). Reproducible verification: [`scripts/verify_heartbeat.py`](scripts/verify_heartbeat.py).

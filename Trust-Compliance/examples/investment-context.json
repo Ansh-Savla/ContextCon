@@ -1,0 +1,29 @@
+{
+  "company_name": "VerbalizeIt",
+  "context": {
+    "company": {
+      "crustdata_company_id": 1919920,
+      "basic_info": {
+        "primary_domain": "verbalizeit.com",
+        "year_founded": 2011,
+        "status": "active",
+        "description": "Human-powered translation service"
+      }
+    },
+    "funding": {
+      "total_raised_usd": 2448000,
+      "acquired_by": "Smartling",
+      "acquisition_date": "2016-05-19"
+    },
+    "headcount": {"total": 45, "as_of": "2026-09-11"},
+    "revenue": {"acquisition_status": "acquired", "estimated": {"lower_bound_usd": 2500000, "upper_bound_usd": 5000000}},
+    "founders": [
+      {"name": "Ryan Frankel", "profile_url": "https://www.linkedin.com/in/ryanvfrankel"},
+      {"name": "Kunal Sarda", "profile_url": "https://www.linkedin.com/in/kunalsarda"}
+    ],
+    "news": [
+      {"title": "VerbalizeIt acquisition coverage", "url": "https://www.sharktankblog.com/business/verbalizeit/"}
+    ],
+    "inferences": ["The profile count could reflect former translators or contractors; this needs verification."]
+  }
+}

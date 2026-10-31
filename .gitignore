@@ -117,7 +117,6 @@ investing/**/screenshots/
 /tmp/
 /research/crustdata-sample/
 
-
 # Personal agent instructions/steering: never commit (keeps per-dev steering out of shared branches)
 CLAUDE.md
 CLAUDE.local.md
@@ -127,3 +126,6 @@ AGENTS.override.md
 *.local.md
 .codex/*.local.md
 .codex/steering.*.md
+
+# Stale pre-move Heartbeat data (now under Trust-Compliance/heartbeat-data)
+/heartbeat-data/

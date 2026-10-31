@@ -4,6 +4,8 @@ A diligence desk for **investors** (equity diligence + compliance clearance) and
 
 ## 1. Run it in 3 minutes
 
+> **Windows:** the repo includes long CrustData doc filenames. Run `git config --global core.longpaths true` before cloning, or clone into a short path such as `C:\dev`.
+
 ```bash
 git clone https://github.com/Ansh-Savla/ContextCon.git
 cd ContextCon && git checkout trust-compliance

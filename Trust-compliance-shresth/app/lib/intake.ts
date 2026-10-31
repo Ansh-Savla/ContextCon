@@ -155,7 +155,7 @@ export async function runIntake(raw: string, budget: RunBudget, emit: Emit): Pro
   const inText = (s?: string) => !!s && lc.includes(s.toLowerCase().slice(0, 80));
   const res = await llmJson<any>({
     purpose: "extract entities + claims (with source spans)",
-    agent: "intake", budget, emit, schema: SCHEMA,
+    agent: "intake", budget, emit, schema: SCHEMA, fast: true,
     prompt: `You are the intake clerk of a diligence desk (investment screening and vendor/payment trust checks, India and US).
 Extract from the request below: lens, the company being asked about (not the sender's mail provider), the company's website domain if written in the body (NOT an email sender domain), people with their claimed roles, and every checkable claim.
 For EVERY field, "span" must be copied verbatim from the request. Do not invent anything.

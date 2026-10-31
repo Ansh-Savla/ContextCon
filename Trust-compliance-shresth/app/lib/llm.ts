@@ -11,11 +11,13 @@ export type LlmJson<T> = { data: T; model: string; tokens: number } | null;
 
 type Attempt = { provider: "gemini" | "openrouter"; model: string };
 
-function chain(): Attempt[] {
+/** fast=true puts the lighter fallback models first (intake, judging); prose keeps the primary model first. */
+function chain(fast = false): Attempt[] {
   const out: Attempt[] = [];
   if (config.llm.provider === "none") return out;
   if (config.llm.geminiKey && config.llm.provider === "gemini") {
-    for (const m of [config.llm.model, ...config.llm.fallbackModels]) out.push({ provider: "gemini", model: m });
+    const order = fast ? [...config.llm.fallbackModels, config.llm.model] : [config.llm.model, ...config.llm.fallbackModels];
+    for (const m of order) out.push({ provider: "gemini", model: m });
   }
   if (config.llm.openrouterKey) out.push({ provider: "openrouter", model: config.llm.provider === "openrouter" ? config.llm.model : config.llm.openrouterModel });
   return out;
@@ -58,9 +60,9 @@ async function callOpenRouter(model: string, prompt: string): Promise<{ text: st
  */
 export async function llmJson<T>(opts: {
   purpose: string; prompt: string; schema: unknown; validate?: (x: T) => boolean;
-  budget: RunBudget; emit: Emit; agent: "intake" | "investigator" | "verifier" | "clerk";
+  budget: RunBudget; emit: Emit; agent: "intake" | "investigator" | "verifier" | "clerk"; fast?: boolean;
 }): Promise<LlmJson<T>> {
-  const attempts = chain();
+  const attempts = chain(opts.fast);
   if (!attempts.length) return null;
   for (const a of attempts) {
     const denied = opts.budget.denyLlm();

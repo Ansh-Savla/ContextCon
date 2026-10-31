@@ -5,3 +5,5 @@ next-env.d.ts
 # Raw API cache and run outputs stay local (may contain personal profile data)
 data/cache/
 data/runs/
+data/ledger.json
+data/systems/

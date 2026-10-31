@@ -193,10 +193,20 @@ export async function runCase(raw: string, onEvent: (e: TraceEvent) => void = ()
         const L = company.locations ?? {};
         const obs = [L.city, L.state, L.country].filter(Boolean).join(", ");
         const e = ctx.ev({ kind: "crustdata", endpoint: "/company/enrich", recordId: b.crustdata_company_id, fieldPath: "locations", value: obs });
+        // Region aliases: a claim of "Delhi NCR" is satisfied by Faridabad/Gurugram/Noida, "Massachusetts" by "MA", etc.
+        const REGION: Record<string, string[]> = {
+          ncr: ["delhi", "new delhi", "faridabad", "gurgaon", "gurugram", "noida", "ghaziabad", "haryana"], delhi: ["delhi", "new delhi", "faridabad", "gurgaon", "gurugram", "noida", "ghaziabad"],
+          massachusetts: ["ma", "massachusetts", "boston"], usa: ["usa", "us", "united states"], india: ["ind", "india"], bangalore: ["bengaluru", "bangalore", "karnataka"], mumbai: ["mumbai", "maharashtra", "thane"],
+          ohio: ["oh", "ohio", "cincinnati"], "new york": ["ny", "new york"],
+        };
+        const obsToks = new Set(norm(obs).split(" "));
+        const obsStr = " " + norm(obs) + " ";
         const toks = norm(String(c.value)).split(" ").filter(t => t.length > 1);
-        const ab: Record<string, string> = { massachusetts: "ma", usa: "usa", india: "ind" };
-        const hit = toks.some(t => norm(obs).split(" ").includes(t) || norm(obs).split(" ").includes(ab[t] ?? "~"));
-        ctx.find({ check: "Location", claim: c.text, submitted: String(c.value), observed: obs || "not reported", status: !obs ? "insufficient" : hit ? "supported" : "conflicting", evidenceIds: [e], rule: "R-LOCATION", reason: hit ? "location tokens match" : obs ? "location differs" : "no location on record", material: !hit && !!obs });
+        const hit = toks.some(t => obsToks.has(t) || (REGION[t] ?? []).some(a => obsStr.includes(" " + a + " ")));
+        const country = (s: string) => (/\b(ind|india)\b/i.test(s) ? "IN" : /\b(usa|us|united states)\b/i.test(s) ? "US" : "");
+        const countryClash = !!country(String(c.value)) && !!country(obs) && country(String(c.value)) !== country(obs);
+        const st: Status = !obs ? "insufficient" : hit ? "supported" : countryClash ? "conflicting" : "potential_issue";
+        ctx.find({ check: "Location", claim: c.text, submitted: String(c.value), observed: obs || "not reported", status: st, evidenceIds: [e], rule: "R-LOCATION", reason: hit ? "location matches (region aliases applied)" : countryClash ? "different country on record" : obs ? "city/region differs from the record — may be a branch or an outdated HQ" : "no location on record", material: st === "conflicting" });
       }
       if (c.kind === "other" && /google ads/i.test(c.text)) {
         const ads = company.seo?.monthly_google_ads_budget;
@@ -276,7 +286,7 @@ export async function runCase(raw: string, onEvent: (e: TraceEvent) => void = ()
     let judged = webNews.map(n => ({ ...n, label: isRel(n.title, n.url) ? "relevant" : "likely namesake", why: "name/domain match rule", kind: "" as string }));
     if (judged.length) {
       const j = await llmJson<{ items: Array<{ i: number; label: string; kind: string; quote: string }> }>({
-        purpose: "judge news relevance (namesake / other event)", agent: "verifier", budget, emit,
+        purpose: "judge news relevance (namesake / other event)", agent: "verifier", budget, emit, fast: true,
         schema: { type: "OBJECT", properties: { items: { type: "ARRAY", items: { type: "OBJECT", properties: { i: { type: "INTEGER" }, label: { type: "STRING", enum: ["relevant", "likely namesake", "different event"] }, kind: { type: "STRING", enum: ["deal report", "allegation", "regulator action", "court finding", "business news", "other"] }, quote: { type: "STRING" } } } } } },
         prompt: `Company: ${b.name} (domain ${b.primary_domain}, ${b.description ?? ""}). Facts on record: founded ${b.year_founded}, HQ ${company.locations?.city ?? ""}.\nFor each item decide if it is about THIS company ("relevant"), a different organisation with a similar name ("likely namesake"), or this company but a different event/pitch than claimed ("different event"). Claimed deal: ${intake.claims.find(c => c.kind === "shark_deal")?.text ?? "none"}. Quote the words that justify the label.\n` + judged.map((n, i) => `${i}. ${n.title} — ${n.url} — ${n.snippet ?? ""}`).join("\n"),
         validate: x => Array.isArray(x?.items),

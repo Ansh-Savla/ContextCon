@@ -1,0 +1,913 @@
+{
+  "source": "https://docs.crustdata.com/llms.txt",
+  "fetchedAt": "2026-10-31T04:44:03.606Z",
+  "indexedFileCount": 113,
+  "savedFileCount": 113,
+  "errors": [],
+  "files": [
+    {
+      "url": "https://docs.crustdata.com/api-reference/account-apis/get-a-usage-summary.md",
+      "path": "api-reference/account-apis/get-a-usage-summary.md",
+      "status": 200,
+      "contentType": "text/markdown; charset=utf-8",
+      "bytes": 24977,
+      "sha256": "d886bdea30d7ad8425baa5cd90d05d5bad33d326ee87fbda31206f7a6ba247e0"
+    },
+    {
+      "url": "https://docs.crustdata.com/api-reference/account-apis/get-account-credit-balance.md",
+      "path": "api-reference/account-apis/get-account-credit-balance.md",
+      "status": 200,
+      "contentType": "text/markdown; charset=utf-8",
+      "bytes": 18958,
+      "sha256": "940a0c4ef9c20d513819c3c1cfaa60027db26fd9e4dc1b80e4551385632ee8ee"
+    },
+    {
+      "url": "https://docs.crustdata.com/api-reference/account-apis/get-one-usage-event.md",
+      "path": "api-reference/account-apis/get-one-usage-event.md",
+      "status": 200,
+      "contentType": "text/markdown; charset=utf-8",
+      "bytes": 18540,
+      "sha256": "12d35cb69b32e22f91a38adca0e4608f1032c0a891e0f2e0a643ac6ea40ab5d0"
+    },
+    {
+      "url": "https://docs.crustdata.com/api-reference/account-apis/list-endpoint-permissions-and-rate-limits.md",
+      "path": "api-reference/account-apis/list-endpoint-permissions-and-rate-limits.md",
+      "status": 200,
+      "contentType": "text/markdown; charset=utf-8",
+      "bytes": 40804,
+      "sha256": "7b9e8d5545a344fc9425d4af492c24c1a83d3f78dedee8dd70395ced15af6d46"
+    },
+    {
+      "url": "https://docs.crustdata.com/api-reference/account-apis/list-usage-errors.md",
+      "path": "api-reference/account-apis/list-usage-errors.md",
+      "status": 200,
+      "contentType": "text/markdown; charset=utf-8",
+      "bytes": 15519,
+      "sha256": "d2f1b14689ec09c9f593c1ed817a9e13682ca7a25cd3fa98ec2427dbca70cf08"
+    },
+    {
+      "url": "https://docs.crustdata.com/api-reference/account-apis/list-usage-events.md",
+      "path": "api-reference/account-apis/list-usage-events.md",
+      "status": 200,
+      "contentType": "text/markdown; charset=utf-8",
+      "bytes": 25299,
+      "sha256": "7618d7dc4bda062f00872495900f70c86b0dbed1807838cd180385fd0d2d5676"
+    },
+    {
+      "url": "https://docs.crustdata.com/api-reference/batch-apis/get-the-status-and-download-urls-for-a-batch-job.md",
+      "path": "api-reference/batch-apis/get-the-status-and-download-urls-for-a-batch-job.md",
+      "status": 200,
+      "contentType": "text/markdown; charset=utf-8",
+      "bytes": 16588,
+      "sha256": "6807aa2e3a09271e05bfbdd0d909135c339281449c3a8a6fb5cfb21a19fb9cab"
+    },
+    {
+      "url": "https://docs.crustdata.com/api-reference/batch-apis/list-batch-jobs-for-the-authenticated-account.md",
+      "path": "api-reference/batch-apis/list-batch-jobs-for-the-authenticated-account.md",
+      "status": 200,
+      "contentType": "text/markdown; charset=utf-8",
+      "bytes": 15303,
+      "sha256": "67e5f3f0bd6652bea2c162a0258a0d6647511445c55ddf17beebea7530825379"
+    },
+    {
+      "url": "https://docs.crustdata.com/api-reference/batch-apis/submit-a-batch-company-database-search-job.md",
+      "path": "api-reference/batch-apis/submit-a-batch-company-database-search-job.md",
+      "status": 200,
+      "contentType": "text/markdown; charset=utf-8",
+      "bytes": 25641,
+      "sha256": "c93eaec6310087d100a2edeedcd448b770701b6a9841b4eaa34987005b43a338"
+    },
+    {
+      "url": "https://docs.crustdata.com/api-reference/batch-apis/submit-a-batch-company-enrichment-job.md",
+      "path": "api-reference/batch-apis/submit-a-batch-company-enrichment-job.md",
+      "status": 200,
+      "contentType": "text/markdown; charset=utf-8",
+      "bytes": 22786,
+      "sha256": "467692ca4b011affaa8f91a8ab7f551294d8d6d4b1c9623b847b48961a7643e0"
+    },
+    {
+      "url": "https://docs.crustdata.com/api-reference/batch-apis/submit-a-batch-job-listings-search-job.md",
+      "path": "api-reference/batch-apis/submit-a-batch-job-listings-search-job.md",
+      "status": 200,
+      "contentType": "text/markdown; charset=utf-8",
+      "bytes": 20182,
+      "sha256": "2ad05e881d89d428f1d269f0b81997b0efe6d49b71e98bbe1f871b1299755141"
+    },
+    {
+      "url": "https://docs.crustdata.com/api-reference/batch-apis/submit-a-batch-person-contact-enrichment-job.md",
+      "path": "api-reference/batch-apis/submit-a-batch-person-contact-enrichment-job.md",
+      "status": 200,
+      "contentType": "text/markdown; charset=utf-8",
+      "bytes": 23194,
+      "sha256": "80da7e69196972b53df25fb600ecaa7e819d616f212e04a1361e99cadc53f86d"
+    },
+    {
+      "url": "https://docs.crustdata.com/api-reference/batch-apis/submit-a-batch-person-database-search-job.md",
+      "path": "api-reference/batch-apis/submit-a-batch-person-database-search-job.md",
+      "status": 200,
+      "contentType": "text/markdown; charset=utf-8",
+      "bytes": 25798,
+      "sha256": "c9b08eb8175da05612ae3faf8da81aa22cf39abda42f20d51f91338d77aa50a1"
+    },
+    {
+      "url": "https://docs.crustdata.com/api-reference/batch-apis/submit-a-batch-person-enrichment-job.md",
+      "path": "api-reference/batch-apis/submit-a-batch-person-enrichment-job.md",
+      "status": 200,
+      "contentType": "text/markdown; charset=utf-8",
+      "bytes": 19682,
+      "sha256": "f4e3a451c790a9f585f2210a196bc6491137342525c04e5b1d77d4d1efa6245e"
+    },
+    {
+      "url": "https://docs.crustdata.com/api-reference/batch-apis/submit-a-batch-person-identify-reverse-email-lookup-job.md",
+      "path": "api-reference/batch-apis/submit-a-batch-person-identify-reverse-email-lookup-job.md",
+      "status": 200,
+      "contentType": "text/markdown; charset=utf-8",
+      "bytes": 23048,
+      "sha256": "a54fae1f0491044c2b1f5ee68dd2d1fa468c347d9024d8ff546f1d76f8cddc5f"
+    },
+    {
+      "url": "https://docs.crustdata.com/api-reference/batch-apis/submit-a-batch-person-verification-job.md",
+      "path": "api-reference/batch-apis/submit-a-batch-person-verification-job.md",
+      "status": 200,
+      "contentType": "text/markdown; charset=utf-8",
+      "bytes": 16971,
+      "sha256": "947b1bcfe95f5c360ef72d57464d3fbbd39d0fc3283b2ac6272c1f640fed08d5"
+    },
+    {
+      "url": "https://docs.crustdata.com/api-reference/company-apis/get-autocomplete-suggestions-for-company-search-fields.md",
+      "path": "api-reference/company-apis/get-autocomplete-suggestions-for-company-search-fields.md",
+      "status": 200,
+      "contentType": "text/markdown; charset=utf-8",
+      "bytes": 12031,
+      "sha256": "029380bc5db852f4d867e88fac96a82caa552e0e8aa67881ec6dbac683a06781"
+    },
+    {
+      "url": "https://docs.crustdata.com/api-reference/company-apis/get-full-company-enrichment.md",
+      "path": "api-reference/company-apis/get-full-company-enrichment.md",
+      "status": 200,
+      "contentType": "text/markdown; charset=utf-8",
+      "bytes": 85329,
+      "sha256": "21e7cc21ebc5f6b249017d754354515d10f6f39522fcdbdaba4f88db7da5146d"
+    },
+    {
+      "url": "https://docs.crustdata.com/api-reference/company-apis/identify-a-company-from-name-domain-id-or-profile-url.md",
+      "path": "api-reference/company-apis/identify-a-company-from-name-domain-id-or-profile-url.md",
+      "status": 200,
+      "contentType": "text/markdown; charset=utf-8",
+      "bytes": 29595,
+      "sha256": "292ff0756a69aa5be87981e909826ff8b45775f2b67d8c7da2b8006722250bfb"
+    },
+    {
+      "url": "https://docs.crustdata.com/api-reference/company-apis/search-companies-with-indexed-fields-only.md",
+      "path": "api-reference/company-apis/search-companies-with-indexed-fields-only.md",
+      "status": 200,
+      "contentType": "text/markdown; charset=utf-8",
+      "bytes": 51079,
+      "sha256": "8b661917c79355ca2d4c848cb5bb79ee15751eec001353091445f319d6772ad8"
+    },
+    {
+      "url": "https://docs.crustdata.com/api-reference/job-apis/autocomplete-values-for-a-job-search-field.md",
+      "path": "api-reference/job-apis/autocomplete-values-for-a-job-search-field.md",
+      "status": 200,
+      "contentType": "text/markdown; charset=utf-8",
+      "bytes": 14639,
+      "sha256": "e6dd682c60f244ac7f424e70c455e8ee87ac33b36e1c5ea7d1fc2fca4fb4a0c9"
+    },
+    {
+      "url": "https://docs.crustdata.com/api-reference/job-apis/search-the-indexed-job-dataset.md",
+      "path": "api-reference/job-apis/search-the-indexed-job-dataset.md",
+      "status": 200,
+      "contentType": "text/markdown; charset=utf-8",
+      "bytes": 54511,
+      "sha256": "94f52f49b6b130aa6159296fab66e4500e322b252317d963e7b2e734556e34bd"
+    },
+    {
+      "url": "https://docs.crustdata.com/api-reference/person-apis/enrich-only-person-contact-data-from-cached-dataset.md",
+      "path": "api-reference/person-apis/enrich-only-person-contact-data-from-cached-dataset.md",
+      "status": 200,
+      "contentType": "text/markdown; charset=utf-8",
+      "bytes": 33594,
+      "sha256": "e8375e1037ea382187aae7494014290f278ab0fe42e704758ba80aea3a19af34"
+    },
+    {
+      "url": "https://docs.crustdata.com/api-reference/person-apis/enrich-person-profiles-from-cached-dataset.md",
+      "path": "api-reference/person-apis/enrich-person-profiles-from-cached-dataset.md",
+      "status": 200,
+      "contentType": "text/markdown; charset=utf-8",
+      "bytes": 62701,
+      "sha256": "5ac670a7591f58dfa9ffadf5309931140582d317ba04ad7a242bc7d1b3a627f7"
+    },
+    {
+      "url": "https://docs.crustdata.com/api-reference/person-apis/get-autocomplete-suggestions-for-person-search-fields.md",
+      "path": "api-reference/person-apis/get-autocomplete-suggestions-for-person-search-fields.md",
+      "status": 200,
+      "contentType": "text/markdown; charset=utf-8",
+      "bytes": 31194,
+      "sha256": "853364ccb57cfea8d1bf44d38da972d21aef847a7cd75f57e0d66fc4cd627439"
+    },
+    {
+      "url": "https://docs.crustdata.com/api-reference/person-apis/identify-people-from-profile-urls-emails-or-google-scholar-profile-urls.md",
+      "path": "api-reference/person-apis/identify-people-from-profile-urls-emails-or-google-scholar-profile-urls.md",
+      "status": 200,
+      "contentType": "text/markdown; charset=utf-8",
+      "bytes": 23281,
+      "sha256": "457b0292e76b2b0bd8d4e011d2e894ceff7fdf1a6556764ff63d58a309ab789f"
+    },
+    {
+      "url": "https://docs.crustdata.com/api-reference/person-apis/search-people-using-filters-and-sorting.md",
+      "path": "api-reference/person-apis/search-people-using-filters-and-sorting.md",
+      "status": 200,
+      "contentType": "text/markdown; charset=utf-8",
+      "bytes": 67627,
+      "sha256": "bb2cef0e3f3ef884e1f36fb36b8ae23472c3e9b64fdf128fe00f54f22ecc530f"
+    },
+    {
+      "url": "https://docs.crustdata.com/api-reference/social-post-apis/search-the-social-post-dataset.md",
+      "path": "api-reference/social-post-apis/search-the-social-post-dataset.md",
+      "status": 200,
+      "contentType": "text/markdown; charset=utf-8",
+      "bytes": 42829,
+      "sha256": "984dc09e56ed95519fb358c4969e5957f710275ca2ffe6f522472e195a292c76"
+    },
+    {
+      "url": "https://docs.crustdata.com/api-reference/watch-apis/cancel-a-discovery-watch.md",
+      "path": "api-reference/watch-apis/cancel-a-discovery-watch.md",
+      "status": 200,
+      "contentType": "text/markdown; charset=utf-8",
+      "bytes": 12269,
+      "sha256": "a20bddc351ee28613929b99e5f4fa760ca2042934a4fce7ca0f597cfdf062a0a"
+    },
+    {
+      "url": "https://docs.crustdata.com/api-reference/watch-apis/create-a-discovery-watch.md",
+      "path": "api-reference/watch-apis/create-a-discovery-watch.md",
+      "status": 200,
+      "contentType": "text/markdown; charset=utf-8",
+      "bytes": 91627,
+      "sha256": "506516b21b52018046ff0171717292c148d774d68a781bcc92bdd881c8447810"
+    },
+    {
+      "url": "https://docs.crustdata.com/api-reference/watch-apis/create-an-entity-watch.md",
+      "path": "api-reference/watch-apis/create-an-entity-watch.md",
+      "status": 200,
+      "contentType": "text/markdown; charset=utf-8",
+      "bytes": 42332,
+      "sha256": "1a04defc41e8b4b79fd90d85fee02c2523af68e606dc82003a9fd6adc2469bc3"
+    },
+    {
+      "url": "https://docs.crustdata.com/api-reference/watch-apis/delete-an-entity-watch.md",
+      "path": "api-reference/watch-apis/delete-an-entity-watch.md",
+      "status": 200,
+      "contentType": "text/markdown; charset=utf-8",
+      "bytes": 12367,
+      "sha256": "883e171360f1d2d5a274818384240dc21146eca3e0b6918063e946ab59d7ca31"
+    },
+    {
+      "url": "https://docs.crustdata.com/api-reference/watch-apis/edit-the-watched-list-pause-or-reconfigure-an-entity-watch.md",
+      "path": "api-reference/watch-apis/edit-the-watched-list-pause-or-reconfigure-an-entity-watch.md",
+      "status": 200,
+      "contentType": "text/markdown; charset=utf-8",
+      "bytes": 33416,
+      "sha256": "e8f6ec273b1c0ee397c29ff61b4922bd73cf73d6fe1e6f92a43f91d8c79a3016"
+    },
+    {
+      "url": "https://docs.crustdata.com/api-reference/watch-apis/get-one-discovery-watch.md",
+      "path": "api-reference/watch-apis/get-one-discovery-watch.md",
+      "status": 200,
+      "contentType": "text/markdown; charset=utf-8",
+      "bytes": 28037,
+      "sha256": "0b2a9e191d9ec78d2e94793448538e60a1c52e74f4f913400c55c13dbe0bc349"
+    },
+    {
+      "url": "https://docs.crustdata.com/api-reference/watch-apis/get-one-entity-watch.md",
+      "path": "api-reference/watch-apis/get-one-entity-watch.md",
+      "status": 200,
+      "contentType": "text/markdown; charset=utf-8",
+      "bytes": 28097,
+      "sha256": "ea6111f0151e65ad58b3c7f415012eeae4ec81b7b949f2aa1073f7b55b37c322"
+    },
+    {
+      "url": "https://docs.crustdata.com/api-reference/watch-apis/get-one-run-with-the-records-it-delivered.md",
+      "path": "api-reference/watch-apis/get-one-run-with-the-records-it-delivered.md",
+      "status": 200,
+      "contentType": "text/markdown; charset=utf-8",
+      "bytes": 22901,
+      "sha256": "c20e50a48591545f2c38ca013348dd7138c6318dc786cb1302c374630dd2be10"
+    },
+    {
+      "url": "https://docs.crustdata.com/api-reference/watch-apis/list-a-watchs-runs.md",
+      "path": "api-reference/watch-apis/list-a-watchs-runs.md",
+      "status": 200,
+      "contentType": "text/markdown; charset=utf-8",
+      "bytes": 18952,
+      "sha256": "23fbeaeb0e6aad37a4baae58660461fb9f1e2abbc41c236bf55b06be68e10f96"
+    },
+    {
+      "url": "https://docs.crustdata.com/api-reference/watch-apis/list-your-discovery-watches.md",
+      "path": "api-reference/watch-apis/list-your-discovery-watches.md",
+      "status": 200,
+      "contentType": "text/markdown; charset=utf-8",
+      "bytes": 28767,
+      "sha256": "2c068ef3ff8c5a32b611f3ac0fc0c25635704b8fc601d8c98ff01e9215d9f997"
+    },
+    {
+      "url": "https://docs.crustdata.com/api-reference/watch-apis/list-your-entity-watches.md",
+      "path": "api-reference/watch-apis/list-your-entity-watches.md",
+      "status": 200,
+      "contentType": "text/markdown; charset=utf-8",
+      "bytes": 28919,
+      "sha256": "ceb2c79efc9d0e56a716a270cbc137370d2f5c41653d567cd5db37c611d2b9df"
+    },
+    {
+      "url": "https://docs.crustdata.com/api-reference/watch-apis/pause-resume-or-reconfigure-a-discovery-watch.md",
+      "path": "api-reference/watch-apis/pause-resume-or-reconfigure-a-discovery-watch.md",
+      "status": 200,
+      "contentType": "text/markdown; charset=utf-8",
+      "bytes": 33994,
+      "sha256": "66e6409788d1b33ce874a16ce4d3eb78f73a03963a7e4cae6b790cf7b9470b5a"
+    },
+    {
+      "url": "https://docs.crustdata.com/api-reference/watch-apis/preview-a-notification-before-creating-an-entity-watch.md",
+      "path": "api-reference/watch-apis/preview-a-notification-before-creating-an-entity-watch.md",
+      "status": 200,
+      "contentType": "text/markdown; charset=utf-8",
+      "bytes": 33811,
+      "sha256": "fd81fcf05998ae8cd0e08794cf4f1991109d23c90b492d5bf14d2f357192eb34"
+    },
+    {
+      "url": "https://docs.crustdata.com/api-reference/watch-apis/send-a-test-notification-from-a-discovery-watch.md",
+      "path": "api-reference/watch-apis/send-a-test-notification-from-a-discovery-watch.md",
+      "status": 200,
+      "contentType": "text/markdown; charset=utf-8",
+      "bytes": 30732,
+      "sha256": "5ebd076f02dcb81776d88641b4c2628f2e9d0a7478e3030fc9ad407fe47610a0"
+    },
+    {
+      "url": "https://docs.crustdata.com/api-reference/watch-apis/send-a-test-notification-from-an-entity-watch.md",
+      "path": "api-reference/watch-apis/send-a-test-notification-from-an-entity-watch.md",
+      "status": 200,
+      "contentType": "text/markdown; charset=utf-8",
+      "bytes": 30591,
+      "sha256": "56f317a94773ed72210c9b4e8f3278fa60c0e6b4749281f05ec1c9160a90358e"
+    },
+    {
+      "url": "https://docs.crustdata.com/api-reference/web-apis/web-fetch.md",
+      "path": "api-reference/web-apis/web-fetch.md",
+      "status": 200,
+      "contentType": "text/markdown; charset=utf-8",
+      "bytes": 13916,
+      "sha256": "79aa77aff657359e3c856c0b3cc898dab9468fc0035bc8c7cc8f485487ac40cd"
+    },
+    {
+      "url": "https://docs.crustdata.com/api-reference/web-apis/web-search.md",
+      "path": "api-reference/web-apis/web-search.md",
+      "status": 200,
+      "contentType": "text/markdown; charset=utf-8",
+      "bytes": 37629,
+      "sha256": "0b6d76aec277ba2c016fa3ac0599d86705a38a83bc6a465d12c6a5958dca3a45"
+    },
+    {
+      "url": "https://docs.crustdata.com/company-docs/autocomplete/introduction.md",
+      "path": "company-docs/autocomplete/introduction.md",
+      "status": 200,
+      "contentType": "text/markdown; charset=utf-8",
+      "bytes": 16648,
+      "sha256": "ab20a9c7267f93c9a875f9da05ca83a1ed384bc06914f5031a89858c0f682e6b"
+    },
+    {
+      "url": "https://docs.crustdata.com/company-docs/enrichment/batch.md",
+      "path": "company-docs/enrichment/batch.md",
+      "status": 200,
+      "contentType": "text/markdown; charset=utf-8",
+      "bytes": 8860,
+      "sha256": "c761615ad7318ffa9daa508da7bb2d59bde7445a3662a24138046ba51000cd01"
+    },
+    {
+      "url": "https://docs.crustdata.com/company-docs/enrichment/introduction.md",
+      "path": "company-docs/enrichment/introduction.md",
+      "status": 200,
+      "contentType": "text/markdown; charset=utf-8",
+      "bytes": 34035,
+      "sha256": "3c8f90b4055ecb56b647580d813d403f7627a4ff45facce433928206a098d94e"
+    },
+    {
+      "url": "https://docs.crustdata.com/company-docs/enrichment/reference.md",
+      "path": "company-docs/enrichment/reference.md",
+      "status": 200,
+      "contentType": "text/markdown; charset=utf-8",
+      "bytes": 19468,
+      "sha256": "a33de2cf17830a2556593b98f0aa1bff0347cf2db98b51cbd5fbf14ee5da5f59"
+    },
+    {
+      "url": "https://docs.crustdata.com/company-docs/filter-values.md",
+      "path": "company-docs/filter-values.md",
+      "status": 200,
+      "contentType": "text/markdown; charset=utf-8",
+      "bytes": 4138,
+      "sha256": "9e45b5aec8f342521f09d064b3eb4057eecae60a423d3a270197d65377c322aa"
+    },
+    {
+      "url": "https://docs.crustdata.com/company-docs/identify/introduction.md",
+      "path": "company-docs/identify/introduction.md",
+      "status": 200,
+      "contentType": "text/markdown; charset=utf-8",
+      "bytes": 20112,
+      "sha256": "6771198ccc1247e8193fa8dc49a6d2f6dc1918e71868d2adc360bc20d7edb320"
+    },
+    {
+      "url": "https://docs.crustdata.com/company-docs/search/batch-search.md",
+      "path": "company-docs/search/batch-search.md",
+      "status": 200,
+      "contentType": "text/markdown; charset=utf-8",
+      "bytes": 11470,
+      "sha256": "7603f3c9955226571f1730d6347fc3b229fc7f7bd7ac8d7896630f96ca6fd31e"
+    },
+    {
+      "url": "https://docs.crustdata.com/company-docs/search/introduction.md",
+      "path": "company-docs/search/introduction.md",
+      "status": 200,
+      "contentType": "text/markdown; charset=utf-8",
+      "bytes": 68160,
+      "sha256": "364b07edf45677810c843c0f0bf7941593237fc8f2ccef0410b5d511f7e1447d"
+    },
+    {
+      "url": "https://docs.crustdata.com/company-docs/search/reference.md",
+      "path": "company-docs/search/reference.md",
+      "status": 200,
+      "contentType": "text/markdown; charset=utf-8",
+      "bytes": 32074,
+      "sha256": "99a9b6d971781ac8f1abb04a6040d223119db82020dbc203ab7b67f646fa11ca"
+    },
+    {
+      "url": "https://docs.crustdata.com/export-docs/data-export.md",
+      "path": "export-docs/data-export.md",
+      "status": 200,
+      "contentType": "text/markdown; charset=utf-8",
+      "bytes": 9180,
+      "sha256": "888c9f27a677a7b533905e4117ca6292aa0e9338ce638543d3bc83a51226d1d7"
+    },
+    {
+      "url": "https://docs.crustdata.com/for-agents/cli.md",
+      "path": "for-agents/cli.md",
+      "status": 200,
+      "contentType": "text/markdown; charset=utf-8",
+      "bytes": 15641,
+      "sha256": "8bf8da40f4bf2ffcc5338f2590022b658be3d36fab071c7f797e12cdacd7cc83"
+    },
+    {
+      "url": "https://docs.crustdata.com/for-agents/llms.md",
+      "path": "for-agents/llms.md",
+      "status": 200,
+      "contentType": "text/markdown; charset=utf-8",
+      "bytes": 2672,
+      "sha256": "f8a206bf6bc9563e4ecf5c6cf3198bdbda7e0d03dd58169ea9ea438a2aec48f8"
+    },
+    {
+      "url": "https://docs.crustdata.com/for-agents/mcp.md",
+      "path": "for-agents/mcp.md",
+      "status": 200,
+      "contentType": "text/markdown; charset=utf-8",
+      "bytes": 11446,
+      "sha256": "b81ac8ac41ff74b69025284b25e247dab66d62c1a490ff03669d75117ea2a083"
+    },
+    {
+      "url": "https://docs.crustdata.com/general/capabilities.md",
+      "path": "general/capabilities.md",
+      "status": 200,
+      "contentType": "text/markdown; charset=utf-8",
+      "bytes": 6236,
+      "sha256": "c52dbc89ced2df110a66395645e592c2d85374516835fe45fe698028c97f4c2a"
+    },
+    {
+      "url": "https://docs.crustdata.com/general/credits.md",
+      "path": "general/credits.md",
+      "status": 200,
+      "contentType": "text/markdown; charset=utf-8",
+      "bytes": 16001,
+      "sha256": "ca7f1a29c29960223614fc2c937344ef596ad4d7d384a7508e22991467db132b"
+    },
+    {
+      "url": "https://docs.crustdata.com/general/data-updates.md",
+      "path": "general/data-updates.md",
+      "status": 200,
+      "contentType": "text/markdown; charset=utf-8",
+      "bytes": 4587,
+      "sha256": "0df7df114f5eaa63315dafb0c71e312f222310a557c51ec969aacc0e6cf353fe"
+    },
+    {
+      "url": "https://docs.crustdata.com/general/introduction.md",
+      "path": "general/introduction.md",
+      "status": 200,
+      "contentType": "text/markdown; charset=utf-8",
+      "bytes": 4774,
+      "sha256": "295bf8c9a2fe967aeb1ac234560d9e62ceec38922923fb91f314dac78ab31741"
+    },
+    {
+      "url": "https://docs.crustdata.com/general/permissions.md",
+      "path": "general/permissions.md",
+      "status": 200,
+      "contentType": "text/markdown; charset=utf-8",
+      "bytes": 13498,
+      "sha256": "4f8ebb194084ed206914135e62b39b3e794f275c12ef506deac0e4f302425667"
+    },
+    {
+      "url": "https://docs.crustdata.com/general/pricing.md",
+      "path": "general/pricing.md",
+      "status": 200,
+      "contentType": "text/markdown; charset=utf-8",
+      "bytes": 28431,
+      "sha256": "86822fbb2fcab9c4800f4f3216936ee6ff51287e7d27e15c2f23097d6ab106c1"
+    },
+    {
+      "url": "https://docs.crustdata.com/general/rate-limits.md",
+      "path": "general/rate-limits.md",
+      "status": 200,
+      "contentType": "text/markdown; charset=utf-8",
+      "bytes": 7579,
+      "sha256": "2976d2523b110389c4de52fc3e3cef9aefbd4036261d782e64000b8edd210761"
+    },
+    {
+      "url": "https://docs.crustdata.com/general/usage.md",
+      "path": "general/usage.md",
+      "status": 200,
+      "contentType": "text/markdown; charset=utf-8",
+      "bytes": 24304,
+      "sha256": "09e62d25f8cdce432b5ced96e8b6d74ce5a09e76d22c34ae1954c3daf1c1c46e"
+    },
+    {
+      "url": "https://docs.crustdata.com/guides/job-title-normalization.md",
+      "path": "guides/job-title-normalization.md",
+      "status": 200,
+      "contentType": "text/markdown; charset=utf-8",
+      "bytes": 16330,
+      "sha256": "ac02e5d9b6b88a3e754c7e84f80f10617e0677dbfda91e25bfe7abf59498607b"
+    },
+    {
+      "url": "https://docs.crustdata.com/guides/person-semantic-search.md",
+      "path": "guides/person-semantic-search.md",
+      "status": 200,
+      "contentType": "text/markdown; charset=utf-8",
+      "bytes": 16014,
+      "sha256": "25b60d5a1f56a6bf851bf06e845df64901ac7c654dce623d6d49242a8ec977ee"
+    },
+    {
+      "url": "https://docs.crustdata.com/guides/technographics.md",
+      "path": "guides/technographics.md",
+      "status": 200,
+      "contentType": "text/markdown; charset=utf-8",
+      "bytes": 20760,
+      "sha256": "8e576677649b57c108a266924e726d54d7053c6ad942f467aa48c919aaef3f8f"
+    },
+    {
+      "url": "https://docs.crustdata.com/integrations/claude-plugin.md",
+      "path": "integrations/claude-plugin.md",
+      "status": 200,
+      "contentType": "text/markdown; charset=utf-8",
+      "bytes": 5118,
+      "sha256": "48f671f5433856ce9300c2d42d1406623206f13672f1739c9a27398d369d707c"
+    },
+    {
+      "url": "https://docs.crustdata.com/integrations/codex.md",
+      "path": "integrations/codex.md",
+      "status": 200,
+      "contentType": "text/markdown; charset=utf-8",
+      "bytes": 5607,
+      "sha256": "b2ad99b6524912990643a391e5b5b27eb5c01a30c21e2a827ba1968781a13fb2"
+    },
+    {
+      "url": "https://docs.crustdata.com/integrations/grok.md",
+      "path": "integrations/grok.md",
+      "status": 200,
+      "contentType": "text/markdown; charset=utf-8",
+      "bytes": 3064,
+      "sha256": "ec5733ec5c044dc6a12421231a1f8284cb188d901186f341d70a5d3a3ae74ad9"
+    },
+    {
+      "url": "https://docs.crustdata.com/integrations/overview.md",
+      "path": "integrations/overview.md",
+      "status": 200,
+      "contentType": "text/markdown; charset=utf-8",
+      "bytes": 4485,
+      "sha256": "f260ca56a7b325883f596d75704e4521b2231e67781bc90d08438c682a84eecf"
+    },
+    {
+      "url": "https://docs.crustdata.com/job-docs/autocomplete/introduction.md",
+      "path": "job-docs/autocomplete/introduction.md",
+      "status": 200,
+      "contentType": "text/markdown; charset=utf-8",
+      "bytes": 21991,
+      "sha256": "66cf512f83f625a15824d82482f82fb77b34e2ea91b1af7166785564d7a0725b"
+    },
+    {
+      "url": "https://docs.crustdata.com/job-docs/search/batch-search.md",
+      "path": "job-docs/search/batch-search.md",
+      "status": 200,
+      "contentType": "text/markdown; charset=utf-8",
+      "bytes": 6473,
+      "sha256": "c961e8c576bb857fda2ea182ab4a69ccf234cd2bd8e762de9ed5e35ad0fa0c6a"
+    },
+    {
+      "url": "https://docs.crustdata.com/job-docs/search/introduction.md",
+      "path": "job-docs/search/introduction.md",
+      "status": 200,
+      "contentType": "text/markdown; charset=utf-8",
+      "bytes": 33661,
+      "sha256": "991d15088873e524216aeefe47b8adba3fd725cc19fb6c54c1f6a10defcd4731"
+    },
+    {
+      "url": "https://docs.crustdata.com/job-docs/search/reference.md",
+      "path": "job-docs/search/reference.md",
+      "status": 200,
+      "contentType": "text/markdown; charset=utf-8",
+      "bytes": 47401,
+      "sha256": "43f744f9a090afb3f6cda81e035cc9248d9547cfbbe6082814edf73b72fa5dc9"
+    },
+    {
+      "url": "https://docs.crustdata.com/openapi-specs/2025-11-01/account.yaml",
+      "path": "openapi-specs/2025-11-01/account.yaml",
+      "status": 200,
+      "contentType": "text/html; charset=utf-8",
+      "bytes": 24481,
+      "sha256": "a9db5a3a2c2836759d0cce5b4229cbe2598a4bb2cc9c6543f88b5187cc25c6f4"
+    },
+    {
+      "url": "https://docs.crustdata.com/openapi-specs/2025-11-01/batch.yaml",
+      "path": "openapi-specs/2025-11-01/batch.yaml",
+      "status": 200,
+      "contentType": "text/html; charset=utf-8",
+      "bytes": 24475,
+      "sha256": "c85f66ae1ea4e70d2a6ead5666cdde5d3186490b5bb9dcf5be11b45fe10bcc32"
+    },
+    {
+      "url": "https://docs.crustdata.com/openapi-specs/2025-11-01/best-practices.md",
+      "path": "openapi-specs/2025-11-01/best-practices.md",
+      "status": 200,
+      "contentType": "text/markdown; charset=utf-8",
+      "bytes": 10752,
+      "sha256": "2fc341928285e0547513ee7523e32a016fb4564a049c6cca7db8176c81157cac"
+    },
+    {
+      "url": "https://docs.crustdata.com/openapi-specs/2025-11-01/changelog.md",
+      "path": "openapi-specs/2025-11-01/changelog.md",
+      "status": 200,
+      "contentType": "text/markdown; charset=utf-8",
+      "bytes": 61462,
+      "sha256": "99d1b813e73d40972eb5b30be5e121583030a63e736cb1d1792d08bf0d171470"
+    },
+    {
+      "url": "https://docs.crustdata.com/openapi-specs/2025-11-01/company.yaml",
+      "path": "openapi-specs/2025-11-01/company.yaml",
+      "status": 200,
+      "contentType": "text/html; charset=utf-8",
+      "bytes": 24481,
+      "sha256": "1fa844091cd924950fb6faaf7ae50fc0383c6cbeae54d9f0347a8f566bc7bf66"
+    },
+    {
+      "url": "https://docs.crustdata.com/openapi-specs/2025-11-01/introduction.md",
+      "path": "openapi-specs/2025-11-01/introduction.md",
+      "status": 200,
+      "contentType": "text/markdown; charset=utf-8",
+      "bytes": 7695,
+      "sha256": "a5457552821b4c9efff8445d2b911ce27978fe4fb48dd3bb456dc143e5b74b0e"
+    },
+    {
+      "url": "https://docs.crustdata.com/openapi-specs/2025-11-01/job.yaml",
+      "path": "openapi-specs/2025-11-01/job.yaml",
+      "status": 200,
+      "contentType": "text/html; charset=utf-8",
+      "bytes": 24469,
+      "sha256": "4df4797007bc217532a92e868e6ddbc0f68456855b3b3e1639ee1cfb85dbec34"
+    },
+    {
+      "url": "https://docs.crustdata.com/openapi-specs/2025-11-01/person.yaml",
+      "path": "openapi-specs/2025-11-01/person.yaml",
+      "status": 200,
+      "contentType": "text/html; charset=utf-8",
+      "bytes": 24478,
+      "sha256": "bc91543efbc5abda0e5d7aa5cdb7e25774ac7d5573cfa3978e729ecafe18c6a3"
+    },
+    {
+      "url": "https://docs.crustdata.com/openapi-specs/2025-11-01/social_post.yaml",
+      "path": "openapi-specs/2025-11-01/social_post.yaml",
+      "status": 200,
+      "contentType": "text/html; charset=utf-8",
+      "bytes": 24493,
+      "sha256": "9aa0d32efa9554a13184a2f5edb8bf56ded4bf385edd9494ca1eca86a79a8e08"
+    },
+    {
+      "url": "https://docs.crustdata.com/openapi-specs/2025-11-01/watch.yaml",
+      "path": "openapi-specs/2025-11-01/watch.yaml",
+      "status": 200,
+      "contentType": "text/html; charset=utf-8",
+      "bytes": 24475,
+      "sha256": "d60cecd06a8ec79e3cb438e7628e92a7d63808be412eeb132cc8e205a12d39f5"
+    },
+    {
+      "url": "https://docs.crustdata.com/openapi-specs/2025-11-01/web.yaml",
+      "path": "openapi-specs/2025-11-01/web.yaml",
+      "status": 200,
+      "contentType": "text/html; charset=utf-8",
+      "bytes": 24469,
+      "sha256": "f82ccbf2784d897bcc4f0a9f36c4e50353dfa7c86aa608a483da0a4d191ce7d2"
+    },
+    {
+      "url": "https://docs.crustdata.com/person-docs/autocomplete/introduction.md",
+      "path": "person-docs/autocomplete/introduction.md",
+      "status": 200,
+      "contentType": "text/markdown; charset=utf-8",
+      "bytes": 28435,
+      "sha256": "a5e050c3d675a9448fb897d23c18fb3469b2c08dda272b02a94ac0647ea16812"
+    },
+    {
+      "url": "https://docs.crustdata.com/person-docs/contact/batch.md",
+      "path": "person-docs/contact/batch.md",
+      "status": 200,
+      "contentType": "text/markdown; charset=utf-8",
+      "bytes": 14040,
+      "sha256": "c7fd0108c3b081caceb627918f034d0dea089b592b00a40c45f7519b81c3b447"
+    },
+    {
+      "url": "https://docs.crustdata.com/person-docs/contact/enrich.md",
+      "path": "person-docs/contact/enrich.md",
+      "status": 200,
+      "contentType": "text/markdown; charset=utf-8",
+      "bytes": 19239,
+      "sha256": "e081bd81ee20b9f8ff57432f445c824d6e98ca04a5f5f916e9165a2ca4a3746a"
+    },
+    {
+      "url": "https://docs.crustdata.com/person-docs/enrichment/batch-enrich.md",
+      "path": "person-docs/enrichment/batch-enrich.md",
+      "status": 200,
+      "contentType": "text/markdown; charset=utf-8",
+      "bytes": 11464,
+      "sha256": "beac93f16a35d2668364f8785931ad4f06337246794ff7459ef982170d6c6a11"
+    },
+    {
+      "url": "https://docs.crustdata.com/person-docs/enrichment/introduction.md",
+      "path": "person-docs/enrichment/introduction.md",
+      "status": 200,
+      "contentType": "text/markdown; charset=utf-8",
+      "bytes": 39685,
+      "sha256": "23ddb768c4e51941aec7a5c1acc561a9c397695e299b49901ec682b67afaf6da"
+    },
+    {
+      "url": "https://docs.crustdata.com/person-docs/enrichment/reference.md",
+      "path": "person-docs/enrichment/reference.md",
+      "status": 200,
+      "contentType": "text/markdown; charset=utf-8",
+      "bytes": 17919,
+      "sha256": "e9516f2d5e1cd35f15d50e394819af5af134c23dcd6678e4d70d66b3a2f60aff"
+    },
+    {
+      "url": "https://docs.crustdata.com/person-docs/filter-values.md",
+      "path": "person-docs/filter-values.md",
+      "status": 200,
+      "contentType": "text/markdown; charset=utf-8",
+      "bytes": 3281,
+      "sha256": "7076d413072b8cbedda2a6acac5c53e0f6d1e07c6142b5298586c7b3ab7f8a2c"
+    },
+    {
+      "url": "https://docs.crustdata.com/person-docs/identify/introduction.md",
+      "path": "person-docs/identify/introduction.md",
+      "status": 200,
+      "contentType": "text/markdown; charset=utf-8",
+      "bytes": 24735,
+      "sha256": "13beb22fafd9d7a482c9ba2b152563b88fa5a047785c54a36e8d1eb333a71029"
+    },
+    {
+      "url": "https://docs.crustdata.com/person-docs/search/batch-search.md",
+      "path": "person-docs/search/batch-search.md",
+      "status": 200,
+      "contentType": "text/markdown; charset=utf-8",
+      "bytes": 13235,
+      "sha256": "892f9132639891d56484fee5a3b2295d0beeb01ce5b908ea521df897d5f7c09b"
+    },
+    {
+      "url": "https://docs.crustdata.com/person-docs/search/introduction.md",
+      "path": "person-docs/search/introduction.md",
+      "status": 200,
+      "contentType": "text/markdown; charset=utf-8",
+      "bytes": 80874,
+      "sha256": "64fd6b5a71db47b8a6eeee1f94cd144cfaf4f9f2ea638d0e7720a53b2360b65c"
+    },
+    {
+      "url": "https://docs.crustdata.com/person-docs/search/reference.md",
+      "path": "person-docs/search/reference.md",
+      "status": 200,
+      "contentType": "text/markdown; charset=utf-8",
+      "bytes": 89676,
+      "sha256": "ec5ba2dffc672b8c0ecc0b3ff0f91879f5eb0f372d550ea448f5c13fe347fd79"
+    },
+    {
+      "url": "https://docs.crustdata.com/person-docs/verification/batch.md",
+      "path": "person-docs/verification/batch.md",
+      "status": 200,
+      "contentType": "text/markdown; charset=utf-8",
+      "bytes": 10745,
+      "sha256": "997618a10f34a4f17d9469b06e303cbfc520c860c2f3455fabc24aaa0948ee93"
+    },
+    {
+      "url": "https://docs.crustdata.com/social-post-docs/indexed-search/introduction.md",
+      "path": "social-post-docs/indexed-search/introduction.md",
+      "status": 200,
+      "contentType": "text/markdown; charset=utf-8",
+      "bytes": 38811,
+      "sha256": "0f1aca23a7acced3257cd344d8bf157001e58f879dc703c695c42eca3283e9c4"
+    },
+    {
+      "url": "https://docs.crustdata.com/social-post-docs/indexed-search/reference.md",
+      "path": "social-post-docs/indexed-search/reference.md",
+      "status": 200,
+      "contentType": "text/markdown; charset=utf-8",
+      "bytes": 33942,
+      "sha256": "68f507be21e1a1a9674d15e66a47dd9c93685697c5d53f318a78a02aee2802da"
+    },
+    {
+      "url": "https://docs.crustdata.com/watcher-docs/company/discovery.md",
+      "path": "watcher-docs/company/discovery.md",
+      "status": 200,
+      "contentType": "text/markdown; charset=utf-8",
+      "bytes": 85358,
+      "sha256": "7a27c4f2040066e7fbebe5fb2162d421080a93f69ffe7cf38c74633a86f988e0"
+    },
+    {
+      "url": "https://docs.crustdata.com/watcher-docs/company/entity.md",
+      "path": "watcher-docs/company/entity.md",
+      "status": 200,
+      "contentType": "text/markdown; charset=utf-8",
+      "bytes": 55494,
+      "sha256": "c2eddd5bd1660f0e7274ff3b0eaff4b0bb1fbae2e2797c5b95db1533809b4743"
+    },
+    {
+      "url": "https://docs.crustdata.com/watcher-docs/cross-dataset-filters.md",
+      "path": "watcher-docs/cross-dataset-filters.md",
+      "status": 200,
+      "contentType": "text/markdown; charset=utf-8",
+      "bytes": 35959,
+      "sha256": "188ac87ef1f4f807c99a7d8cc4285eef668dd9e9976cbc7a9654fc38afa16fc3"
+    },
+    {
+      "url": "https://docs.crustdata.com/watcher-docs/job/watch.md",
+      "path": "watcher-docs/job/watch.md",
+      "status": 200,
+      "contentType": "text/markdown; charset=utf-8",
+      "bytes": 76920,
+      "sha256": "73d7e4eb33afd2637d0c1555fdf84a47676ba4025e66a42f93710f6b3590f4fc"
+    },
+    {
+      "url": "https://docs.crustdata.com/watcher-docs/payload-delivery.md",
+      "path": "watcher-docs/payload-delivery.md",
+      "status": 200,
+      "contentType": "text/markdown; charset=utf-8",
+      "bytes": 23428,
+      "sha256": "74daf27726bf97535d9bdb1899295858391402a383e3ed083bde45c87f9fb892"
+    },
+    {
+      "url": "https://docs.crustdata.com/watcher-docs/person/discovery.md",
+      "path": "watcher-docs/person/discovery.md",
+      "status": 200,
+      "contentType": "text/markdown; charset=utf-8",
+      "bytes": 78939,
+      "sha256": "190d2d191445a73b508215ee1f164c35949bf8a81f5b3b7fa41ff2a239ae5cea"
+    },
+    {
+      "url": "https://docs.crustdata.com/watcher-docs/person/entity.md",
+      "path": "watcher-docs/person/entity.md",
+      "status": 200,
+      "contentType": "text/markdown; charset=utf-8",
+      "bytes": 58373,
+      "sha256": "efdd8d83ed8c74708048d3d2cf2e229738779790b970b89d3e8c7886d31dd2ba"
+    },
+    {
+      "url": "https://docs.crustdata.com/watcher-docs/social-post/discovery.md",
+      "path": "watcher-docs/social-post/discovery.md",
+      "status": 200,
+      "contentType": "text/markdown; charset=utf-8",
+      "bytes": 58221,
+      "sha256": "30616165a19a5c014cdcc763c2273056c0dc5e7b3a2b2263c059f5b20c0b592c"
+    },
+    {
+      "url": "https://docs.crustdata.com/web-docs/fetch/introduction.md",
+      "path": "web-docs/fetch/introduction.md",
+      "status": 200,
+      "contentType": "text/markdown; charset=utf-8",
+      "bytes": 13348,
+      "sha256": "0543d1e63135545a6d3a24c1c06b7d6d9accf5f1e06dcf08084623335e05b202"
+    },
+    {
+      "url": "https://docs.crustdata.com/web-docs/search/introduction.md",
+      "path": "web-docs/search/introduction.md",
+      "status": 200,
+      "contentType": "text/markdown; charset=utf-8",
+      "bytes": 31759,
+      "sha256": "2137cd030c0ecb2a86591eb67f225aa181c30a135ed0a54a327decfa9eea6be5"
+    },
+    {
+      "url": "https://docs.crustdata.com/web-docs/search/reference.md",
+      "path": "web-docs/search/reference.md",
+      "status": 200,
+      "contentType": "text/markdown; charset=utf-8",
+      "bytes": 16146,
+      "sha256": "8a611fd99db0c716be3a6cd7e09917805caa7d0a68ede1e9d60044491aee4048"
+    }
+  ]
+}

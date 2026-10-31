@@ -1,0 +1,24 @@
+[submodule ".codex/crustdata-repos/tools"]
+	path = .codex/crustdata-repos/tools
+	url = https://github.com/crustdata/tools.git
+[submodule ".codex/crustdata-repos/skills"]
+	path = .codex/crustdata-repos/skills
+	url = https://github.com/crustdata/skills.git
+[submodule ".codex/crustdata-repos/crustdata-cursor-plugin"]
+	path = .codex/crustdata-repos/crustdata-cursor-plugin
+	url = https://github.com/crustdata/crustdata-cursor-plugin.git
+[submodule ".codex/crustdata-repos/vercel-crustdata-template"]
+	path = .codex/crustdata-repos/vercel-crustdata-template
+	url = https://github.com/crustdata/vercel-crustdata-template.git
+[submodule ".codex/crustdata-repos/n8n-nodes-crustdata"]
+	path = .codex/crustdata-repos/n8n-nodes-crustdata
+	url = https://github.com/crustdata/n8n-nodes-crustdata.git
+[submodule ".codex/crustdata-repos/benchmarks"]
+	path = .codex/crustdata-repos/benchmarks
+	url = https://github.com/crustdata/benchmarks.git
+[submodule ".codex/crustdata-repos/claude-gtm-skills"]
+	path = .codex/crustdata-repos/claude-gtm-skills
+	url = https://github.com/crustdata/claude-gtm-skills.git
+[submodule ".codex/crustdata-repos/homebrew-tap"]
+	path = .codex/crustdata-repos/homebrew-tap
+	url = https://github.com/crustdata/homebrew-tap.git

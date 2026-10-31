@@ -67,7 +67,7 @@ export class Crustdata {
           method,
           headers: { authorization: `Bearer ${config.crustdataApiKey}`, "content-type": "application/json", "x-api-version": API_VERSION },
           body: method === "POST" ? JSON.stringify(body ?? {}) : undefined,
-          signal: AbortSignal.timeout(60_000),
+          signal: AbortSignal.timeout(["/company/enrich", "/person/enrich", "/web/enrich/live"].includes(p) ? 90_000 : 60_000),
         });
       } catch (err) {
         const timedOut = (err as Error).name === "TimeoutError";
@@ -84,7 +84,14 @@ export class Crustdata {
         await sleep(Math.min(wait + 1, 61) * 1000);
         continue;
       }
-      const text = await res.text();
+      // Large profiles can take a while to stream; a timeout while reading the body must not stop the run.
+      let text = "";
+      try { text = await res.text(); }
+      catch (err) {
+        if (attempt < 1 && !billedSearch) { this.emit({ agent: "investigator", step: label, detail: `${p} · response read timed out, retrying`, status: "info" }); await sleep(1500); continue; }
+        this.emit({ agent: "investigator", step: label, detail: `${p} · response read failed: ${(err as Error).message}`, status: "failed", ms: Date.now() - started });
+        return { ok: false, status: 0, message: (err as Error).message };
+      }
       let json: any = null;
       try { json = text ? JSON.parse(text) : null; } catch { json = { message: text.slice(0, 300) }; }
       if (!res.ok) {

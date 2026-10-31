@@ -112,3 +112,7 @@ investing/fixtures/_missing.jsonl
 investing/**/screenshots/
 *.png.tmp
 .playwright/
+
+# Local scratch files and one-off CrustData exploration
+/tmp/
+/research/crustdata-sample/

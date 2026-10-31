@@ -1,0 +1,15 @@
+node_modules/
+.next/
+next-env.d.ts
+*.tsbuildinfo
+
+# Secrets: keep keys in .env.local only
+.env*
+!.env.example
+
+# Local runtime data: API cache, saved runs, simulated systems of record
+data/
+
+# The repo-root .gitignore ignores Python "lib/" folders; our TypeScript source lives in lib/, so re-include it.
+!lib/
+!lib/**

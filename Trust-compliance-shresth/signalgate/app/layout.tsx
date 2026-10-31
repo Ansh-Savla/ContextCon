@@ -1,0 +1,24 @@
+import type { Metadata } from "next";
+import { Geist, Geist_Mono } from "next/font/google";
+import { TooltipProvider } from "@/components/ui/tooltip";
+import { themeBootScript } from "@/lib/theme";
+import "./globals.css";
+
+const sans = Geist({ subsets: ["latin"], variable: "--font-geist-sans" });
+const mono = Geist_Mono({ subsets: ["latin"], variable: "--font-geist-mono" });
+
+export const metadata: Metadata = {
+  title: "SignalGate — diligence desk for investors and lenders",
+  description: "Agents that verify a company and its people through CrustData's identity graph, then complete investor diligence or lender KYB and credit work.",
+};
+
+export default function RootLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <html lang="en" className={`${sans.variable} ${mono.variable}`} suppressHydrationWarning>
+      <head><script dangerouslySetInnerHTML={{ __html: themeBootScript }} /></head>
+      <body className="font-sans">
+        <TooltipProvider delayDuration={200}>{children}</TooltipProvider>
+      </body>
+    </html>
+  );
+}

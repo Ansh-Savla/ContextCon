@@ -1,257 +1,419 @@
-# SignalGate: Investment Diligence & Trust Triage
+> **Historical (v1).** Superseded by the rebuilt app in [`signalgate/`](signalgate/) — see its README.
 
-**Status:** Proposed build plan, ready for scope freeze  
-**Last reviewed:** 2026-10-31  
-**Project steering:** [`../.codex/steering.md`](../.codex/steering.md)  
-**Hackathon:** ContextCon IIT Bombay, CrustData track
+# SignalGate build plan: Investment + Trust & Compliance diligence agent
 
-## 1. Product decision
+## Context
 
-Build **SignalGate**, an agent that completes a bounded pre-investment screen for a startup and returns a source-linked diligence brief. It combines the *Investing* and *Trust & Compliance* themes without claiming to conduct regulated diligence or certify compliance.
+ContextCon IIT Bombay (CrustData track). Code freeze is 3:30 PM on 31 Oct 2026. Judging covers four things:
+- end-to-end execution of an unseen request
+- CrustData identity graph usage plus a citation for every claim
+- robustness to messy input
+- a 2-minute demo
 
-The core question is:
+Two plans existed:
+- `Trust-compliance-shresth/PLAN.md` (SignalGate, investing): strong guardrails, but too much scope and some wrong API details.
+- Mrp1Dev's `Trust-Compliance/implementation-pipeline.md` (vendor trust): a lean engine of four checks plus corroboration. Its live API sample is in `Trust-Compliance/shark-information-crust-data-provides.md`.
 
-> “Given this startup, its founders, an investor’s thesis, and a few explicit claims, what can we corroborate from CrustData and public records, what conflicts, and what remains unknown?”
+The user picked the **Investment + Trust & Compliance** scope. **All work on this laptop lives under `Trust-compliance-shresth/`.** Nothing goes in shared folders, steering or root files.
 
-### The finished artifact
+**The result:** one agent, one engine, two lenses.
+- **Investment lens:** pre-investment and founder diligence.
+- **Trust lens:** vendor legitimacy, impersonation, payment-change requests, shell-company triage.
 
-One reviewable case containing:
+You paste a messy request and get back a finished, cited case report with a bounded outcome. The agent never asks a follow-up question, never contacts anyone and never takes an external action.
 
-1. A resolved company identity and match confidence, with alternatives or ambiguity retained.
-2. A compact investment-fit summary against the supplied thesis, using sourced company, funding, people, hiring, news, and operating signals where available.
-3. A claim-by-claim evidence matrix: **supported**, **conflicting evidence**, **potential issue to review**, or **insufficient evidence**.
-4. A small relationship/evidence graph linking the company, founders, stated claims, CrustData records, external registry/watchlist records, and source URLs.
-5. A bounded recommendation: **advance to human diligence**, **hold for a specific verification**, or **insufficient evidence to assess**. It is not an automated investment approval or rejection.
-6. A chronological execution trace, source timestamps, source jurisdiction, and a concise list of diligence questions.
+**One-liner:** *SignalGate is an AI diligence desk. Paste any deal or vendor request and its agents investigate through CrustData's identity graph. Then they finish the job in your local systems: an IC-ready memo, an auditor-ready vendor file, or a payment held with a complaint-ready case file. A human sees only the exceptions.*
 
-Investment fit and trust/evidence quality must appear as separate dimensions. Never collapse them into one opaque “legitimacy score.”
+**Concept visuals:** see [concept/CONCEPT.md](concept/CONCEPT.md) and [concept/ui-mockup.png](concept/ui-mockup.png). The implementation visual contract is [UI-DESIGN.md](UI-DESIGN.md); Codex and Claude Code should follow it.
 
-## 2. Why this scope fits the brief
+## LLM in use: Gemini, with fallbacks everywhere (2026-10-31, 12:10)
 
-The event brief explicitly names distinguishing genuine businesses from shell companies, credit limits, and fraud analysis. It requires CrustData’s canonical identity graph, an end-to-end unseen request, evidence for claims, robust handling of ambiguity, and a two-minute demo. SignalGate uses CrustData as the first-party identity and operating-context layer, then adds only narrowly scoped public-record checks.
+**Live test on the E5 text (`gemini-3.8-flash`):**
+- Structured JSON extraction returned 200 in about 6.7 s, with a correct span for every field, using about 735 tokens.
+- Function calling returned 200 in about 4.5 s and chose `company_identify`.
+- Lesson: the model put `domains` and `names` in one identify call. CrustData accepts only one identifier type per call, so the tool wrapper must split them into two calls, domain first.
 
-### Critique and course correction from the earlier ideas
+**Configured in `.env.local`:**
+- `LLM_PROVIDER=gemini`
+- `LLM_MODEL=gemini-3.8-flash`
+- `LLM_FALLBACK_MODELS=gemini-flash-lite-latest`
 
-- **Trade-credit limit recommendations are out of MVP.** CrustData headcount, hiring, funding, and web activity are not receivables, cash flow, payment history, existing exposure, or a credit policy. Those signals cannot support a responsible credit limit.
-- **Invoice/bank-change approval is out of MVP.** Profile and domain matching cannot prove who controls a bank account or is authorized to change payment instructions. Never return “approve payment.”
-- **“Shell-company detector” is too strong a claim.** Public presence can be sparse for legitimate early-stage firms, and operating signals do not prove legal existence or fraud. Use “business identity and claim-consistency triage.”
-- **Full KYC/AML, PEP screening, beneficial ownership, and legal compliance certification are out of scope.** The current available inputs and free sources do not establish complete jurisdictional coverage or regulated identity verification.
-- **Continuous monitoring is a later phase.** It adds lifecycle state, scheduler/webhook behavior, source freshness, and more permission checks; it is not required to demonstrate one complete diligence run.
-- **Do not build a multi-agent system for the demo.** One deterministic orchestrator with Gemini limited to extraction/synthesis is simpler to inspect, budget, and explain.
+**Fallback rule, applied to every LLM use:**
+- Each LLM call runs `primary → fallback model(s) → OpenRouter (if key) → rules`.
+- It falls back on 402, 429, any 5xx, a 20 s timeout, invalid JSON, or a schema or span-quote failure.
+- Every fallback is recorded in the trace.
 
-## 3. User contract
+| LLM use | What Gemini does | Fallback (always present) |
+|---|---|---|
+| Intake | Schema extraction with span quotes and lens choice | Regex/rules parser. Both always run, and the UI shows where they disagree. |
+| Investigator plan | Chooses the next tool calls and writes targeted web/news queries | Fixed rules playbook per lens |
+| Namesake / other-event judging | Classifies each web hit as relevant, namesake, or a different event, quoting the evidence | Name+domain string-match rules (R-OTHER-EVENT) |
+| Memo / case narrative | Prose built only from evidence IDs | Templated sentences |
+| Never | Finding statuses, Heartbeat, outcome | Always rules |
 
-### Input
+**Budget:**
+- At most 6 LLM calls per run, run in parallel where possible.
+- About $0.01 per run.
+- Expected latency is +10–20 s per run. The demo shows a streamed trace, so the wait is visible as progress.
 
-- Company name and/or website domain (at least one required).
-- Optional jurisdiction/incorporation country.
-- Optional founder names or professional-network profile URLs.
-- Investor thesis as a short text description or structured filters.
-- Optional 1–5 explicit claims to inspect, such as “founded in 2021,” “Founder A previously led X,” or “registered in India under CIN …”.
-- Optional demo mode selecting a preconfigured case.
+## Time-boxed cut (critique, 12:10: about 3h20m left, nothing built yet)
 
-For the hackathon MVP, do not accept confidential data-room files, bank details, government IDs, personal contact data, or payment instructions. The investor’s text claims are sufficient to demonstrate evidence comparison.
+The plan is larger than the remaining time. If the clock slips, things are cut in this order, and the build order already follows it:
 
-### Output and automation boundary
+1. **Must have (by about 1:45):**
+   - Engine with the rules brain plus Gemini intake.
+   - Cases E5, E3, E8 and E6 end to end, with local actions and the case JSON.
+   - A CLI as the demo fallback.
+2. **Must have (by about 2:45):** a single-page UI matching the mockup:
+   - verdict
+   - claim matrix
+   - trace
+   - Heartbeat
+   - evidence ledger
+3. **Should have:**
+   - E1, E2, E4 and E7. The engine is the same, so these are mostly free once the rules exist.
+   - Gemini investigator planning and namesake judging.
+4. **Cut first if late:** E9 conflict of interest, OpenRouter, export polish, Exceptions inbox as a separate screen (it becomes a counter instead).
+5. **Hard stop at 3:00:** record the video. Live runs are preferred, with fixtures as backup.
 
-The agent completes research and produces an evidence-backed triage result automatically. It may not contact founders, companies, regulators, or other people; submit reports to a registry; move money; or make an investment or compliance decision on behalf of a user.
+## Service, not tool: what "finished work" means
 
-## 4. End-to-end workflow
+The event brief says: "Parts delivered rather than suppliers listed… Fraud caught rather than flagged… Bring in a human only for the exceptions, make every decision cite its reasons." A report alone is a flag. To count as a service, every run **ends with an action in a local system of record**, which the brief allows ("interact only with the team's local environment"). Nothing is ever sent outside.
 
-| Stage | Action | Evidence / state retained | Failure behavior |
+| Service (paid today by) | Agent's finished work | Local action (simulated system of record) | Human only when |
 |---|---|---|---|
-| 1. Intake | Validate required fields; normalize domain, country, names, and claims. Gemini may extract claim objects from user text into a schema. | Original input, normalized fields, parsed claim and confidence. | Ask for company/domain if absent; preserve uncertain parsing for confirmation or mark claim unresolved. |
-| 2. Resolve | Call CrustData Company Identify by domain when available, otherwise name; resolve supplied people using CrustData identity endpoints. | Candidate IDs, match score, matched-on values, API timestamp, alternatives. | Multiple plausible candidates => stop company-specific conclusions and return an ambiguity state. |
-| 3. Enrich | Enrich the resolved company with only relevant available fields; enrich founders as needed; query jobs and web/news for concrete thesis/claim questions. Fetch important pages. | Raw response references, normalized facts, source URLs, timestamps, CrustData IDs, endpoint/credit trace. | Partial/no-match results remain explicit; back off on rate limits; do not fabricate missing fields. |
-| 4. Public-record overlays | Based on jurisdiction and identifier availability, query the selected official registry and, for a US sanctions-screening demo, the official OFAC lists. Use GLEIF when an LEI or good candidate exists. | Jurisdiction, identifier match method, source link/version/date, candidate match confidence. | Unsupported jurisdiction or weak name-only match => “not checked”/“possible match needs review”; never assert global clearance. |
-| 5. Compare claims | Deterministic checks compare normalized claims to source facts. Gemini summarizes only provided evidence and proposes concise explanations with evidence IDs; it does not invent sources or set final statuses. | Claim-to-fact edges, exact fields/text, contradiction rule, evidence reference and rationale. | No independent evidence => insufficient evidence; source disagreement => conflicting evidence, not forced resolution. |
-| 6. Triage | Apply transparent rules to identity certainty, official records, material contradictions, and evidence coverage. Keep thesis fit separate. | Decision state, rule IDs, data gaps, confidence/coverage components. | If minimum identity or evidence threshold fails, return “insufficient evidence” or “hold for verification.” |
-| 7. Deliver | Render case dashboard and export/share a self-contained report with clickable sources and an execution trace. | Final report JSON and UI state; local demo run identifier. | Every failed/skipped call and its effect is visible in the case timeline. |
+| Pre-investment screen (VC analyst) | IC memo with thesis fit, Heartbeat, claim matrix and diligence questions | Deal added to `data/pipeline.json` as **Advance** or **Pass (reason)** | Hold: a contradiction needs a founder call |
+| Founder verification (angel, syndicate) | Founder dossier with cited work history | Note on the syndicate deal record | Conflicting claims |
+| Vendor onboarding / KYB-lite (procurement) | Auditor-ready vendor file | Vendor master `data/vendors.json` → **Approved**, **Rejected (reason)** or **Exception** | Identity unresolved or contradicted |
+| Payment-change / BEC check (AP) | Complaint-ready case file | **Payment hold** written to `data/ap-queue.json`, plus a prepared (unsent) verification-callback task | Always an exception, by policy |
+| Adverse-media check (compliance) | Dated dossier with allegation and finding labels | Compliance log entry | Relevant adverse hit |
 
-## 5. Evidence model and graph
+All outputs are **prepared or simulated actions, clearly labelled**. There are no emails, calls or payments. The UI has an **Exceptions inbox**: the only screen a human has to open.
 
-Use a small normalized evidence graph (no graph database required for the hackathon):
+## Agents and the "brain" provision
 
-- **Company** — submitted entity and resolved CrustData company ID.
-- **Person** — submitted founder/executive and resolved CrustData person ID.
-- **Claim** — one investor/user assertion with expected value and entity scope.
-- **Fact** — normalized sourced observation, value, source, and observation time.
-- **Source** — CrustData record/API call or external page/registry dataset, jurisdiction and retrieval time.
-- **Signal** — derived observation such as a name/domain mismatch or company activity trend; records its rule and inputs.
-- **Assessment** — investment-fit component or diligence triage result, with the exact evidence IDs used.
+Same tools, same guardrails, two brains you can swap:
 
-Edges: `IDENTIFIED_AS`, `FOUNDER_OF`/`WORKED_AT` (only where sourced), `REGISTERED_AS`, `CLAIMS`, `SUPPORTED_BY`, `CONTRADICTED_BY`, `MENTIONED_IN`, and `DERIVED_FROM`.
-
-Every user-visible conclusion must resolve to at least one fact/source or be labeled as an inference. Preserve raw provenance IDs and do not infer beneficial ownership, legal affiliation, fraud, or authority from a professional-profile relationship.
-
-## 6. Data and API plan
-
-### CrustData — mandatory core
-
-Use the local API mirror under [`.codex/crustdata-docs`](../.codex/crustdata-docs/) and its original page URLs as the implementation reference. The current documented API version is `2025-11-01`; required headers are `Authorization: Bearer …` and `x-api-version: 2025-11-01`.
-
-1. **Account preflight:** `GET /account/endpoints` (free) and account credit/usage endpoints. Establish enabled endpoints, field permissions, endpoint-specific rate limits, and available credits before spending.
-2. **Company identity:** `POST /company/identify`; use domain as the preferred identifier when supplied. Preserve candidate scores and resolve ambiguity rather than picking the first result.
-3. **Company enrichment:** `POST /company/enrich`; request only relevant permitted groups, such as basic info, headcount history, funding, people, locations, and news. Current local docs state the endpoint supports field selection and account permissions may disable response fields.
-4. **People identity/context:** use person identify/search/enrich for named founders only after company context and identity are established. Reuse CrustData IDs.
-5. **Optional person work-history verification:** `POST /batch/person/verify` only if enabled on this account. Local docs say it is an add-on, costs 10 credits per returned verdict, supports up to 10 profile URLs per batch, and may take a minute or two. This is not legal identity/KYC verification.
-6. **Web/news evidence:** `POST /web/search/live`, then `POST /web/fetch/live` on material sources. Prefer targeted queries tied to a claim, company, person, regulator, or jurisdiction. Record original URLs and publisher/date. CrustData is not a substitute for an official sanctions or corporate registry source.
-7. **Jobs and watchers:** jobs can add context for operating activity or the thesis; do not treat job volume as proof of legitimacy. Watchers are post-MVP unless a live demo genuinely needs a supported change signal and account permissions are confirmed.
-
-### External sources — add narrowly by jurisdiction
-
-**First external overlay for the India-oriented demo:** India MCA Company Master Data exposed through [data.gov.in](https://data.gov.in/catalog/company-master-data). The catalog describes company name, CIN, status, category, registration date, capital, state, and ROC fields. Obtain the portal’s free registered-user API key, inspect the live resource schema and update date, and join by CIN when supplied. If only name matching is available, show candidate results and avoid a definitive legal-identity match.
-
-**Cross-border entity reference:** [GLEIF API](https://www.gleif.org/en/lei-data/gleif-api/) for LEI lookup and parent/child reference data where the target has an LEI. A missing LEI is “not found/not applicable,” not a negative signal.
-
-**Optional US sanctions demo:** [OFAC Sanctions List Service](https://ofac.treasury.gov/sanctions-list-service) offers downloadable SDN and consolidated non-SDN list files. If integrated, retain list date/hash and match on identifiers/aliases as available. A fuzzy name candidate is only an alert for review; it is not a confirmed match or comprehensive global screening. Respect OFAC’s current download requirements (including a User-Agent where required).
-
-**Optional UK target:** [Companies House REST API](https://developer.company-information.service.gov.uk/get-started), with company status and Persons with Significant Control endpoints, if the selected company is UK-registered. Requires API credentials; do not include solely for breadth.
-
-**Optional SEC public-company context:** [SEC EDGAR APIs](https://www.sec.gov/search-filings/edgar-application-programming-interfaces) only if a target is an SEC filer. They are not a useful baseline for private startups.
-
-**Do not make OpenSanctions a free production dependency.** Its bulk dataset is free for noncommercial use under CC BY-NC; business/commercial use requires a data license. For a student demo, prefer official list sources directly unless its current license and use terms have been explicitly checked.
-
-Do not clone all external API documentation. CrustData’s current mirrored index already contains 113 official Markdown/OpenAPI files. Keep external official URLs, selected schemas, access notes, and source dates in this plan; mirror only the exact authoritative docs/schemas needed once the source is selected for implementation.
-
-## 7. Decision rules and trust language
-
-### Triage states
-
-- **Advance to human diligence:** identity is resolved strongly enough for this use, no material contradictions surfaced in the checked evidence, and required checks for the selected scope completed. This does not mean “verified safe.”
-- **Hold for a specific verification:** a material discrepancy or possible official-list match needs a human to resolve.
-- **Insufficient evidence:** identity is ambiguous, relevant sources are unavailable, or evidence coverage is too low to assess.
-
-### Investment-fit dimensions (separate from trust)
-
-Score or rank thesis alignment using explicit, editable criteria such as sector, geography, stage/funding context, team background, hiring direction, and recent company signals. Show the contribution of each criterion and missing fields. Do not present this as a return forecast or investment recommendation.
-
-### Prohibited shortcuts
-
-- No single opaque fraud/legitimacy score.
-- No treating absent web coverage, small headcount, no hiring, short founder tenure, or young domain as proof of fraud.
-- No using scraped accusations as fact; distinguish allegation, investigation, regulator action, and court finding.
-- No declaring KYC/AML, sanctions clearance, incorporation validity, beneficial ownership, solvency, or creditworthiness beyond source-specific facts.
-- No output such as “approve the vendor/payment/investment” or automatic sanctions adverse action.
-
-## 8. UI/UX direction
-
-The interface should feel like a focused investment committee workbench, not a chatbot or generic admin dashboard. Use a restrained, high-contrast editorial system with clear typography, dense but scannable data, and one memorable evidence-graph motif. Avoid stock imagery and invented company logos; use verified CrustData/source metadata only when permitted, otherwise use a typographic identity mark.
-
-### Main case screen
-
-- **Header:** company identity, resolved/ambiguous status, jurisdiction, run time, and demo/live mode.
-- **Outcome strip:** investment fit and evidence quality side by side; triage state and top reason.
-- **Left rail:** workflow trace with queued/running/completed/skipped/failed stages and API/source provenance.
-- **Main canvas:** claim matrix with status, expected vs observed value, source dates, evidence links, and explainable rationale.
-- **Right panel:** compact company/person/source graph; click a node to inspect facts, relationships, match confidence, and source.
-- **Bottom drawer:** source ledger, raw/normalized field values, API errors, coverage gaps, and export.
-- **Intake state:** paste company/domain, thesis, and claims; select jurisdiction; preview intended checks and expected credit use before running.
-
-### Interaction quality
-
-Build loading, no-match, ambiguous match, partial result, rate-limited, disabled endpoint, missing external API key, possible sanctions match, and evidence-conflict states. Keep long claims and source titles inspectable. Use keyboard access, visible focus, semantic labels, reduced-motion support, and responsive layout. Avoid gratuitous animation; use a small evidence-arrival/timeline transition only where it clarifies execution.
-
-### Recommended implementation approach
-
-The target directory is currently empty. At scaffold time, use a single TypeScript web app with server-side API routes for CrustData, Gemini, and any external key-bearing requests. Keep the UI and backend in one small deployable app; render the graph from the normalized evidence model rather than adding a graph database. Choose the lightest maintained graph/visualization component only if custom SVG becomes a time sink. Preserve a local JSON/SQLite case store only if persistence is necessary for the demo.
-
-## 9. Demo plan (two minutes)
-
-Use one selected, well-covered startup and a clearly labeled synthetic intake variation. The synthetic alteration must be about a fabricated claim/domain/profile mismatch and must not accuse a real person or company of actual fraud. The live research is performed against authorized APIs; any fabricated field is explicitly shown as user-submitted demo data.
-
-1. **0:00–0:15 — Intake:** paste company, domain, thesis, and one or two claims; show planned source checks and call/credit budget.
-2. **0:15–0:40 — Resolve and research:** show CrustData company resolution and founder context, with confidence and live evidence arriving.
-3. **0:40–1:15 — Compare:** show one corroborated claim, one mismatch or unresolved claim, and the original sources. If actual sources do not support a mismatch, use an explicit insufficient-evidence state rather than manufacture one.
-4. **1:15–1:45 — Graph and triage:** open the company/person/claim/source graph and demonstrate why the result is “advance,” “hold,” or “insufficient evidence.”
-5. **1:45–2:00 — Deliver:** show exportable diligence brief and the audit/evidence trail.
-
-Preload a deterministic, clearly labeled fixture as a resilience fallback, but do not present fixture data as live. Select the real company only after checking CrustData access, source coverage, and whether the available official registry can resolve it. No real-world outreach or external actions.
-
-## 10. API keys, cost, and setup
-
-### Required
-
-**CrustData API key**
-
-- Get/copy it from [app.crustdata.com/api-keys](https://app.crustdata.com/api-keys). The local CrustData mirror documents bearer auth and `x-api-version: 2025-11-01`.
-- Before the first paid call, use account endpoints/credits to inspect enabled paths, field permissions, limits, costs, and balance. Ask the team/account contact about hackathon credits if the expected grant is not visible; do not assume an award has already been credited.
-
-**Gemini API key**
-
-- Use [Google AI Studio API Keys](https://aistudio.google.com/apikey) to create or select a key tied to the correct project. Since paid access is available, verify the project’s billing tier and set usage/budget alerts before using it.
-- Keep the key in `GEMINI_API_KEY`. Restrict the key to the Gemini API in AI Studio where supported. Gemini is for structured claim extraction and concise evidence synthesis, not for external verification or final risk rules.
-
-### Optional by chosen jurisdiction
-
-**India OGD/data.gov.in key:** register/login at [data.gov.in](https://data.gov.in/), create an API key in the user account, and use only the selected MCA Company Master Data resource. Confirm its live parameters and rate limits before coding.
-
-**UK Companies House key:** register at the official developer hub and create API credentials only if a UK company is the demo target.
-
-GLEIF public search/API and OFAC downloadable lists do not require buying an aggregator API key for the described lookup flow. No additional paid watchlist provider is required for the MVP.
-
-### Where to feed keys
-
-At development time, create `Trust-compliance-shresth/.env` locally (the existing root `.gitignore` already ignores `.env` and `.env.*`; do not change `.gitignore`). Store values only in the developer’s local environment or deployment secret manager:
-
-```dotenv
-CRUSTDATA_API_KEY=replace_locally
-GEMINI_API_KEY=replace_locally
-DATA_GOV_IN_API_KEY=replace_locally_if_used
-COMPANIES_HOUSE_API_KEY=replace_locally_if_used
+```
+                ┌───────────────────────── SignalGate ──────────────────────────┐
+ messy request ─►  INTAKE AGENT        parse request → lens, entities, claims   │
+ (email/form/   │       │              (LLM if enabled, else rules)             │
+  pitch/tip)    │       ▼                                                       │
+                │  INVESTIGATOR AGENT ──tools──► CrustData: identify · enrich · │
+                │   plans next call,              person search/enrich · jobs · │
+                │   stops on budget               web search/fetch              │
+                │       │  evidence ledger (every fact → record ID / URL)       │
+                │       ▼                                                       │
+                │  VERIFIER (deterministic rules + Heartbeat) ── statuses, outcome
+                │       │      LLM may *propose*, rules *dispose*               │
+                │       ▼                                                       │
+                │  CASE CLERK AGENT ──► memo / vendor file / case file          │
+                │       │               + local action (pipeline, vendor master,│
+                │       ▼                 AP hold) ── Exceptions inbox ► human  │
+                └───────────────────────────────────────────────────────────────┘
+   brain = LLM_PROVIDER: none (rules playbook) | openrouter | gemini
+   guardrail on every tool call: allow-list, credit budget, no outbound comms
 ```
 
-Do not put keys in `NEXT_PUBLIC_*`/`VITE_*` variables, browser storage, source files, committed `.env.example` values, fixtures, console logs, screenshots, or chat. Browser requests must call the app’s server route; the server attaches provider credentials. `.env.example` may contain blank placeholders only. Do not ask the user to paste keys into chat; once development begins, give them the exact local file/variable names and a masked-key preflight path.
+- **Rules brain (`LLM_PROVIDER=none`, the default and demo-safe):** a fixed playbook calls the tools in a set order. It always works, costs nothing, and gives the same result every time.
+- **LLM brain (`openrouter` or `gemini`):** the LLM picks tools and drives the steps. It reads the messy intake, plans which CrustData calls to make next (including follow-up searches), and judges whether a news hit is about the same company or a namesake; that judgement must quote its evidence. It also writes the narrative from evidence IDs.
+  - **It never sets a finding status, the Heartbeat or the outcome.** Those stay deterministic in the Verifier.
+  - If an LLM call fails or runs out of budget, that step falls back to the rules brain, and the trace shows it.
+- The trace shows **which brain made each decision**, with the tool name and arguments, plus tokens and credits used.
+- `lib/llm.ts`: one OpenAI-compatible chat interface.
+  - **OpenRouter:** `https://openrouter.ai/api/v1/chat/completions` with `tools` and `response_format`.
+  - **Gemini:** direct REST, `generateContent` with function declarations.
+  - Env: `LLM_PROVIDER`, `LLM_MODEL`, `OPENROUTER_API_KEY`, `GEMINI_API_KEY`, `LLM_MAX_CALLS_PER_RUN` (default 12).
 
-### Spend controls
+**Allowed by the hackathon?** Yes. The event page FAQ says: "Build with any model, framework or tool, with or without Crustdata. Every project is judged on the same criteria either way." The PS rules require using CrustData's keys and identity graph, which we do, and require agents to interact only with the local environment and authorized APIs. An LLM API under our own key is an authorized API. Never send keys to the LLM, and never ask it to contact anyone.
 
-- Preflight permissions and balance first. Do not enrich broad batches or fetch every field.
-- Reuse identity IDs; avoid repeat identification and enrichment.
-- Cap the demo to one company, up to two founders, and targeted external queries; use paid person verification only when access and budget permit.
-- Set Gemini output-token and call limits; invoke it only for claim parsing and final narrative synthesis.
-- Show estimated and actual calls/credits in the run trace. Stop before optional calls if a base workflow can complete without them.
+**Gemini status (re-checked 2026-10-31, later):** **working**: `gemini-3.8-flash` and `gemini-flash-lite-latest` return 200 after the billing top-up. `gemini-2.5-flash` is closed to new users. Recommended LLM brain: `LLM_PROVIDER=gemini`, `LLM_MODEL=gemini-3.8-flash`. OpenRouter stays optional.
 
-## 11. Delivery plan and scope freeze
+**OpenRouter models**, verified live from `openrouter.ai/api/v1/models` on 2026-10-31. All support tool calling and structured output. Prices are USD per 1M input/output tokens.
 
-### P0 — plan freeze / access preflight
+| Role | Model | Price | Est. per run |
+|---|---|---|---|
+| **Agent brain (recommended)** | `anthropic/claude-sonnet-5.5` | $2 / $10 | ~$0.05–0.15 |
+| Budget brain, intake + relevance judging | `anthropic/claude-haiku-5.5` (or `openai/gpt-6-luna`) | $0.10 / $0.50 | <$0.01 |
+| Gemini via OpenRouter | `google/gemini-3.8-flash` | $0.83 / $4.13 | ~$0.03 |
+| Free fallback (rate-limited) | `google/gemma-4-31b-it:free` | $0 | 50 req/day, or 1,000/day after buying ≥$10 |
 
-Confirm the product name and scope; check directory, local environment, CrustData endpoint access/credits, Gemini model/key and budget, and whether the India OGD API resource works. Pick the demo company after the check. Record unavailable capabilities and fallback behavior. Do not begin broad data collection.
+**Setting up OpenRouter (the user does this; never paste keys in chat):**
+1. Sign in at openrouter.ai.
+2. Go to **Settings → Credits** (`openrouter.ai/settings/credits`) and choose **Add credits**.
+   - Payment: card (Stripe), AliPay or USDC. A platform fee is shown at checkout.
+   - **$10 is enough for the whole hackathon**, and it also lifts free-model limits to 1,000 requests a day.
+   - Unused credits can be refunded within 24 hours (fees excluded).
+   - Indian cards must have international online transactions enabled. If a card is declined, try another card or USDC.
+3. Go to **Settings → Keys** (`openrouter.ai/settings/keys`), create a key named `signalgate-hackathon`, and give it a credit limit (for example $10) if the form offers one. Copy it, because it is shown only once.
+4. Add to `Trust-compliance-shresth/app/.env.local`:
 
-### P1 — complete vertical slice
+   ```dotenv
+   LLM_PROVIDER=openrouter
+   LLM_MODEL=anthropic/claude-sonnet-5.5
+   OPENROUTER_API_KEY=...
+   ```
 
-Implement the intake -> CrustData identity -> minimal enrichment -> one relevant public registry lookup -> evidence normalization -> deterministic claim comparison/triage -> rendered case brief flow. Use a single server-side orchestrator and store all source references.
+5. Preflight checks `GET https://openrouter.ai/api/v1/key` (remaining limit) without printing the key.
 
-### P2 — demo-grade UI and resilience
+## Preflight results (2026-10-31, read-only)
 
-Finish the evidence matrix, execution trace, compact graph, loading/partial/error states, and export. Add deterministic fixture fallback clearly labeled as fixture. Polish accessibility and presentation viewport.
+- CrustData key works. Balance is **15,200 credits**: 15,000 in the main wallet plus 200 granted credits that expire on 2026-11-14.
+- Enabled endpoints, with cost and requests per minute:
 
-### P3 — demo and submission
+  | Endpoint | Cost | Requests/min |
+  |---|---|---|
+  | `/company/identify` | Free | 30 |
+  | `/company/enrich` | 2 | 15 |
+  | `/person/search` | 0.03, plus 0.1 when filtering on `experience` | 30 |
+  | `/person/enrich` | 1 | 15 |
+  | `/job/search` | 0.03 | 30 |
+  | `/web/search/live` | 1 | 10 |
+  | `/web/enrich/live` | 1 | 10 |
+  | `/company/search` | 0.03 | 30 |
+  | `/social_post/search` | 0.5 | — |
 
-Run the authorized live demo, verify a meaningful ambiguous/no-data edge case if the user asks for verification, prepare a two-minute recording script, and package the functional repository. Do not run tests unless asked; this plan states acceptance criteria but no tests are being run now.
+- Not available:
+  - `/batch/person/verify` is disabled.
+  - `/person/identify` is not listed.
+  - The `technographics`, `social_profiles` and `hiring.recent_openings` fields are disabled.
+- Every field this plan reads is enabled. That covers the enrich groups above, the person-search current-company and name filters, and person-enrich current and past employment.
+- Tooling: Node 20.19 and npm 10.8. `next@16.3.6`, `react@19.3.0` and `tsx@4.23.15` resolve from npm.
 
-### Acceptance criteria (for later development review)
+## Verified facts the build relies on
 
-- A new valid request completes without manual entity stitching or an LLM-only answer.
-- At least one CrustData canonical company ID is resolved and reused for enrichment; the source IDs and timestamps appear in the case.
-- A claim can be supported, contradicted, or explicitly left unresolved with source links.
-- An ambiguous identity, unavailable endpoint, external-source error, or missing key produces a clear partial result and never a fabricated verdict.
-- Investment fit and trust evidence remain visibly separate.
-- All API keys remain server-side and absent from git/logs/browser payloads.
-- The main flow and one edge case can be understood in a two-minute demo.
+Sources are the local docs mirror and the teammate's live sample.
 
-## 12. Current assumptions and open checks
+- Headers: `authorization: Bearer`, `x-api-version: 2025-11-01`. A request without the version header returns 400.
+- `POST /company/identify`: **free**. Takes `domains`, `names` or `crustdata_company_ids`, at most 25. Returns `[{matched_on, match_type, matches[{confidence_score, company_data.basic_info}]}]`.
+  - A name-only lookup picks the wrong entity (MistoBox LLC at 0.8 vs Misto at 1.0), so resolve by **domain first**.
+- `POST /company/enrich`: **2 credits**. Takes `fields` groups:
+  - `basic_info, headcount, funding, people(founders/cxos/decision_makers), locations, taxonomy, news, web_traffic, hiring, revenue`.
+  - `exact_match:true` for domains.
+- `POST /person/search`: 0.03 per result.
+  - Filter `experience.employment_details.current.crustdata_company_id` plus `basic_profile.name`.
+  - `{op:"and",conditions:[...]}` syntax.
+- `POST /person/enrich`: 1–9 credits, by `professional_network_profile_urls`.
+- `/person/identify` works **only on URL, email or Scholar URL** and is enabled per account. Don't rely on it for names.
+- `POST /job/search` with `limit:0` plus `group_by` costs **nothing** (pattern from deal-sourcing-agent).
+- `POST /web/search/live`: 1 credit. Takes `query, sources[web|news], site, start_date`.
+- Fetch is **`POST /web/enrich/live`** (not `/web/fetch/live`): 1 credit per page, `urls` 1–10.
+  - Both web endpoints are limited to **10 requests/min**.
+  - Search timestamps are in ms, fetch timestamps in seconds.
+- `GET /account/credits` and `GET /account/endpoints` are free. Run them as preflight.
+- Data rules from the live sample, applied as engine rules:
+  - A null field is unknown, not zero.
+  - `funding.total=0` is not proof the company never raised.
+  - `employee_count_range` (profile) differs from `headcount.total` (measured). Keep both, labelled.
+  - Revenue is an estimate.
+  - News can be about a different company with a similar name, so filter for relevance.
+  - `metadata` freshness is often null.
 
-These are implementation preflight items, not blockers to the plan:
+## Reuse (MIT, attribute in file headers)
 
-- Assume the India MCA catalog is the primary optional registry overlay because the hackathon is at IIT Bombay; verify the actual API resource and its match fields before promising CIN/name lookup.
-- Assume CrustData `/account/endpoints` will be checked before build calls; endpoint availability and person verification cannot be inferred from the key alone.
-- The Trust-compliance-shresth directory is empty now; framework/version/dependencies must be selected during implementation after a final filesystem check.
-- The demo company is intentionally undecided until live API/source coverage is checked. Never invent live data to force the demo narrative.
+From `.codex/crustdata-repos/tools/deal-sourcing-agent/src/`:
+- `crustdata.ts`: `request()` with 429/503 retry and `retry-after`, a `pace()` rate limiter, the `spend` credit counter, `leaf/and/or` filter builders, `searchPeople`, `jobCounts`/`newestJobs` (free counts).
+- `founders.ts`: `isFounderTitle`, `pickFounders`, `priorFounderRoles` (repeat founder), `employerMatches`, `domainOf`.
+- `score.ts` and `signals.ts`: patterns for scoring with stated reasons, used for the fit checklist.
 
-## 13. Authoritative references
+From `.codex/crustdata-repos/vercel-crustdata-template/`:
+- Next 16.3.6, React 19.3.0, TS 5.9.3 versions.
+- `lib/crustdata.ts` `normalizeDomain()`.
 
-- Hackathon brief: [`ContextCon PS - CrustData.docx`](../ContextCon%20PS%20-%20CrustData.docx) and [`ContextCon 03_ IIT Bombay, the Agentic Services Hackathon _ Y Combinator.pdf`](../ContextCon%2003_%20IIT%20Bombay,%20the%20Agentic%20Services%20Hackathon%20_%20Y%20Combinator.pdf).
-- Previous Trust & Compliance explorations: [`combined-suggestion.md`](../Trust-Compliance/combined-suggestion.md), [`opus-reply.md`](../Trust-Compliance/opus-reply.md), [`sol-reply.md`](../Trust-Compliance/sol-reply.md). Treat this plan and current official schemas as authoritative where those drafts conflict.
-- CrustData docs mirror: [README](../.codex/crustdata-docs/README.md), [Company Identify](../.codex/crustdata-docs/api-reference/company-apis/identify-a-company-from-name-domain-id-or-profile-url.md), [Company Enrichment](../.codex/crustdata-docs/api-reference/company-apis/get-full-company-enrichment.md), [account endpoint permissions](../.codex/crustdata-docs/api-reference/account-apis/list-endpoint-permissions-and-rate-limits.md), [person verification](../.codex/crustdata-docs/person-docs/verification/batch.md), [web search](../.codex/crustdata-docs/api-reference/web-apis/web-search.md), and [web fetch](../.codex/crustdata-docs/api-reference/web-apis/web-fetch.md).
-- External sources: [India MCA Company Master Data](https://data.gov.in/catalog/company-master-data), [India OGD API access help](https://www.data.gov.in/help), [GLEIF API](https://www.gleif.org/en/lei-data/gleif-api/), [OFAC Sanctions List Service](https://ofac.treasury.gov/sanctions-list-service), [Companies House API](https://developer.company-information.service.gov.uk/get-started), [SEC EDGAR APIs](https://www.sec.gov/search-filings/edgar-application-programming-interfaces), [OpenSanctions licensing](https://www.opensanctions.org/docs/commercial/exemption/).
-- Secret setup: [CrustData key page](https://app.crustdata.com/api-keys), [Gemini API keys](https://ai.google.dev/gemini-api/docs/api-key), and [Gemini billing](https://ai.google.dev/gemini-api/docs/billing).
+## Concrete end-to-end examples: US + India, built on Shark Tank companies
+
+**Demo theme: the Shark Tank Diligence Desk.**
+- Every company below appeared on Shark Tank US or Shark Tank India. That gives public claims (asks, deals, founders) to check against CrustData's graph.
+- The core question, "did the deal hold up, and is the company still alive?", is what an investor, vendor desk or credit desk actually pays to have answered.
+- The examples are paired across both markets.
+- Full input texts are in [EXAMPLES.md](EXAMPLES.md).
+
+✅ marks companies already resolved live by teammates on 2026-10-31.
+
+| # | Market | Persona → service | Company | What the run must catch | Expected outcome |
+|---|---|---|---|---|---|
+| **E1** | US | VC associate → pre-investment screen | Misto (mistobox.com) ✅ id 2436762 | Name lookup picks MistoBox LLC at 0.8; the domain gives Misto at 1.0. Funding total of 0 is not proof of no raise. | **Advance**, with "Shark deal: insufficient evidence" |
+| **E2** | US | Angel → founder-claim check | Tom + Chee (tomandchee.com) ✅ id 1228597 | "1,000 staff": profile range 501–1000 vs measured 107. Revenue $500M–1B is only an estimate. | **Hold**: conflicting evidence |
+| **E3** | **India** | India VC analyst → screen of a messy forwarded pitch | BluePine Foods (bluepinefoods.com) ✅ id 12347153 | Input names it "BluePine Industries" (no match) and the agent recovers it by domain. The ₹75L Shark Tank India deal is **absent from CrustData funding** but present on the web. Co-founder Naveen Panwar **left in Oct 2023**. Headcount is 4 against a claimed ~20. | **Hold**, with an ask for the cap table |
+| **E4** | US | Procurement officer → vendor onboarding | Wicked Good Cupcakes (wickedgoodcupcakes.com) ✅ id 2525868 | Name alone gives several exact candidates, so the domain decides. Range 51–200 vs measured 2. | **Exception (Hold)**: size conflict, entered in the vendor master as Exception |
+| **E5** | **India** | AP controller → bank-change / BEC check (**SYNTHETIC**) | BluePine Foods vs `bluepinefoods-payments.in` | Lookalike domain (brand plus extra token, different TLD). The fictitious "Rohit Sample" is not found at company id 12347153. | **Hold**: payment hold written to the AP queue, plus a complaint-ready case file |
+| **E6** | **India** | Credit analyst → supplier triage | "Zeta" (name only) | Many close identify candidates | **Insufficient**: candidates listed, no conclusions |
+| **E7** | **India** | Compliance → adverse-info pre-check | BluePine Foods (reuses E3 IDs) | A web hit about "₹50L for 20% with Varun Alagh" is **a different pitch**, so it must be rejected. Relevant hits are labelled. | Dossier with labelled hits, never "clean" |
+| **E8** | US | VC → follow-on / zombie check | VerbalizeIt (verbalizeit.com) id 1919920 | **Acquired by Smartling in 2016**, yet `status=active` (a contradiction). The 45 "employees" are stale profiles. The ~700K visits and $27K/mo ads belong to the acquirer's redirect. Founders left within 0–5 months of the acquisition. | **Pass: not an independent company**. Heartbeat shows ghost signals that are excluded. |
+| **E9** (stretch) | US/India | IC member → conflict of interest | E1 or E3 plus a synthetic roster | Overlaps between founder history and roster | Potential issue, or "not checked" |
+
+Messiness covered: wrong company name (E3), forwarded-email noise (E3), name only (E6), lookalike domain (E5), contradictory size (E2, E4), missing funding (E1, E3), acquired zombie (E8), a different event about the same company (E7), mixed ₹/$ units (E3, E5).
+
+The fixtures `fixtures/E*.json` are recorded from real runs and labelled **FIXTURE** in the UI.
+
+### Data-quality rules learned from the live research (apply in `lib/checks/`)
+
+- **R-NAME-RECOVERY:** if a name doesn't match, retry stripped variants (Industries, Pvt Ltd, Inc, LLC, Technologies), then any domain or URL found in the text. The report shows "input name differs from canonical name".
+- **R-DOMAIN-FIRST:** a domain match (confidence 1.0) beats any name match. Rejected name candidates are kept with the reason (industry or description mismatch).
+- **R-ACQUIRED:** `funding.acquired_by`, or `acquisition_status=acquired`, marks the entity as absorbed.
+  - The investment lens returns **Pass: not independent**.
+  - If `all_domains` contains the acquirer's domain, or the site redirects, web traffic and SEO are attributed to the acquirer and **excluded from Heartbeat**.
+  - Headcount is labelled "may include stale profiles".
+- **R-STATUS-CONFLICT:** `status=active` together with acquired is flagged as a conflict in the provider's own data.
+- **R-DEPARTED:** a person claimed as current but with an `end_date` on that employer is marked **conflicting**, citing the end date.
+- **R-FUNDING-GAP:** a deal claimed on the web (e.g. a Shark Tank offer) but missing from CrustData funding is marked **conflicting sources**: "deal may not have closed as aired; request cap table". Neither source is overruled.
+- **R-OTHER-EVENT:** a web hit naming the company but with different deal terms or investors is labelled **different event**, and ignored.
+- **R-SELF-DESC:** the company's own description (e.g. "pitched at #sharktankindia") is accepted as **self-reported** support only, labelled as such.
+- **R-UNITS:** ₹ lakh and crore are parsed (1 L = 100,000; 1 Cr = 10,000,000 INR) and kept in their original currency. CrustData funding is in USD. Values in different currencies are never compared numerically without a labelled conversion. Presence and absence comparisons are fine.
+- **R-VOLATILE:** web traffic that swings more than 3× within 3 months is marked volatile, and its Heartbeat weight is halved.
+
+## Heartbeat: composite liveliness metric
+
+**What it answers:** "How alive is this company's operation right now, according to the signals we can observe?" It measures **operating activity, not legitimacy**. User decision: it is a **signal, not a verdict**. It feeds the investment fit checklist (the thesis can set `min heartbeat`), and it can raise a `potential_issue` when it contradicts a claim such as "rapidly growing" or "500 staff". **It never causes Hold on its own and never implies fraud.**
+
+**Components:** each is scored 0–100 and taken from CrustData only, using data we already fetch, so it adds no credits.
+
+| Component | Weight | Source (field / call) | Scoring s ∈ [0,100] |
+|---|---|---|---|
+| Team momentum | 25 | `headcount.growth_percent` (6m, else 12m); fallback: slope of `headcount.timeseries` | clamp(50 + 50·g/30): −30% → 0, flat → 50, +30% → 100 |
+| Hiring activity | 20 | `POST /job/search` `limit:0` count, last 90 days (free, observed). `hiring.openings_count` only as a fallback. | min(100, 25·log2(1+n)): 0 → 0, 1 → 25, 3 → 50, 15 → 100 |
+| Digital demand | 20 | `web_traffic…monthly_visitors` growth (MoM/QoQ) | clamp(50 + 50·g/25) |
+| Audience momentum | 10 | `followers.qoq_percent` (else `mom_percent`) | clamp(50 + 50·g/15) |
+| News recency | 15 | newest **relevance-filtered** article in `news[]` plus web news search | ≤30d 100 · ≤90d 75 · ≤180d 50 · ≤365d 25 · older 0 |
+| Capital recency | 10 | `funding.last_fundraise_date` | ≤12mo 100 · ≤24mo 60 · ≤36mo 30 · older 10 |
+
+**Equation**
+- Let A be the set of components with real data. Null or missing is **excluded, never scored 0**. That follows the live-sample rule that a null field is unknown.
+- `Heartbeat = round( Σ_{i∈A} wᵢ·sᵢ / Σ_{i∈A} wᵢ )`
+- `Coverage = Σ_{i∈A} wᵢ / 100`
+- **Coverage < 0.5:** show "Low signal: insufficient coverage" instead of a band. The number stays visible but greyed.
+- **Bands:** ≥70 Strong pulse · 40–69 Steady · 20–39 Faint · <20 Flatline signals. The wording deliberately avoids "dead" or "fake".
+- **"As of":** the latest date across the component time series. Freshness metadata is often null, so the date comes from the data itself.
+
+**Rules that use it**
+- **F-HB (fit):** `heartbeat ≥ thesis.minHeartbeat` (default 40) gives pass, fail or unknown when coverage < 0.5.
+- **T-HB (trust):** if a claim says growth or large scale and Heartbeat is <30 with coverage ≥0.5, the claim gets `potential_issue` and cites the components.
+- A small-but-real firm (for example, measured 2 staff) can be Faint without any negative trust effect.
+
+**Shown in the case report:**
+- an ECG-style pulse line drawn from `headcount.timeseries` (the UI's signature detail)
+- the score, band and coverage
+- a component breakdown in which each component links to its evidence IDs
+- the same weights in an editable `heartbeat.config.ts`
+
+**Implementation:** `lib/heartbeat.ts`, a pure function `(evidenceBundle) → {score, band, coverage, asOf, components[{name, weight, value, score, evidenceIds, missingReason?}]}`.
+
+**Critique to keep visible in the README**
+- The weights are judgment calls, not fitted to outcomes.
+- Growth percentages are the provider's measurement periods.
+- Web traffic and followers mean little for B2B or very small firms. That is why missing data is excluded rather than penalised, and why coverage is reported.
+
+## Architecture
+
+```
+Trust-compliance-shresth/
+  PLAN.md          ← this plan (replaces SignalGate v1; old version stays in git history)
+  EXAMPLES.md      ← table above with full input texts
+  app/             ← Next.js 16 + React 19 + TS, no Tailwind, no DB
+    .env.local     ← user-created: CRUSTDATA_API_KEY; optional LLM_PROVIDER, LLM_MODEL, OPENROUTER_API_KEY, GEMINI_API_KEY (ignored by root .env.*)
+    lib/llm.ts            optional brain: OpenRouter / Gemini adapter, tool-calling loop, per-run call cap, falls back to rules
+    lib/agents/           intake.ts, investigator.ts (tool loop over lib/crustdata), clerk.ts (deliverable + local action)
+    lib/actions.ts        local system-of-record writes: data/pipeline.json, data/vendors.json, data/ap-queue.json, exceptions inbox
+    .env.example   ← blank placeholders only
+    lib/crustdata.ts      adapted request/pace/spend/filters + identify/enrich/personSearch/personEnrich/jobCount/webSearch/webFetch/credits
+    lib/founders.ts       adapted from deal-sourcing-agent
+    lib/intake.ts         deterministic parser → {lens, company, domain, people[], claims[], thesis?, roster?}; every field keeps its source span
+    lib/report.ts         template-based narrative built only from findings + evidence IDs
+    lib/evidence.ts       Evidence {id, kind: crustdata|web, endpoint, recordId|url, fieldPath, value, sourceDate?, retrievedAt}
+    lib/domain.ts         normalizeDomain + lookalike rules (Levenshtein ≤2, TLD swap, brand+token, hyphenation, homoglyph)
+    lib/checks/           resolve.ts, identity.ts, impersonation.ts, scale.ts, funding.ts, founders.ts, activity.ts, adverse.ts, coi.ts, fit.ts
+    lib/heartbeat.ts      composite liveliness metric (see Heartbeat section) + heartbeat.config.ts weights
+    lib/triage.ts         rule IDs → outcome (trust: Checks satisfied / Hold / Insufficient; investment: Advance / Hold / Insufficient)
+    lib/orchestrator.ts   async generator yielding TraceEvents; per-run budget caps (≤4 web searches, ≤3 fetches, ≤3 person enrich)
+    cli.ts                npx tsx cli.ts "<request>" → cases/<ts>.json + markdown brief (fallback demo)
+    app/api/run/route.ts  SSE stream of TraceEvents → final Case JSON
+    app/page.tsx          intake (paste box + example chips E1–E8) → live trace → case report
+    components/           Verdict header (outcome + lens + identity confidence), ClaimMatrix (claim | submitted | observed | status | evidence links), FitChecklist (investment only), Trace (endpoint, credits, status), SourceLedger, export (JSON/Markdown)
+    fixtures/  cases/
+```
+
+**Engine rules**
+- **Intake parser (`lib/intake.ts`, no LLM):**
+  - Regex extraction:
+    - emails, URLs and domains, including the sender domain from `From:` lines
+    - names in `Name <email>` form
+    - quoted company names, and phrases like `founded by A and B`, `I'm the … at X`, `screening X`
+    - years after `founded / est. / since`
+    - staff counts (`N staff / employees / people / team of N`)
+    - money amounts with $, ₹, M, Cr or L
+    - round types (pre-seed … Series D)
+    - HQ or location after `HQ:` or `based in`
+    - the thesis text after `thesis` (sector, geo, stage, size and founded words, plus `min heartbeat N`)
+    - a roster given as a JSON array
+  - Lens is chosen by keyword score:
+    - investment words: screen, thesis, pitch, raise, term sheet, syndicate, founder, invest
+    - trust words: supplier, vendor, onboarding, invoice, bank, remittance, payment, terms
+    - a tie means both lenses run
+  - When there's no domain, the company name goes to free `/company/identify` by name, and the resulting ambiguity check decides what happens next.
+  - The UI shows a **Parsed intake** panel listing each extracted field next to the text it came from. Anything the parser could not extract is shown as "not provided", never guessed.
+- **Report (`lib/report.ts`):** templated sentences per finding status and rule ID. Each sentence cites evidence IDs. There is no generated prose.
+- Status labels, Heartbeat and outcome are all deterministic.
+- **With an LLM brain enabled:** the LLM's intake extraction must quote a source span for each field, or that field is dropped. Its tool calls go through the same allow-list and budget guard. The rules parser runs alongside it, and the UI shows any disagreement between the two.
+- Missing input never blocks the run. The check is reported as "not checked: input absent".
+- Ambiguity: name-only with more than one candidate within 0.15 of the top score, or no domain agreement, counts as ambiguous. Company-specific checks are then skipped and the result is Insufficient.
+- Every finding has the form `{claim, submitted, observed, status ∈ supported|conflicting|potential_issue|insufficient|not_checked, evidenceIds[], reason}`.
+- Every API failure becomes a trace event plus a partial result, never an exception to the user.
+- Keys stay server-side only. No `NEXT_PUBLIC_*`. Masked key in the preflight output.
+
+## Build sequence (on go-ahead)
+
+1. **Housekeeping (5 min):**
+   - Write this plan to `Trust-compliance-shresth/PLAN.md` and examples to `EXAMPLES.md`.
+   - Save memory: all work stays in `Trust-compliance-shresth/`.
+2. **Keys and preflight (10 min):**
+   - The user creates `app/.env.local`.
+   - Run `/account/credits` and `/account/endpoints` (shows enabled paths and per-endpoint prices, key masked).
+   - Done: E3 company is BluePine Foods (id 12347153). Free identify confirms the E1–E8 IDs before the first paid call.
+3. **Scaffold (15 min):** Next app with the pinned versions, crustdata client, evidence ledger, domain utilities.
+4. **Engine (≈75 min):** intake → resolve → retrieve once → checks → triage → case JSON. Build it as agents (intake, investigator, clerk) with the rules brain first. Get E5 and E6 working first (the hero and the robustness case), then E1, E2, E4, then E3 and E7.
+   - Clerk writes local actions: pipeline, vendor master, AP hold, exceptions inbox.
+4b. **LLM brain (≈30 min, only if an OpenRouter or Gemini key with credit is present):**
+   - `lib/llm.ts` adapter.
+   - LLM intake with span quotes.
+   - LLM investigator tool loop over the same tool registry and guards.
+   - Namesake judging.
+   - The demo shows the same case with both brains.
+5. **UI (≈60 min):** SSE trace, verdict, claim matrix, fit checklist, source ledger, export, example chips, FIXTURE fallback. Follow the `frontend-craft` skill.
+6. **Record fixtures and README (20 min):** run E1–E7 live, save the fixtures, write the README (run instructions, architecture, examples).
+7. **Demo (≈30 min before 3:30):** under 2 minutes:
+   - E3 BluePine (India, messy input → Hold, ask for cap table)
+   - E5 BluePine BEC (India, synthetic → AP hold plus case file)
+   - E8 VerbalizeIt (US, acquired zombie → Pass, ghost Heartbeat signals)
+   - If time allows, E6 Zeta (ambiguous → Insufficient)
+
+Git:
+- Commit to `trust-compliance` only, staging only `Trust-compliance-shresth/**`.
+- Commit at each milestone. Push only when the user says.
+- Never touch `.codex/steering.md`, `AGENTS.md`, `.gitignore` or other team folders.
+
+## Verification
+
+- Preflight script prints credits and enabled endpoints. It never prints any part of the key.
+- Intake parser: run on E1–E8 texts. Check that each expected field is extracted with its span, and that absent fields show as "not provided".
+- `npx tsx cli.ts` on each example E1–E7. Check for each run:
+  - the outcome matches the table, or a deviation is explained by real data rather than forced
+  - every finding has at least one evidence ID that resolves to an endpoint+record or a URL
+  - credits used are under 40
+- Heartbeat: for E1, E2 and E4, print the component table. Check that:
+  - the score recomputes by hand from the shown components
+  - null components are excluded and the coverage figure reflects that
+  - E4 (2 staff) shows Faint or Low signal with no trust penalty
+  - E2's "1,000 staff" claim gets `potential_issue` only if T-HB conditions hold
+- Agents and actions:
+  - Every run ends with a local action, written to the system-of-record JSON, plus a deliverable.
+  - Hold cases appear in the Exceptions inbox.
+  - Nothing is sent outside the machine.
+- Brain swap:
+  - Run E5 with `LLM_PROVIDER=none`, then with `openrouter`. Both must reach the same outcome.
+  - The trace shows which brain decided each step.
+  - Kill the LLM key mid-run: the run falls back to rules and the fallback is visible.
+- Edge checks:
+  - bad CrustData key: partial report showing the error
+  - E6: no company-specific claims
+- UI: run `next dev` and drive it with the Playwright browser through E5 and E6 at presentation size. Inspect the trace, matrix links and export.
+- Secret check: `grep -r` for the key prefix in `.next/static` and `cases/` returns nothing. `git status` shows only `Trust-compliance-shresth/` changes, and `.env.local` is ignored.

@@ -1,0 +1,100 @@
+CrustData API Endpoints (via MCP `crustdata` connector)
+=========================================================
+
+COMPANY
+-------
+company_identify        Free. Resolve a company (domain/name/URL) to its Crustdata id. One identifier type per call.
+company_search          Search companies in the indexed dataset (filters and/or natural-language search). Base 0.03 cr/result + premium-group charges.
+company_search_live     Real-time company search. 2 credits/result. Flat filter format, page required.
+company_enrich          Full company profile by id/domain/name/URL. 2 credits per returned match (+2 for technographics).
+
+PERSON
+------
+person_identify          Resolve people from emails or profile URLs. 1 credit per matched identifier.
+person_search            Search people in the indexed dataset (filters and/or natural-language search). Base 0.03 cr/result + premium-group charges.
+person_search_live       Real-time people search. 2 credits/result. Flat filter format, page required.
+person_enrich            Full person profile (deep fields). Base 1 credit + add-ons (business email +1, personal +2, phone +2, dev +1; cap 7). preview:true is free.
+person_enrich_live       Fresh live person profile when cached enrich is insufficient. 7 credits/profile.
+person_contact_enrich    Default for contact info only (emails, phone) by profile URL or email. Billed per contact type returned (biz 1, personal 2, phone 2; max 5, +0.5 for verified).
+
+JOBS
+----
+job_search               Search job postings in the indexed dataset, with filters/sorts/aggregations. ~0.03 credits/result.
+job_search_live          Real-time job search for a company. 2 credits/result.
+
+SOCIAL & WEB
+------------
+social_post_search_live  Keyword search across professional-network social posts (live).
+social_post_list_live    Social posts for one entity (person/company), paginated; optional reactors/comments.
+social_post_search       Indexed search of professional-network posts with structured filters. 0.5 credits/post returned.
+web_search_live          Web/news/academic search, and the tool for X/Twitter, Reddit, or anything outside Crustdata's own datasets. 1 credit/query.
+web_enrich_live          Fetch and extract a web page by URL, logged out. 1 credit/page.
+
+OTHER ENRICHMENT
+----------------
+dev_platform_enrich      Developer-platform profile, repos, orgs, activity. +1 credit as a person_enrich add-on, or standalone.
+employee_review_enrich   Employee reviews for a company.
+
+SCOPE / DISCOVERY HELPERS
+-------------------------
+describe_scope           Free. Filter columns this API key's plan allows on a dataset (company|person) — call before a field-filtered search to avoid a 403.
+company_autocomplete     Free. Typeahead for a company filter field's canonical values.
+person_autocomplete      Free. Typeahead for a person filter field's canonical values.
+job_autocomplete         Free. Typeahead for a job filter field's canonical values (title, company, location).
+
+ACCOUNT / USAGE (all free, read-only)
+--------------------------------------
+account_credits          Remaining credit balance + recurring grant details.
+account_endpoints        Every endpoint's access status, enabled/disabled response fields, and rate limit for this account.
+account_usage_summary    Usage totals over a time window (requests, credits, errors, results), optionally grouped.
+account_usage_events     Requests one by one, newest first, with charge breakdown.
+account_usage_event      One request's full detail (request, headers, response) by its X-Request-Id.
+account_usage_errors     Failed requests grouped by endpoint + error type, most frequent first.
+
+BATCH (async bulk jobs — submit, then poll)
+--------------------------------------------
+batch_company_enrich          Bulk company enrich (<=10k). NOT enabled on this account's plan.
+batch_person_enrich           Bulk person enrich (<=10k). NOT enabled on this account's plan.
+batch_person_contact_enrich   Bulk contact-only enrich (<=300). NOT enabled on this account's plan.
+batch_person_identify         Bulk reverse-lookup of emails/URLs to people (<=300). NOT enabled on this account's plan.
+batch_person_verify           Bulk work-history verification ("is this person's current role real?"). Add-on, 403 unless enabled. NOT enabled on this account's plan.
+batch_company_search          Bulk indexed company search, walks to <=10k results. NOT enabled on this account's plan.
+batch_person_search           Bulk indexed person search, walks to <=10k results. NOT enabled on this account's plan.
+batch_job_search              Bulk job search across a set of companies.
+batch_company_search_live     Bulk live company search (<=1k). NOT enabled on this account's plan.
+batch_person_search_live      Bulk live person search (<=1k). NOT enabled on this account's plan.
+batch_person_enrich_live      Bulk live person enrich (<=300, 7 cr/profile). NOT enabled on this account's plan.
+batch_social_post_list_live   Bulk live social-post listing for many entities.
+batch_job_get                 Free. Poll one batch job's status + download URLs.
+batch_jobs_list               Free. List your batch jobs, most recent first.
+batch_results                 Free. Hand back a completed batch job's results file (download URL, or read rows inline).
+
+WATCHES (ongoing monitoring)
+-----------------------------
+watch_list                 Free. List your entity watches (fixed set of people/companies + track condition).
+watch_get                  Free. One watch's full config by id.
+watch_discovery_list        Free. List your discovery watches (filter tree that fires on new matches).
+watch_discovery_get         Free. One discovery watch's full config by id.
+watch_runs                  Free. Run history for one watch.
+watch_run_summary           Free. One run in full detail, including delivery payloads.
+watch_run_records           Free. Download + parse a run's records when delivered as a link.
+watch_preview               Free. Dry-run an entity watch's track condition before creating it.
+watch_test                  Free. Resend an entity watch's baseline delivery as a test.
+watch_discovery_test        Free. Resend a discovery watch's baseline delivery as a test.
+watch_create                Free to create (but commits to recurring spend per change). Create an entity watch.
+watch_discovery_create      Free to create (but commits to recurring spend per new match). Create a discovery watch.
+watch_update                Free. Edit an entity watch's status/entities/config/notifications.
+watch_discovery_update      Free. Edit a discovery watch's status/config/notifications.
+watch_cancel                Free. Permanently cancel an entity watch.
+watch_discovery_cancel      Free. Permanently cancel a discovery watch.
+
+DOCS
+----
+crustdata_docs_search    Free. Semantic search across Crustdata docs.
+crustdata_docs_fs        Free. Run rg/cat/ls/head over the docs filesystem to find exact field names.
+
+NOTES
+-----
+- All of the above are called through the single MCP tool `execute`, which runs a JS script with `callTool(name, params)` as the only I/O — this list is the `name` values it accepts.
+- Every ~23 "batch_*_live"/"batch_*" family endpoints marked NOT enabled above are gated off this account's current plan (403 regardless of request shape); job-related batch and most free/read-only/watch endpoints are available.
+- Per the project steering rule (.codex/steering.md), prefer the cheapest correct path (free identify/describe_scope before paid enrich/search) and never call unrelated endpoints just to burn credits.

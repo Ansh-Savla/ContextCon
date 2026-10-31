@@ -1,0 +1,1 @@
+{"tool": "job_search", "body": {"filters": {"field": "company.basic_info.company_id", "type": "=", "value": 609458}, "limit": 5, "fields": ["crustdata_job_id", "job_details", "location"]}, "ok": true, "data": {"job_listings": [], "next_cursor": null, "total_count": 0}, "credits": 0, "recorded_at": "2026-10-31T06:01:32Z", "via": "mcp"}

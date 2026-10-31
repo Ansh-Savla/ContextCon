@@ -117,6 +117,7 @@ export async function runDesk(raw: string, onEvent: (e: TraceEvent) => void = ()
   let monitoring: CaseResult["monitoring"];
   const pressImages: PressImage[] = [];
   let plan: CaseResult["plan"];
+  let financeStats: Array<{ label: string; value: string; hint?: string }> = [];
   const hostOf = (u: string) => { try { return new URL(u).hostname.replace(/^www\./, ""); } catch { return "web"; } };
 
   if (identity.status === "resolved") {
@@ -313,6 +314,21 @@ export async function runDesk(raw: string, onEvent: (e: TraceEvent) => void = ()
     emit({ agent: "analyst", step: "Company activity (Heartbeat)", detail: `${heartbeat.score ?? "—"} · ${heartbeat.band} · ${Math.round(heartbeat.coverage * 100)}% coverage`, status: "ok" });
 
     const hc = co.headcount ?? {};
+    {
+      const est = co.revenue?.estimated ?? {};
+      const total = typeof hc.total === "number" && hc.total > 0 ? hc.total : undefined;
+      const f0 = co.funding ?? {};
+      const g2 = hc.growth_percent?.two_years, g1 = hc.growth_percent?.yoy;
+      const revMid = est.lower_bound_usd && est.upper_bound_usd ? (est.lower_bound_usd + est.upper_bound_usd) / 2 : undefined;
+      financeStats = [
+        { label: "Revenue (estimate)", value: est.upper_bound_usd ? `${usd(est.lower_bound_usd)}–${usd(est.upper_bound_usd)}` : "—", hint: "provider model, unaudited" },
+        { label: "Revenue per employee", value: revMid && total ? usd(Math.round(revMid / total)) : "—", hint: revMid && total && revMid / total > 1.5e6 ? "implausibly high for most industries" : "estimate midpoint ÷ measured staff" },
+        { label: "Capital raised", value: usd(f0.total_investment_usd), hint: f0.num_funding_rounds ? `${f0.num_funding_rounds} round${f0.num_funding_rounds > 1 ? "s" : ""}` : undefined },
+        { label: "Capital per employee", value: f0.total_investment_usd && total ? usd(Math.round(f0.total_investment_usd / total)) : "—" },
+        { label: "Last round", value: f0.last_round_type ? String(f0.last_round_type).replace(/_/g, " ") : "—", hint: f0.last_fundraise_date ? ym(f0.last_fundraise_date) : undefined },
+        { label: "Headcount growth", value: typeof g1 === "number" ? `${g1 > 0 ? "+" : ""}${Math.round(g1 * 10) / 10}% YoY` : "—", hint: typeof g2 === "number" ? `${g2 > 0 ? "+" : ""}${Math.round(g2)}% over 2 yrs` : undefined },
+      ];
+    }
     // ---- time series for charts (already fetched; 0 credits)
     {
       const dom = Object.keys(co.web_traffic?.domain_traffic ?? {})[0];
@@ -336,6 +352,22 @@ export async function runDesk(raw: string, onEvent: (e: TraceEvent) => void = ()
     for (const n of relevant.filter(x => x.provider === "CrustData web" && x.date).slice(0, 6)) events.push({ date: String(n.date).slice(0, 10), kind: "news", title: n.title, detail: hostOf(n.url), source: "CrustData", url: n.url, evidenceId: newsEv || coEv });
     for (const h of relevant.filter(x => x.provider === "Tavily" && x.date).slice(0, 4)) { const d = new Date(h.date!); if (!isNaN(d.getTime())) events.push({ date: d.toISOString().slice(0, 10), kind: "press", title: h.title, detail: hostOf(h.url), source: "Tavily", url: h.url }); }
     events.sort((x, y) => x.date.localeCompare(y.date));
+
+    // ---- founder & leadership flags (Sightline port): departures, recent departures, moved to acquirer, stale roles
+    {
+      const acqName = acquiredBy?.replace(/ \(.*\)$/, "");
+      for (const p of people) {
+        p.isFounder = /founder|promoter/i.test(p.title ?? "") || (co.people?.founders ?? []).some((f: any) => f.crustdata_person_id === p.id);
+        const fl: NonNullable<Person["flags"]> = [];
+        if (!p.current && p.until) {
+          const months = (Date.now() - Date.parse(p.until + "-01")) / 2.63e9;
+          fl.push({ sev: p.isFounder ? "high" : "med", text: `Left ${p.until}${months < 12 ? " (recent departure)" : ""}` });
+        }
+        if (acqName && p.current && acquiredOn && Date.now() - Date.parse(acquiredOn) > 3.156e10) fl.push({ sev: "low", text: `Still listed as current ${Math.round((Date.now() - Date.parse(acquiredOn)) / 3.156e10)} yrs after the acquisition — possibly stale` });
+        if (p.priorFounder?.length) fl.push({ sev: "low", text: `Prior founder / CEO: ${p.priorFounder.length} role${p.priorFounder.length > 1 ? "s" : ""}` });
+        p.flags = fl;
+      }
+    }
 
     // ---- PLANNER: choose follow-up lookups (Gemini proposes from an allow-list; rules validate; playbook fallback)
     const dealCheck = checks.find(k => k.rule === "FIN-DEAL");
@@ -515,6 +547,39 @@ export async function runDesk(raw: string, onEvent: (e: TraceEvent) => void = ()
   }
   emit({ agent: "verifier", brain: "rules", step: "Decision", detail: decisions.map(d => `${d.track}: ${d.label}`).join(" · "), status: "ok" });
 
+  // ---------------- experimental score (Sightline port; ranking aid only — never drives the decision)
+  let score: CaseResult["score"];
+  if (co) {
+    const hc0 = co.headcount ?? {};
+    const fnd = people.filter(p => p.isFounder);
+    let team = !fnd.length ? 0 : 2 + (fnd.length >= 2 ? 1 : 0);
+    team += fnd.some(p => p.priorFounder?.length) ? 1 : 0;
+    team += fnd.length && fnd.every(p => p.current) ? 1 : 0;
+    team -= checks.some(k => k.rule === "PPL-DEPARTED" && k.status === "contradicted") ? 2 : 0;
+    const g = hc0.growth_percent?.two_years;
+    let traction = typeof g !== "number" ? 1 : g > 50 ? 5 : g > 20 ? 4 : g > 0 ? 3 : g > -10 ? 2 : 1;
+    if ((hc0.total ?? 0) < 10) traction = Math.min(traction, 2);
+    if ((co.followers?.yoy_percent ?? 0) > 40) traction += 1;
+    const tot = co.funding?.total_investment_usd ?? 0;
+    let fund = tot > 10e6 ? 5 : tot > 5e6 ? 4 : tot > 1e6 ? 3 : tot > 0 ? 2 : 1;
+    const lastR = co.funding?.last_fundraise_date;
+    if (lastR && Date.now() - Date.parse(lastR) > 3 * 3.156e10) fund -= 1;
+    const highs = checks.filter(k => k.status === "contradicted" && k.material).length, meds = checks.filter(k => k.status === "review").length;
+    const risk = 5 - 2 * highs - meds;
+    const gaps = checks.filter(k => k.status === "unverified" || k.status === "not_run").length;
+    const conf = 5 - gaps;
+    const cl = (v: number) => Math.max(0, Math.min(5, v));
+    const dims = [
+      { key: "team", label: "Team", v: cl(team), why: `${fnd.length} founder(s) on record${fnd.some(p => p.priorFounder?.length) ? ", repeat founder" : ""}${checks.some(k => k.rule === "PPL-DEPARTED" && k.status === "contradicted") ? ", co-founder departed" : ""}` },
+      { key: "traction", label: "Traction", v: cl(traction), why: typeof g === "number" ? `headcount ${g > 0 ? "+" : ""}${Math.round(g)}% over 2 yrs${(hc0.total ?? 0) < 10 ? " (small team: capped)" : ""}` : "no 2-year growth on record" },
+      { key: "funding", label: "Funding", v: cl(fund), why: `${usd(tot)} recorded${lastR ? `, last round ${ym(lastR)}` : ""}` },
+      { key: "risk", label: "Risk", v: cl(risk), why: `${highs} material contradiction(s), ${meds} review item(s)` },
+    ];
+    const notInvestable = !!acquiredBy || checks.some(k => k.section === "fraud" && k.status === "contradicted");
+    const overall = notInvestable ? null : Math.round(20 * (0.3 * dims[0].v + 0.3 * dims[1].v + 0.2 * dims[2].v + 0.2 * dims[3].v));
+    score = { overall, label: overall === null ? (acquiredBy ? "Not investable — acquired" : "Not scored — fraud signals") : overall >= 70 ? "Strong" : overall >= 55 ? "Promising" : overall >= 40 ? "Watch" : "Weak", reason: "Weighted: team 30% · traction 30% · funding 20% · risk 20%. Data confidence shown separately. Rule-based heuristic for ranking — not investment advice, never used in the decision.", dims, confidence: { v: cl(conf), why: `${gaps} unverified / not-run check(s)` } };
+  }
+
   // ---------------- post-decision monitoring (CrustData Watcher preview: deliver=false, no credit, nothing created) ----------------
   if (identity.status === "resolved" && ["proceed", "ready", "conditions", "refer"].includes(decisions[0].code) && !fraud && (!plan || plan.actions.some(a => a.name === "prepare_monitoring" && a.ran))) {
     const track = { op: "or", conditions: [{ field: "headcount.total", type: "changed" }, { field: "funding.last_fundraise_date", type: "changed" }, { field: "basic_info.status", type: "changed" }] };
@@ -562,7 +627,7 @@ export async function runDesk(raw: string, onEvent: (e: TraceEvent) => void = ()
   emit({ agent: "clerk", step: "Work completed", detail: actions.map(a => a.summary).join(" · "), status: "ok" });
 
   const result: CaseResult = {
-    id, createdAt: new Date().toISOString(), intake, identity, profile, people, checks, series, events, parent, peers, monitoring, pressImages, plan, decisions, conditions, heartbeat, investment, credit, memo, memoBy, actions, evidence, trace,
+    id, createdAt: new Date().toISOString(), intake, identity, profile, people, checks, series, events, parent, peers, monitoring, pressImages, plan, score, finance: co ? { stats: financeStats, rounds: (co.funding?.milestones ?? []).map((m: any) => ({ date: m.funding_date ?? m.date, round: m.round_type, amountUsd: m.amount_usd, investors: m.investors })) } : undefined, decisions, conditions, heartbeat, investment, credit, memo, memoBy, actions, evidence, trace,
     spend: { crustdataCredits: round(budget.credits), crustdataCalls: budget.calls, cacheHits: budget.cacheHits, tavilyCalls: budget.tavilyCalls, llmCalls: budget.llmCalls, llmTokens: budget.llmTokens, budgetPerRun: budget.creditsCap, seconds: Math.round((Date.now() - t0) / 100) / 10 },
   };
   emit({ agent: "system", step: "Done", detail: `${round(budget.credits)} CrustData credits · ${budget.cacheHits} cache hits · ${budget.tavilyCalls} Tavily · ${budget.llmCalls} LLM calls · ${result.spend.seconds}s`, status: "ok" });

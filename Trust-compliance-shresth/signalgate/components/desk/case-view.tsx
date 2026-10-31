@@ -17,6 +17,7 @@ import { BarList, PeerBars, RevenueBand, TrendChart } from "./charts";
 import { Timeline } from "./timeline";
 import { GeoMap } from "./geo-map";
 import { HelpButton } from "./help";
+import { FinancePanel, FoundersLeadership, ResearchPanel, ScoreCard } from "./extras";
 
 const SECTION: Record<Section, { label: string; Icon: typeof Building2 }> = {
   kyb: { label: "Entity & KYB", Icon: Building2 }, people: { label: "People", Icon: Users }, fraud: { label: "Payment fraud", Icon: AlertTriangle },
@@ -124,7 +125,9 @@ export function CaseView({ c, replay }: { c: CaseResult; replay: boolean }) {
           <TabsTrigger value="compliance">Compliance & KYB <span className="ml-1 text-xs text-muted-foreground">{bySection(["kyb", "people", "fraud", "screening"]).length}</span></TabsTrigger>
           <TabsTrigger value="case">{investor ? "Investment case" : "Credit case"}</TabsTrigger>
           <TabsTrigger value="story">Story <span className="ml-1 text-xs text-muted-foreground">{c.events.length}</span></TabsTrigger>
-          <TabsTrigger value="people">People <span className="ml-1 text-xs text-muted-foreground">{c.people.length}</span></TabsTrigger>
+          <TabsTrigger value="people">Founders &amp; leadership <span className="ml-1 text-xs text-muted-foreground">{c.people.length}</span></TabsTrigger>
+          <TabsTrigger value="finance">Financials</TabsTrigger>
+          <TabsTrigger value="research">Research</TabsTrigger>
           <TabsTrigger value="sources">Sources <span className="ml-1 text-xs text-muted-foreground">{c.evidence.length}</span></TabsTrigger>
           <TabsTrigger value="trace">Agent trace</TabsTrigger>
         </TabsList>
@@ -153,6 +156,7 @@ export function CaseView({ c, replay }: { c: CaseResult; replay: boolean }) {
               <CardHeader><CardTitle className="flex items-center gap-2"><ShieldCheck className="size-4 text-primary" />Conditions before money moves</CardTitle></CardHeader>
               <CardContent>{c.conditions.length ? <ol className="list-decimal space-y-2 pl-5 text-sm">{c.conditions.map(x => <li key={x}>{x}</li>)}</ol> : <p className="text-sm text-muted-foreground">None beyond standard documentation.</p>}</CardContent>
             </Card>
+            <ScoreCard c={c} />
             {c.plan && <PlanCard c={c} />}
             {c.heartbeat && <HeartbeatCard c={c} open={id => open(undefined, id)} />}
           </div>
@@ -191,31 +195,11 @@ export function CaseView({ c, replay }: { c: CaseResult; replay: boolean }) {
           </div>
         </TabsContent>
 
-        <TabsContent value="people" className="mt-4">
-          {c.people.length ? (
-            <div className="grid gap-3 md:grid-cols-2">
-              {c.people.map(p => (
-                <Card key={(p.id ?? p.name) + p.name} className="gap-3">
-                  <CardHeader className="flex flex-row items-start gap-3">
-                    <PersonAvatar name={p.name} photo={p.photo} size={44} />
-                    <div className="min-w-0 flex-1">
-                      <CardTitle className="text-base">{p.name.replace(/^MasterChef\s+/, "")}</CardTitle>
-                      <CardDescription>{p.title ?? "Role not on record"}{p.since ? ` · since ${p.since}` : ""}</CardDescription>
-                    </div>
-                    {p.current ? <StatusBadge status="verified" /> : <span className="rounded-md border border-bad/20 bg-bad-bg px-1.5 py-0.5 text-xs font-medium text-bad">Left {p.until}</span>}
-                  </CardHeader>
-                  <CardContent className="space-y-2 text-sm">
-                    {p.headline && <p className="text-muted-foreground line-clamp-2">{p.headline}</p>}
-                    {p.pastRoles?.length ? <div><span className="flex items-center gap-1 text-xs font-medium text-muted-foreground"><Briefcase className="size-3" />Career (CrustData person enrich)</span><ul className="mt-1 space-y-0.5">{p.pastRoles.map(x => <li key={x}>{x}</li>)}</ul></div> : null}
-                    {p.education?.length ? <div><span className="flex items-center gap-1 text-xs font-medium text-muted-foreground"><GraduationCap className="size-3" />Education</span><ul className="mt-1 space-y-0.5">{p.education.map(x => <li key={x}>{x}</li>)}</ul></div> : null}
-                    {p.priorFounder?.length && !p.pastRoles?.length ? <div><span className="text-xs font-medium text-muted-foreground">Prior founder / CEO roles</span><ul className="mt-1 space-y-0.5">{p.priorFounder.map(x => <li key={x}>{x}</li>)}</ul></div> : null}
-                    <div className="flex items-center gap-3 text-xs text-muted-foreground">{p.id && <span className="font-mono">person #{p.id}</span>}{p.profileUrl && <a className="inline-flex items-center gap-1 text-primary hover:underline" href={p.profileUrl} target="_blank" rel="noreferrer">Profile<ExternalLink className="size-3" /></a>}</div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          ) : <p className="text-sm text-muted-foreground">No people on record — the company was not resolved.</p>}
-        </TabsContent>
+        <TabsContent value="people" className="mt-4"><FoundersLeadership c={c} /></TabsContent>
+
+        <TabsContent value="finance" className="mt-4"><FinancePanel c={c} /></TabsContent>
+
+        <TabsContent value="research" className="mt-4"><ResearchPanel c={c} /></TabsContent>
 
         <TabsContent value="sources" className="mt-4 grid gap-4">
           <CrustDataUsed c={c} />

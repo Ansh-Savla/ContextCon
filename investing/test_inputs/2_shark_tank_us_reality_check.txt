@@ -1,0 +1,7 @@
+# Shark Tank US 2013 — reality check
+# Crustdata marks all of these "active". Expect DEFUNCT, ACQUIRED and DORMANT verdicts, a rejected revenue estimate, and one company missing from the graph.
+VerbalizeIt              | Human-powered translation service sharktankseason                                      |
+| Tom + Chee               | Grilled-cheese and tomato-soup restaurant chain sharktankseason                        |
+| Ryan’s Barkery           | All-natural dog treats and biscuits sharktankseason                                    |
+| Stella Valle             | Charm jewelry and bracelets sharktankseason                                            |
+| Geek Chic                | Handcrafted geek-themed furniture

@@ -1,0 +1,13 @@
+# title :: what it shows :: exact input line (each one has recorded Crustdata responses for offline replay)
+Beyond Snack :: Fast-growing D2C snack brand, $8.3M Series A :: Beyond Snack — Manas Madhu; banana-chip brand.
+HairOriginals :: Resolved from a bare domain; co-founder left pre-launch :: hairoriginals.com
+TagZ Foods :: LinkedIn URL input; acquired by Reliance below capital raised :: https://www.linkedin.com/company/tagz-foods/?utm_source=share&utm_medium=member_desktop
+qZense Labs :: CEO co-founder left in 2026; input founder names are wrong :: Qzense Labs — Sangeeta Kumar and Neil; food-quality sensing technology.
+Skippi :: Shark Tank India all-shark deal; low-confidence identity match :: Skippi Ice Pops — Ravi and Anuja Kabra; among the earliest widely discussed deals.
+BluePine Foods :: Wrong company name in input, resolved by description :: BluePine Industries — Frozen momos; one of the early Season 1 pitches
+Geek Chic :: Closed in 2017 but Crustdata still shows 41 staff :: Geek Chic | Handcrafted geek-themed furniture
+VerbalizeIt :: Acquired by Smartling; founders' next moves :: VerbalizeIt | Human-powered translation service
+Tom & Chee :: Acquired restaurant chain; implausible revenue estimate :: Tom + Chee | Grilled-cheese and tomato-soup restaurant chain
+Stella Valle :: Sources disagree on whether it still trades :: Stella Valle | Charm jewelry and bracelets
+Ryan's Barkery :: Not in the Crustdata graph; web-only evidence :: Ryan’s Barkery | All-natural dog treats and biscuits
+Jugaad Life :: Probably does not exist; nothing is invented :: Jugaad Life — Ritesh Agarwal-backed startup pitch? (not Season 1; avoid confusion)

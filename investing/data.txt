@@ -1,0 +1,591 @@
+COMPANY DATA PACK
+=================
+SET B (current input in comapanies.txt): 7 Shark Tank India Season 1 companies   <- start here
+SET A (earlier input): 5 US Shark Tank companies, kept below for the verification demo
+
+Pulled 2026-10-31 via the Crustdata MCP (API version 2025-11-01).
+Credits: Set B ~30, Set A ~33. Balance now ~15,137.
+
+Source tags used on every fact:
+  [CD]   Crustdata record     [WEB] web_search_live result     [DER] derived by us (method shown)
+  [INF]  our inference         [!]   conflict or data-quality warning
+  [IN]   claim from the input file (treated as a hint, not a fact)
+
+
+#############################################################################
+SET B — SHARK TANK INDIA, SEASON 1
+#############################################################################
+
+SUMMARY
+-------
+Company       Crustdata id  Status (verified)              Shark Tank deal (web)                   Raised since   Headcount 2y
+Skippi        653768        OPERATING, growing slowly      ₹1 Cr for 15%, all sharks (later        $2.73M total   29 -> 64
+                                                           reported ₹1.2 Cr / 18%)
+HairOriginals 730246        OPERATING, scaling             ₹60L from 3 sharks                      $6.73M total   32 -> 101
+TagZ Foods    609458        ACQUIRED by Reliance Consumer  ₹70L for 2.75% (Ashneer, Namita)        $4.22M total   46 -> 22
+                            Nov 2024, ₹28 Cr (distress sale)
+Beyond Snack  653773        OPERATING, scaling             ₹50L for 2.5% (Aman, Ashneer)           $12.6M total   15 -> 62
+qZense Labs   13987         OPERATING, shrinking           NO DEAL (rejected on the show)          $0.87M total   14 -> 11
+BluePine      12347153      OPERATING, very small          ₹75L (Ashneer, Aman, Vineeta)           $0 recorded    3 -> 4
+Jugaad Life   —             UNRESOLVED / probably not a    no evidence found                       —              —
+                            real Season 1 company
+
+Shark-implied valuation [DER = deal amount / equity]: Skippi ₹6.7 Cr | TagZ ~₹25.5 Cr | Beyond Snack ₹20 Cr.
+
+The input's founder names were partly wrong. They were checked against Crustdata job records:
+  [IN] "Tagz Foods — Sagar and Meghana"         -> Anish Basu Roy + Sagar Bhalotia. No Meghana found.
+  [IN] "Hair Originals — Jatin and Ashish"      -> Jitendra Sharma (founder/CEO) + Ashish Tiwari (left 2021-12).
+  [IN] "Qzense Labs — Sangeeta Kumar and Neil"  -> WRONG. Dr. Srishti Batra + Rubal Chib.
+  [IN] "Skippi — Ravi and Anuja Kabra"          -> correct.
+  [IN] "Beyond Snack — Manas Madhu"             -> correct (+ co-founder Jyoti Rajguru from 2022).
+  [IN] "BluePine Industries — frozen momos"     -> real name BluePine Foods Pvt Ltd; founder Aditi Bhutia Madan.
+  [INF] The list looks AI-generated. The portal must treat input names as claims to verify.
+
+VC READ, RANKED [INF]
+  1. Beyond Snack   — largest raise ($8.3M Series A, Jan 2025), 4x headcount, a real ops co-founder.
+                      Watch: web traffic down from its Dec 2024 peak.
+  2. HairOriginals  — 3x headcount, Series A, followers +114% YoY. Watch: the early co-founder now runs
+                      a similar business (HairForever).
+  3. Skippi         — steady revenue story and an SME-IPO plan, but headcount flat for 2 years and web
+                      traffic down ~90% from its 2024 peak.
+  4. qZense         — deep-tech, but shrinking, no new money since 2023, and the CEO co-founder left
+                      in June 2026.
+  5. BluePine       — 4 people; the Shark deal isn't reflected in recorded funding.
+  —  TagZ           — exited. Useful as a comparable: Shark valuation ~₹25.5 Cr -> sold for ₹28 Cr
+                      after raising $4.2M.
+
+
+=============================================================================
+B1. SKIPPI ICE POPS   (Crustdata: "Skippi", id 653768)
+=============================================================================
+Resolution: name "Skippi Ice Pops" -> conf 0.6 (shared with "ICE", "Reddy Ice", "Havmor"). Chosen on
+  description match ("100% Natural ... Icepops"). [!] The exact brand name scores only 0.6.
+Profile [CD]  skippi.in | linkedin.com/company/skippiicepops (17,880 followers, +45% YoY)
+  Founded 2021 (LinkedIn page; the brand predates it) | HQ Jubilee Hills, Hyderabad, Telangana
+  Food & Beverage Manufacturing | specialities: FMCG, ice pops, corn sticks, snacks
+Funding [CD funding.milestones]  $2,731,397 over 3 rounds
+  2021-12-28  $133,799     Aman Gupta, Anupam Mittal, Ashneer Grover, Namita Thapar, Vineeta Singh (the Shark Tank deal)
+  2024-05-28  $1,201,824   lead Hyderabad Angels; Hem Securities, Meenakshi Group, Mitesh Nandlaskar, Soonicorn
+  2025-06-24  $1,395,774   lead Surya Family Office (extended pre-Series A, ₹12 Cr)
+  Shark Tank: ₹1 Cr for 15% from all sharks [WEB HinduBusinessLine 2021-12-28]. Later reports say
+    ₹1.2 Cr for 18% from six sharks [WEB].   [!] The two reports disagree; ask the founders.
+  Targets: "aims to cross ₹70 Cr revenue in FY25" [WEB ET Retail 2024-05-29]; "₹300 Cr turnover, SME IPO
+    in three years" [CD news: Indian Retailer 2025-08-05]; "targets ₹100 Cr valuation" [CD news:
+    Business Standard 2025-06-24]
+Revenue estimate [CD]  $10M–$20M
+Headcount [CD]  64 (2026-09). 29 (2023-04) -> 66 (2024-03) -> 57 (2025-01) -> 64. 2-yr +3%.
+  Sales 23, Operations 12. [!] 5 people listed in Brazil (São Leopoldo): probably mislinked profiles.
+Web [CD]  19,547 visitors/mo; 89% from search. Peak 203,672 (2024-05). [DER] ~90% below peak.
+Founders [CD person_search, exact mode, employer id verified]
+  Ravi Kabra — Co-Founder, 2021-01 → now (person 79375) | linkedin.com/in/kabraravi | Hyderabad
+    Before: Kuehne+Nagel, commodities BD (Australia) 2018–2020; George Weston Foods, Export Manager
+    2014–2018; DuPont export consultant. ICFAI management diploma 2004.
+  Anuja Kabra — COO (person 490715) | linkedin.com/in/anuja-kabra-2b6a79262
+Employee reviews [CD]  none.   Job postings [CD job_search]  not checked for Set B.
+
+
+=============================================================================
+B2. HAIRORIGINALS   (id 730246)
+=============================================================================
+Resolution: name "Hair Originals" -> no match (only salons). Domain hairoriginals.com -> conf 1.0.
+  [!] Spacing matters: the brand is "HairOriginals". Domain fallback is essential.
+Profile [CD]  hairoriginals.com | linkedin.com/company/hairoriginal (8,888 followers, +114% YoY)
+  Founded 2018 | HQ Golf Course Rd, Sector 42, Gurugram | Fashion accessories manufacturing
+  "World's first luxury brand of 100% natural Indian human hair, as shown in Shark Tank India"
+Funding [CD]  $6,729,475 over 5 rounds
+  2022-01-19  pre-seed $80,589    Anupam Mittal, Ashneer Grover, Peyush Bansal (the Shark Tank deal)
+  2022-01-27  pre-seed $398,886
+  2022-12-26  seed $1,250,000     lead Anicut Capital; JITO Angel Network, Dexter Angels, LVX, Kesh Kala FO ...
+  2023-10-18  Series A (amount n/a) Culture Cap, Dominor Investment, She Capital
+  2025-02-04  Series A $5,000,000 lead 12 Flags Group + Anicut Capital; Peyush Bansal
+  Shark Tank: ₹60L from 3 sharks [WEB stylespeak.com]
+Revenue estimate [CD]  $10M–$20M
+Headcount [CD]  101 (2026-09). 32 (2022-12) -> 57 -> 74 -> 98 -> 101. 2-yr +44%, YoY +6%.
+  Sales 25, Operations 22, Arts & Design 11, BD 11. Small UK, US and Nigeria presence.
+Web [CD]  31,749 visitors/mo (MoM +34%). Ads ~$133/mo.
+Employee reviews [CD]  4.2 / 5 (8 reviews). Recommend 76%, outlook 58%.
+Founders [CD, employer id verified]
+  Jitendra Sharma — Founder & CEO, 2019-09 → now (person 23076571) | linkedin.com/in/jiten333 | Gurugram
+    Before: TotalEnergies, process / pre-commissioning lead 2012–2019 (worked across Europe, US and
+    Africa — the origin of the idea [WEB hairoriginals.com blog]). IIT Delhi Chemical Engineering
+    (dual degree) 2008.
+  Ashish Tiwari — Co-Founder, 2019-11 → 2021-12 (person 297432) | IIT Kharagpur dual degree 2011
+    Then: "Independent Consultant and ... Business Owner @ HairForever India" 2021-12 → 2024-09;
+    now co-founder & CSO of DashLoc.
+    [!] Left right before the Shark Tank episode aired (Jan 2022) and moved to a similarly named
+        hair business. Possible competing venture: confirm with the founder.
+  Execs: Piyush Waadhwwani (Chief Customer Officer), Manish Modi (COO). Former Chief of Growth Rohit
+    Dhingra (2024-02 → 2025-05, ex-boAt).
+News [CD]  Series A coverage Feb 2025 (YourStory, Fashion Network, Bar & Bench, Adgully).
+
+
+=============================================================================
+B3. TAGZ FOODS   (Crustdata: "TagZ Foods", id 609458)
+=============================================================================
+Resolution: conf 1.0. [!] A second record "Tagz Foods Dummy" (69434749, same domain) exists; ignore it.
+Profile [CD]  tagzfoods.com | linkedin.com/company/tagz-foods (14,232 followers)
+  Founded 2019 | HQ Domlur, Bengaluru | premium snacks (#GabbarKaFavourite)
+  status "active", acquisition_status "acquired"   [!] same contradiction as VerbalizeIt in Set A
+EXIT [CD funding.acquired_by]  Reliance Consumer Products (id 7671194), 2024-11-14, $3,314,569 (= ₹28 Cr)
+  Described as a "distress sale" / "fire sale" [CD news: Inc42 2024-11-13, StartupStory 2024-11-14]
+Funding before the exit [CD]  $4,215,541 over 9 rounds
+  2019-10 angel $77.5K | 2020-10 seed (Venture Catalysts, 100Unicorns) | 2021-04 seed $500K (VCats)
+  2021-07 seed $538K (Agility Ventures, Arjun Vaidya ...) | 2022-01 Ashneer Grover, Namita Thapar
+  (the Shark Tank deal) | 2022-04 seed $1.1M (Abhishek Deo) | 2023-05 seed $2M (100Unicorns, VCats,
+  Klub, Indifi ...) | 2023-06 Shikhar Dhawan | 2024-01 GrowthCap Ventures
+  Shark Tank: ₹70L for 2.75% [WEB] -> [DER] implied valuation ~₹25.5 Cr
+  [DER] Total raised ~₹35 Cr (at ~₹84/$) vs a ₹28 Cr exit -> late investors likely lost money.
+Headcount [CD]  22 now. Peak 46 (2023-06). 2-yr -24%.
+Web [CD]  2,191 visitors/mo, QoQ -67%. Brand winding down under its new owner.
+Founders [CD, employer id verified]
+  Anish Basu Roy — Co-Founder & CEO, 2019-05 → 2024-11 (person 283558)
+    NOW: Business Head, Snacks & Sweets at Reliance Consumer Products (2024-12 →)
+    [DER] Moved into the acquirer -> acqui-hire.
+    Before: SVP at Healthify; co-founder & CEO of Shotang India 2013–2018 (second-time founder);
+    Nokia sales. SCMHRD PGDM 2006; GEC Bhopal BE 2004.
+  Sagar Bhalotia — Co-Founder, 2019-04 → "now" (person 264389) | IIT Bombay BTech Chem Eng 2013
+    Before: Healthify, FreshMenu, OYO GM, Quikr PM.
+    [!] His profile still says current, a year after the acquisition. Probably stale.
+  Confirmed by press: "Founded in 2019 by Anish Basu Roy and Sagar Bhalotia" [WEB, Nov 2024]
+Web noise [WEB]  One result calls TagZ a "fraud company". It's an unsourced forum post; kept out of
+  the facts and listed only as something to check.
+
+
+=============================================================================
+B4. BEYOND SNACK   (id 653773)
+=============================================================================
+Resolution: name -> TWO matches at conf 1.0: 653773 (beyondsnack.in, Kerala, 51–200) and 2110681
+  (beyondsnack.ca, founded 2025, "myself only"). Chosen by country and description.
+Profile [CD]  beyondsnack.in | linkedin.com/company/beyondsnack (11,501 followers, +44% YoY)
+  Founded 2018 in Kerala; HQ now Andheri, Mumbai | Nendran banana chips, women-led facility
+Funding [CD]  $12,616,748 over 4 rounds
+  2021-04-03  seed $6,814?   100X.VC, Faad Network, HEM Angels, Mitesh Nandlaskar, Sat Industries
+              [!] the amount looks truncated
+  2023-07-27  seed $3,500,000   lead Nabventures
+  2024-10-10  seed $809,934     lead Enrission India Capital
+  2025-01-09  Series A $8,300,000 (~₹71 Cr) lead 12 Flags Group; Enrission, Faad, Nabventures
+  Shark Tank: ₹50L for 2.5% from Aman Gupta + Ashneer Grover [WEB PitchBase; Indian Retailer 2023-01-31]
+  [!] Crustdata's funding records do NOT include the Shark Tank round or those two investors.
+Revenue estimate [CD]  $10M–$20M
+Headcount [CD]  62 (2026-09). 15 (2023-02) -> 38 -> 49 -> 57 -> 62. 2-yr +35%, YoY +11%, QoQ -7%.
+  Sales 18, Operations 12, Marketing 6, QA 5.
+Web [CD]  11,260 visitors/mo. Peak 132,763 (2024-12, around the raise). MoM -24%.
+Employee reviews [CD]  4.3 / 5 (4 reviews).
+Founders [CD, employer id verified]
+  Manas Madhu — Founder & MD, 2018-05 → now (person 499523) | linkedin.com/in/manasmadhu | Mumbai
+    Before: IBS Software consultant; Capgemini senior consultant. SIBM Pune MBA 2013; Univ. of Kerala
+    BTech 2006.
+  Jyoti Rajguru — Co-founder & Director Operations, 2022-06 → now (person 499524)
+    Before: Mondelez India (transportation, planning) 2018–2022; Cummins supply chain. Symbiosis MBA;
+    COEP BTech. [DER] Joined after Shark Tank: a "later co-founder" (operations hire).
+  Head of Marketing: Devanshi Shah (appointed Sept 2026) [CD news]. Previous head of marketing
+    Rajeshwari Iyer (Jan 2025 interview) [CD news]. [DER] Marketing-head turnover within ~18 months.
+
+
+=============================================================================
+B5. QZENSE LABS   (Crustdata: "qZense Labs", id 13987)
+=============================================================================
+Resolution: conf 1.0.
+Profile [CD]  qzense.com | linkedin.com/company/qzense (3,448 followers)
+  Founded 2019 | HQ Koramangala, Bengaluru | IoT for fresh-food quality assessment
+  [!] Crustdata industry says "IT Services & Consulting". Its NAICS / LinkedIn category undersells the
+      deep-tech nature.
+Funding [CD]  $868,227 over 5 rounds
+  2019-09 seed $253K (Entrepreneurs First, SOSV, SOSV HAX) | 2019-12 JioGenNext (non-equity)
+  2020-12 seed $615K (lead Manish Modi, Vedant Loyalka; 100Unicorns, Chennai Angels, Lumis, EF, SOSV)
+  2023-01 Dominor Investment | 2023-05 grant, Dept. of Science & Technology
+  Shark Tank: NO DEAL — "Sharks rejected"; pitched with ~₹15L annual revenue [WEB]
+  Current valuation ₹22.2 Cr; founders hold 24.42% [WEB Tracxn 2026-10-04]
+Revenue estimate [CD]  $1M–$2.5M   [!] [INF] high against ₹15L revenue at pitch and 11 staff; unverified
+Headcount [CD]  11. Peak 15 (2024-03). 2-yr -21%, YoY -15%.
+  [!] Regions include Kyiv (2), France (2), Stockholm, Oregon: likely mislinked profiles (name collision).
+Employee reviews [CD]  3.7 / 5 (3 reviews). Work-life 2.0, management 2.0, comp 1.5.
+Founders [CD, employer id verified]
+  Dr. Srishti Batra — Founder, 2019-05 → now (person 275883) | linkedin.com/in/srishtibatra
+    PhD, NCBS-TIFR (olfaction & chemical ecology) 2019; IISER Mohali BS-MS 2014. Founder-in-residence at
+    Entrepreneurs First 2019.
+  Rubal Chib — Co-Founder & CEO, 2019-05 → 2026-06 (person 283508) | linkedin.com/in/rubalchib
+    Before: Havells R&D project lead; Cube26 IoT engineer. IIM Bangalore Goldman Sachs 10K Women 2022.
+    Since leaving: EIR at The Foundery (2026-04), INSEAD AI Venture Lab mentor.
+    [!] The CEO co-founder LEFT IN JUNE 2026. This is the biggest current key-person risk in the set.
+  Board observer: Manish Modi (Mastermind Capital), seed lead.
+
+
+=============================================================================
+B6. BLUEPINE INDUSTRIES -> BLUEPINE FOODS PVT LTD   (id 12347153)
+=============================================================================
+Resolution: "BluePine Industries" -> no match (Reliance Industries, Bluepine home-services app, ...).
+  "BluePine Foods" -> conf 0.8; domain bluepinefoods.com -> conf 1.0.
+  [!] The input name was wrong. The company describes itself as "First pitcher and season opener at
+      #sharktankindia" (self-description, confirms identity).
+Profile [CD]  bluepinefoods.com | linkedin.com/company/bluepinefoods (2,154 followers)
+  Founded 2013 (CD) | HQ NIT Faridabad, Haryana | frozen momos, dim sums, spring rolls
+  Incubated at NSRCEL-IIM Bangalore; Technoserve accelerator. Consumer brand "Momo Mami" / "Yangkiez".
+Funding [CD]  $0 recorded; 1 round — IIT Mandi Catalyst seed (2018, amount n/a)
+  Shark Tank: Aditi asked ₹50L; counter-offered ₹75L for 12%; Ashneer, Aman and Vineeta accepted
+    [WEB professionalsaathi.com; moneycontrol 2026-08-21 "secured Rs 75 lakh"]
+  [!] The Shark money is missing from Crustdata funding. Either the deal didn't close as aired, or the
+      record is incomplete. Ask for the cap table.
+  [!] A web result describing "₹50L for 20% with Varun Alagh" belongs to a different pitch; ignored.
+Revenue estimate [CD]  $1M–$2.5M   [INF] unverified for a 4-person team
+Headcount [CD]  4 (2026-08); 2–4 since 2023.
+Web [CD]  7,971 visitors/mo; volatile (1,986 → 10,190 within 3 months).
+Founders [CD, employer id verified]
+  Aditi Bhutia Madan ("Momo Mami") — Founder Director, 2014-12 → now (person 523740)
+    linkedin.com/in/momomami | New Delhi. Also founder of Momo Mami / Yangkiez (2017 →). Earlier
+    founded Satthva Atithya (institutional hospitality) and PVR Kitchen n Kafe; TV chef ("Rasoi Se").
+    Profile lists "Pitcher @ Shark Tank India 2021-10 → 2022-01".
+  Naveen Panwar — Co-Founder & Director, 2016-01 → 2023-10 (person 680587) | MNIT Jaipur BTech 2014
+    [!] Co-founder left in Oct 2023; now in the founder's office at Select Brands International.
+  Surbhi Singhania — Head, Growth & Strategy (2026-01 →).
+
+
+=============================================================================
+B7. JUGAAD LIFE
+=============================================================================
+Input itself says: "Ritesh Agarwal-backed startup pitch? (not Season 1; avoid confusion)".
+Resolution: names "Jugaad Life", "JugaadLife", "Jugaad Life Pvt Ltd" -> only unrelated companies
+  (JUGAAD Mauritius architecture, Jugaad ad collective, Social Jugaad ...; best conf 0.6).
+Web [WEB]  "Jugaad Life" + Shark Tank India -> only generic "jugaad in startups" articles.
+VERDICT  UNRESOLVED. No evidence this company exists or pitched. [INF] Likely a hallucinated entry in
+         the input list. The portal should say exactly this rather than return a lookalike company.
+
+
+-----------------------------------------------------------------------------
+SET B CREDITS
+-----------------------------------------------------------------------------
+company_identify x6 calls ...... 0  (free)
+company_enrich (6 ids) ......... 12
+person_search x6 ............... ~10.9
+web_search_live x7 ............. 7
+TOTAL .......................... ~30
+
+
+#############################################################################
+SET A — US SHARK TANK (earlier input)
+#############################################################################
+
+Source tags used on every fact:
+  [CD]   Crustdata record (tool + id given in the company header)
+  [WEB]  web_search_live result (Crustdata's web search; publisher + date given)
+  [DER]  derived by us from the data (method shown)
+  [INF]  our inference, not a sourced fact
+  [!]    data-quality warning: sources conflict, or the field is plainly wrong
+
+-----------------------------------------------------------------------------
+SUMMARY
+-----------------------------------------------------------------------------
+Company          Resolved?          Crustdata status   Real status (web-verified)            Shark Tank deal (as aired)
+VerbalizeIt      yes, id 1919920    "active"     [!]   Acquired by Smartling, May 2016       Kevin O'Leary $250K / 20% — fell through after the show
+Tom + Chee       yes, id 1228597    "active"           Operating, owned by GSR Brands         Mark Cuban + Barbara Corcoran (Cuban later exited)
+                                                       (Gold Star Chili) since 2017
+Ryan's Barkery   NO — not in graph  n/a                No longer in business (renamed         Barbara Corcoran $25K / 25%
+                                                       Ry's Ruffery)
+Stella Valle     yes, id 1413450    "active"           Low-activity; both founders left 2022  Mark Cuban + Lori Greiner $150K / 35%
+Geek Chic        yes, id 1878179    "active"     [!]   CLOSED June 2017, Chapter 7            (not confirmed in sources pulled)
+
+Main lesson: Crustdata says "active" for all four it resolved. Two of them (VerbalizeIt, Geek Chic)
+have been gone for 8+ years, and its revenue estimate for Tom + Chee is off by orders of magnitude.
+The portal must cross-check status, revenue and headcount against dated web evidence.
+
+
+=============================================================================
+1. VERBALIZEIT
+=============================================================================
+Input: "VerbalizeIt | Human-powered translation service"
+Resolution: company_identify(names) -> id 1919920, confidence 1.0, matched on name.
+  Other candidates seen (rejected, all conf 0.4): Verbalize (BR training), VERBALIZE (abuse-report app),
+  Verbalize (PR). Rejected because their industry and description don't match translation.
+
+COMPANY PROFILE [CD company_enrich id 1919920]
+  Domain           verbalizeit.com   (all_domains also lists smartling.com — the acquirer)
+  LinkedIn         linkedin.com/company/verbalizeit   (2,002 followers, +2% YoY)
+  Founded          2011
+  HQ               79 Madison Ave, 2nd Floor, New York, NY, USA
+  Type             Privately Held; acquisition_status = "acquired"; status = "active"   [!] contradictory
+  Industry         Translation & Localization; NAICS 541930 Translation and Interpretation Services
+  Specialities     Interpretation, translation, subtitling, captioning, website & app localization
+
+FUNDING [CD funding]
+  Total raised     $2,448,000 over 3 rounds (all seed)
+    2012-05-25  Seed  $118,000    Techstars, Right Side Capital Management
+    2012-11-18  Seed  $1,500,000  (investors not listed)
+    2014-10-13  Seed  $830,000    lead FG Angels; Upslope Ventures, Marc Bell Ventures
+  Exit             Acquired by Smartling (crustdata id 637299) on 2016-05-19, amount undisclosed
+  Shark Tank       Season 4. Asked $250K for 15%. Accepted Kevin O'Leary's $250K for 20% on air.
+                   The deal did not close afterwards; the founders sought funding elsewhere.
+                   [WEB sharktankblog.com/business/verbalizeit; Looper 2022-06-30; NYT 2013-06-12;
+                   SlashGear 2025-02-11]
+  Other            Won $250K in the Blue Ocean Challenge [WEB/CD news: Xconomy 2015-06-01]
+
+HEADCOUNT [CD headcount]
+  Now 45 (2026-09-11), was 58 on 2022-12-26. YoY -2.2%, 2-yr -8.2%.
+  By role: Media & Communication 32, Administrative 7, Marketing 2, Operations 2, IT 1, Military 1.
+  [!] [INF] These 45 are almost certainly ex-translators and contractors whose profiles still list
+      VerbalizeIt. The company itself was absorbed in 2016.
+
+REVENUE ESTIMATE [CD revenue.estimated]  $2.5M–$5M, flat every month 2025-01 → 2026-10
+  [!] [INF] A model estimate for an entity that hasn't existed independently since 2016. Not usable.
+
+WEB / SEO [CD web_traffic, seo]
+  verbalizeit.com visitors: ~449K (2025-03) → ~701K (2025-06) → 0 (2026-03).
+  SEO: $27,100/mo Google Ads budget, 29,920 organic clicks/mo.
+  [!] [INF] Ad spend and traffic of this size almost certainly belong to smartling.com (the
+      verbalizeit.com domain redirects there). Do not attribute it to VerbalizeIt.
+  SEO competitors: lokalise.com, phrase.com, smartcat.com, weglot.com, rws.com.
+
+EMPLOYEE REVIEWS [CD employee_reviews]  3.1 / 5 from 50 reviews
+  Work-life 3.8, culture 3.5, senior mgmt 3.2, career 3.0, comp & benefits 2.7.
+  CEO approval 66%, recommend to a friend 58%, business outlook 50%.
+
+FOUNDERS [CD person_search, past employer = 1919920]
+  Ryan Frankel — CEO & Co-Founder, 2011-04 → 2016-10   (crustdata_person_id 3043730)
+    linkedin.com/in/ryanvfrankel | Greater Philadelphia
+    Now: CEO of Workup. Headline: "4x Company Founder ... Goldman Sachs Alumnus".
+    Wharton MBA (WG'12) [WEB Wharton Magazine]
+  Kunal Sarda — COO & Co-Founder, 2012-05 → 2016-05   (crustdata_person_id 283729)
+    linkedin.com/in/kunalsarda | New York City Metro
+    Now: "Building healthcare's all-star admin" (healthcare startup)
+    Wharton grad [WEB sharktankblog.com]
+  [DER] Both founders left within 0–5 months of the May 2016 acquisition. After the acquisition
+        they "remain[ed] with Smartling in leadership positions" [WEB Wharton Magazine].
+  Notable alumni: Marshall Hayes — Advisor 2015 ("1 Previous Exit", Boulder).
+
+NEWS [CD news + WEB]
+  2016-05-24  AlleyWatch      "This NYC Startup Was Just Acquired to Destroy This Barrier"
+  2016-05-21  Vator           M&A roundup (Smartling acquires VerbalizeIt)
+  2015-11-04  Business Insider "Getting sick in China might've been the best thing to happen to this
+                               startup founder"
+  2015-06-01  Xconomy         Blue Ocean Challenge $250K
+  2025-02-11  SlashGear       "What Happened To The VerbalizeIt Translation App From Shark Tank"
+
+VERDICT [INF]  Successful small exit (seed-funded → acquired in 5 years). Not investable today:
+               the company no longer exists independently. Founder track record is positive
+               (both went on to found or lead new companies).
+
+
+=============================================================================
+2. TOM + CHEE   (Crustdata name: "Tom & Chee")
+=============================================================================
+Input: "Tom + Chee | Grilled-cheese and tomato-soup restaurant chain"
+Resolution: company_identify(names) -> id 1228597, confidence 1.0.
+  Other candidates (rejected): per-store pages "Tom + Chee - Lancaster" (64991463) and
+  "Tom + Chee - Kennesaw" (14827176), conf 0.8 — franchise locations, not the parent company.
+  "TOM" bank (Turkey), conf 0.6.
+  [INF] The portal should roll franchise-location pages up into the parent company.
+
+COMPANY PROFILE [CD company_enrich id 1228597]
+  Domain           tomandchee.com   | LinkedIn linkedin.com/company/tom-chee (914 followers, +2.5% YoY)
+  Founded          2009 (started as a tent next to the Fountain Square ice rink, Cincinnati)
+  HQ               650 Lunken Park Dr, Cincinnati, OH, USA
+  Industry         Limited-Service Restaurants (NAICS 722513); fast casual
+  Size range       501–1000 (LinkedIn bucket) vs 107 observed headcount   [!] conflict
+  Status           "active"; acquisition_status "acquired"
+
+OWNERSHIP / FUNDING [CD funding]
+  Venture rounds   none recorded ($0)
+  Acquired by      Gold Star Chili (crustdata id 6566020) on 2017-10-09
+                   [WEB Franchise Times 2021-04-14: GSR Brands bought it Sept 2017, spent 2+ years
+                   retooling, relaunched franchising in 2020]
+  Shark Tank       Aired May 2013. Deal with Mark Cuban and Barbara Corcoran; the founders later
+                   parted ways with Cuban over a conflict, leaving Barbara as the only shark investor
+                   [WEB Tampa Bay 2014-08-28; tonetoatl.com 2016-11-01].
+                   Featured on the show three more times [WEB].
+  Today            Co-branded "Gold Star + Tom & Chee" locations; franchise expansion pages active
+                   [WEB franchise.tomandchee.com; franchising.com 2021-07-13; Cincinnati 2021-12-16]
+
+HEADCOUNT [CD headcount]
+  107 (2026-09-08), range 103–111 since 2022-04. Flat (YoY -1.8%).
+  By role: Operations 47, Support 17, Business Development 11, Education 6, Sales 6.
+
+REVENUE ESTIMATE [CD revenue.estimated]  $500M–$1B
+  [!] [INF] Implausible. ~107 people and a handful of fast-casual units cannot generate this.
+      The model is probably conflating it with the parent (GSR Brands / Gold Star) or misreading
+      the 501–1000 size bucket. Treat as unknown.
+
+WEB / SEO [CD]
+  tomandchee.com: 7,408 visitors/mo now (MoM -28%, QoQ -34%). Peak 71,150 (2024-09).
+  Traffic sources: 48% search, 20% direct. Organic clicks 6,617/mo.
+
+EMPLOYEE REVIEWS [CD]  3.5 / 5 from 40 reviews
+  Work-life 3.1, culture 3.2, senior mgmt 2.9, career 2.6, comp 2.3.
+  CEO approval 36%, recommend 50%, business outlook 21%   (weak).
+
+FOUNDERS & LEADERSHIP
+  Corey Ward — Co-Founder / CMO, 2009-01 → 2018-01   [CD person 213524338, employer id matches]
+    linkedin.com/in/corey-e-ward | Cincinnati. Background: art director / designer (ACA College of
+    Design 1996). Now creative director / brand strategist.
+    [DER] Left ~3 months after the Oct 2017 acquisition.
+  Trew Quackenbush — Co-Founder   [WEB only: named as co-founder alongside Corey Ward in multiple
+    articles]. NOT FOUND in Crustdata person search.
+  Jennifer Quackenbush — "Founder + Co owner @ Tom+Chee (2009-12 → now)"   [CD person 41030353]
+    [!] The role is not linked to the company id (id=0). She is now an Event Coordinator.
+  Jennifer Rachford — "Co-Founder @ Tom & Chee (2009-12 → now)"   [CD person 420896]
+    [!] Listed as co-founder in Crustdata's people.founders, but her headline is "Franchise Development
+        Manager" and no press source names her as a founder. Unverified.
+  Roger David — CEO / President of GSR Brands (Gold Star / Tom & Chee), 2017-10 → now
+    [CD person 356634]. 25+ yrs restaurant / retail marketing.
+  Aaron Morgan — "CEO at Tom+Chee", Orlando   [CD person 420897]  [!] probably a franchisee
+    entity; conflicts with Roger David as CEO.
+  Earlier execs: David Krikorian — President 2013-02 → 2015-04; Marty Boyer — VP & Director of
+    Marketing 2013 → 2016; Michael Buckles — Franchise Owner 2016-10 → 2019-11 (ex-Five Guys DM).
+
+NEWS [CD news]  The 2 items Crustdata returned are irrelevant (Navajo election, Tom Brady dinner).
+  [!] Name-collision noise. Relevant news came from web search (above).
+
+VERDICT [INF]  Not a venture deal. A franchise brand inside a regional restaurant group, with flat
+               headcount and falling web traffic. The original founders have exited.
+
+
+=============================================================================
+3. RYAN'S BARKERY   (later renamed Ry's Ruffery)
+=============================================================================
+Input: "Ryan's Barkery | All-natural dog treats and biscuits"
+Resolution: NOT RESOLVED.
+  company_identify names ["Ryan's Barkery", "Ryans Barkery", "Ryan’s Barkery"] -> only unrelated
+  matches (Ryan's Travel, Ryans Computers, ...; best conf 0.6).
+  domain ryansbarkery.com -> no match. LinkedIn /company/ryans-barkery -> no match.
+  -> No Crustdata company record. Everything below is web-sourced or person-level.
+
+PEOPLE [CD person_search]
+  Daniela Kelly — headline "Co-Founder at Ryan's Barkery, LLC", Stamford, CT   [CD person 207792822]
+    UConn BS Design & Resource Management 1992. No employment rows on the profile.
+  Ryan Kelly — founder (age ~11 when the episode aired, May 2013)   [WEB newstimes.com 2013-05-09]
+    Not identifiable in Crustdata (common name; no Barkery/Ruffery employment record).
+    [INF] Founder was a minor. The portal should not try to profile him further.
+
+SHARK TANK / HISTORY [WEB]
+  Season 4. Asked $25,000 for 25%; Barbara Corcoran matched it ($25K / 25%).
+    [WEB Shark Tank update 2025-07-03; newstimes.com 2013-05-09; Dec 2013 update interview]
+  Renamed Ry's Ruffery shortly after the show; Norwalk / Stamford, CT.   [WEB allsharktankproducts.com]
+  Status: no longer in business; website shut down, products unavailable.
+    [WEB Gazette Review "Ryan's Barkery Shark Tank 2026 Update"]
+
+VERDICT [INF]  Defunct micro-business. Good test case: the portal must return an
+               "unresolved in Crustdata" result with web-only evidence, not invent a record.
+
+
+=============================================================================
+4. STELLA VALLE
+=============================================================================
+Input: "Stella Valle | Charm jewelry and bracelets"
+Resolution: company_identify(names) -> id 1413450, confidence 0.8 (name on record is
+  "Stella Valle [We're Hiring]"). Rejected: Stella-Jones (manufacturing), Stella & Dot (jewelry, but a
+  different company — a near-miss to watch for), Stella Maris College.
+
+COMPANY PROFILE [CD company_enrich id 1413450]
+  Domain           stellavalle.com | LinkedIn linkedin.com/company/stella-valle (221 followers)
+  Founded          2009, by West Point graduates and Army veterans (sisters)
+  HQ               7 E Bridge St, New Hope, PA, USA
+                   (earlier pop-up shop at 79 Main St, Flemington, NJ   [WEB nj.com 2020-01-14])
+  Industry         Jewelry retail / e-commerce (NAICS 458310)
+  Status           "active"; not acquired
+  Retail           Sold at Target (2016)   [WEB "New at Target: Stella Valle Jewelry" 2016-03-14]
+
+FUNDING [CD funding]  No venture rounds recorded.
+  Shark Tank       Season 4, Ep 25 (aired 2013-05-17). Deal: Mark Cuban + Lori Greiner,
+                   $150,000 for 35%.   [WEB seenintank.com; "Where Are They Now" 2014-05-02]
+
+HEADCOUNT [CD headcount]  1 person (2026-08-10); 2 in 2022-08, 1 ever since.
+  Only identified employee: Zachary Baker, Director of Finance   [CD person 210746231]
+  [!] The company name says "[We're Hiring]", but there are 0 job postings in the index and
+      headcount is flat at 1.
+
+REVENUE ESTIMATE [CD]  $1M–$2.5M   [!] [INF] unlikely with 1 employee and almost no web traffic.
+
+WEB / SEO [CD]  stellavalle.com: 0 visitors most months of 2026 (171 in Jul, 1,148 in Aug).
+  Organic clicks ~100/mo. No ad spend.
+EMPLOYEE REVIEWS [CD]  none.
+JOB POSTINGS [CD job_search]  0.
+
+FOUNDERS
+  Ashley (Dellavalle) Jung — Co-Founder & COO, 2009-11 → 2022-09   [CD person 56172248,
+    employer id matches]. linkedin.com/in/ashley-d-jung | Erwinna, PA.
+    Headline: "Combat Tested Leader | Shark Tank Winner | AI-First Innovator".
+  Paige (Dellavalle) Walker — "CEO, Stella Valle" 2009-11 → 2022-04   [CD person 188609312,
+    fit "possible"]. linkedin.com/in/paige-walker-984b6737.
+    West Point BS Business Mgmt / Systems Engineering 2009; Sales Engineer at VIAVI 2009–2011.
+    Since 2022: Co-Founder of The Brightwood Skin (COO until 2025-11); before that Head of Business
+    Operations at JECT 2021–2022.
+    [!] Her Stella Valle role is not linked to the company id (id=0). The match rests on the name
+        change (Dellavalle → Walker, confirmed in a Facebook mention: "Paige Dellavalle Walker of
+        Stella Valle"), the dates and West Point. Medium confidence.
+  [DER] BOTH founders left in 2022 (Apr and Sep). Key-person risk = maximum.
+  Other alumni: Paul Fioravanti — Strategic Advisor 2020; Jacob Richmann — EVP Sales (contract) 2016;
+    Lori Mele — Brand Manager 2017–2018; Megan Kinney — Brand Ambassador Relations Dir. 2019.
+
+NEWS  Crustdata news: none. Web: Target launch 2016, NJ pop-up 2020; recent items are
+      "where are they now" / net-worth blogs (low quality, e.g. "net worth $5M" — unsourced).
+
+VERDICT [INF]  Founder-led brand that peaked around 2016–2020 (Target, pop-up store). Both founders
+               have moved on; the company looks dormant or in maintenance mode.
+
+
+=============================================================================
+5. GEEK CHIC
+=============================================================================
+Input: "Geek Chic | Handcrafted geek-themed furniture"
+Resolution: company_identify(names) -> TWO matches with confidence 1.0:
+  1878179  Geek Chic — geekchichq.com, furniture manufacturing, Everett WA   <- chosen (description match)
+  62691601 Geek&Chic — geekandchic.es, recycled-circuit jewelry, Spain       <- rejected
+  Also Geek Chic Consulting, Marketing Geek Chic (conf 0.8).
+  [!] Two exact-confidence hits: the portal must break the tie on description / industry, or ask.
+
+COMPANY PROFILE [CD company_enrich id 1878179]
+  Domain           geekchichq.com | LinkedIn linkedin.com/company/geek-chic (133 followers, falling)
+  Founded          2008 | HQ 711 100th St SE, Everett, WA, USA
+  Industry         Wood household furniture manufacturing (NAICS 337122). Gaming tables, comic storage,
+                   collectibles display, office retrofitting. Handcrafted north of Seattle.
+  Type             "Public Company"   [!] wrong — it was a small private workshop
+  Status           "active"           [!] WRONG — see below
+
+ACTUAL STATUS [WEB]
+  Ceased operations, announced 2017-06-13 on its website and social media ("It is with great sadness
+  that I must announce Geek Chic has ceased operation. Despite heroic efforts by many, this outcome is
+  out of our hands.")   [WEB FusionHaa 2017-06-13; multiple outlets 2017-06-16]
+  Chapter 7 bankruptcy; under $300 in the bank at closing.   [WEB Polygon 2017-07-19]
+  Founder Robert Gifford confirmed the closure on Twitter.   [WEB FusionHaa 2017-06-13]
+
+HEADCOUNT [CD]  41 (2026-08-31). Was 32 in 2022-11 and peaked at 43 in 2024.
+  By role: Business Development 21, Operations 4, Arts & Design 3, ...
+  [!] [INF] A company closed in 2017 cannot grow headcount in 2023–2024. These are stale or mislinked
+      profiles. Crustdata's own people data agrees: the last production staff left in June 2017
+      (Production Manager Cody Hunemuller 2014-11 → 2017-06; Woodworker AJ Hansen 2016-05 → 2017-06).
+
+REVENUE ESTIMATE [CD]  $2.5M–$5M through 2026-10   [!] fiction for a company closed in 2017.
+WEB [CD]  geekchichq.com showed 212,826 visitors in 2024-10 and ~40–68K/mo in 2025, now 0.
+  Organic SEO competitors are Swiss pharmacies.
+  [!] [INF] The lapsed domain was almost certainly re-registered by an unrelated party.
+EMPLOYEE REVIEWS [CD]  1 review, 1.0 / 5.
+FUNDING [CD]  none recorded.
+
+FOUNDER
+  Robert Gifford — founder   [WEB only]. NOT FOUND in Crustdata. A name-scoped person search
+    returned only name-collision companies ("Geek Chic Events" UK, "Geek Chic Cosmetics" OR,
+    "Geek Chic" Cairo).
+    [!] The person_search company filter was OR-unioned with the text query (managed mode), so
+        off-company profiles came back. Use mode "exact" or re-check employer id on every result.
+  Other alumni [CD]: Joseph Han — Senior Industrial Designer 2010–2015; Jen Thomas — Art Director
+    2011–2015; Kevin Forney — Graphic Designer 2013–2015.
+
+NEWS [CD news]  6 of 7 items are about the "geek chic" fashion trend (Acne Studios, Song Hye Kyo...).
+  [!] Pure name-collision noise. One possibly relevant item: "Edmonds business sets the table for
+      gamers" (HeraldNet 2026-08-05) — a nearby gaming-table maker, not verified as related.
+
+VERDICT [INF]  Defunct since 2017 (bankruptcy). Crustdata's live-looking metrics are stale or
+               contaminated. This is the clearest case for the portal's cross-check.
+
+
+-----------------------------------------------------------------------------
+CREDITS LOG
+-----------------------------------------------------------------------------
+company_identify x8 ............. 0      (free)
+company_enrich x1 (4 ids) ....... 8
+person_search x9 ................ ~13.9
+web_search_live x11 ............. 11
+job_search x4 ................... 0      (no results)
+TOTAL ........................... ~33 credits   (15,167 remaining)
+
+Plan-gated fields we could not get: company headcount and locations on identify; technographics,
+hiring.recent_openings and social_profiles.crunchbase on enrich (returned empty, not errors).
+Raw enrich response saved in this session's scratchpad (enrich_raw.json) for reuse in the build.

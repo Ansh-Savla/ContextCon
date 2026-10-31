@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Sightline</title>
+  <meta name="description" content="Investor-grade company profiles on the Crustdata identity graph.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@500&family=Fira+Sans:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="/static/styles.css">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230B1B33'/%3E%3Cpath d='M6 16c3-5 6.5-7.5 10-7.5S23 11 26 16c-3 5-6.5 7.5-10 7.5S9 21 6 16z' fill='none' stroke='%23D9B66C' stroke-width='2'/%3E%3Ccircle cx='16' cy='16' r='3.2' fill='%23fff'/%3E%3C/svg%3E">
+</head>
+<body>
+  <a class="skip" href="#profile">Skip to profile</a>
+  <header class="topbar">
+    <div class="topbar-inner">
+      <a class="brand" href="/" aria-label="Sightline home">
+        <svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" fill="currentColor"/><path d="M6 16c3-5 6.5-7.5 10-7.5S23 11 26 16c-3 5-6.5 7.5-10 7.5S9 21 6 16z" fill="none" stroke="#D9B66C" stroke-width="2"/><circle cx="16" cy="16" r="3.2" fill="#fff"/></svg>
+        <span class="brand-name">Sightline</span>
+      </a>
+      <span class="brand-tag">Investor-grade company profiles on the Crustdata identity graph</span>
+      <div class="topbar-meta">
+        <span id="run-stats" class="run-stats"></span>
+        <span id="mode-pill" class="source-badge" title="Checking data source">
+          <span class="dot" aria-hidden="true"></span><span class="txt">Connecting…</span>
+        </span>
+      </div>
+    </div>
+  </header>
+
+  <section id="hero" class="hero" aria-labelledby="hero-h">
+    <div class="hero-inner">
+      <div class="hero-copy">
+        <p class="eyebrow">For VCs, angels and the curious</p>
+        <h1 id="hero-h">Company intelligence for investors.</h1>
+        <p class="lede">Founders, funding, traction and reported financials for any startup. Verified on Crustdata, cited to the source, and readable by anyone.</p>
+      </div>
+      <form id="search" class="search" autocomplete="off">
+        <div class="field grow">
+          <label for="q">Company</label>
+          <input id="q" name="q" type="text" placeholder="Company name, website or LinkedIn URL" required>
+        </div>
+        <button id="run" class="btn-primary" type="submit">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="m20 20-4.2-4.2"/></svg>
+          <span>Analyze</span>
+        </button>
+      </form>
+      <div class="examples-wrap">
+        <span class="examples-label" id="ex-label">Try a sample</span>
+        <div id="examples" class="examples" role="list" aria-labelledby="ex-label"></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="progress" class="progress" hidden aria-live="polite">
+    <div class="progress-inner">
+      <ol class="steps" id="steps">
+        <li data-step="0"><span class="bullet" aria-hidden="true"></span><span>Reading request</span></li>
+        <li data-step="1"><span class="bullet" aria-hidden="true"></span><span>Resolving identity</span></li>
+        <li data-step="2"><span class="bullet" aria-hidden="true"></span><span>Researching</span></li>
+        <li data-step="3"><span class="bullet" aria-hidden="true"></span><span>Cross-checking</span></li>
+        <li data-step="4"><span class="bullet" aria-hidden="true"></span><span>Profile ready</span></li>
+      </ol>
+      <p id="step-msg" class="step-msg"></p>
+      <details class="agent-log">
+        <summary>Agent log</summary>
+        <ol id="ticker"></ol>
+      </details>
+    </div>
+  </section>
+
+  <main id="profile" class="profile" tabindex="-1"></main>
+
+  <div id="pop" class="pop" role="dialog" aria-label="Source quote" hidden></div>
+
+  <div id="drawer-root" class="drawer-root" hidden>
+    <div class="drawer-backdrop" data-close></div>
+    <aside id="drawer" class="drawer" role="dialog" aria-modal="true" aria-labelledby="drawer-title" tabindex="-1"></aside>
+  </div>
+
+  <footer class="foot">
+    <p>Sightline · company data from the Crustdata identity graph · web research labelled where used · no outreach is sent</p>
+  </footer>
+
+  <script src="/static/vendor/echarts.min.js"></script>
+  <script src="/static/app.js"></script>
+</body>
+</html>

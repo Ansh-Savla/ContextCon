@@ -96,5 +96,5 @@ export type CaseResult = {
   evidence: Evidence[];
   trace: TraceEvent[];
   spend: { crustdataCredits: number; crustdataCalls: number; cacheHits: number; llmCalls: number; llmTokens: number; budgetPerRun: number };
-  profile?: Record<string, unknown>;
+  profile?: { name?: string; domain?: string; founded?: number; hq?: string; headcount?: number; range?: string; description?: string; linkedin?: string; logo?: string };
 };

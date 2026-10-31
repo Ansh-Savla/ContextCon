@@ -1,139 +1,69 @@
-# SignalGate: Shark Tank Diligence Desk (India + US)
+# SignalGate: a diligence desk for investors and lenders (India + US)
 
-**SignalGate is an AI diligence desk.** You paste a deal or vendor request about a startup. Its agents investigate the request through **CrustData's canonical identity graph** and then finish the job:
-- an IC memo for an investor
-- an auditor-ready vendor file for procurement
-- a payment hold with a complaint-ready case file for accounts payable
+**One request in, finished work out.** Paste a forwarded pitch, a loan application, or an email asking you to wire money. SignalGate's agents:
+1. verify the company and its people in **CrustData's canonical identity graph**
+2. screen for payment fraud and adverse news (**Tavily**, with a CrustData web fallback)
+3. build the investment case or the credit case
+4. decide using cited rules
+5. **complete the work**: an IC or credit memo, the deal pipeline or credit file updated, conditions precedent listed, and a wire placed on hold when fraud is suspected
 
 A human only sees the exceptions.
 
 Built for ContextCon 03 at IIT Bombay (CrustData × YC), in the *Investing* and *Trust & Compliance* themes.
 
-![SignalGate case screen](concept/ui-mockup.png)
+## One desk, two clients
 
-## What it does, end to end
-
-```
-messy request ─► INTAKE ─► INVESTIGATOR ──tools──► CrustData: identify · enrich · people · jobs · web search/fetch
-(email/pitch/      │            │  evidence ledger: every fact → record id / URL / field path
- form/tip)         │            ▼
-                   │       VERIFIER: deterministic rules + Heartbeat → statuses and outcome
-                   │            ▼
-                   └──────► CASE CLERK ─► memo / vendor file / case file
-                                         + local action: deal pipeline · vendor master · AP payment hold
-                                         └─► Exceptions inbox (the only human queue)
-     brain = Gemini (gemini-3.8-flash → flash-lite) → OpenRouter (optional) → rules   ·   LLM never sets a status
-```
-
-| Service | Finished work | Local action (simulated) |
+| | Investor (equity) | Lender (credit / KYB) |
 |---|---|---|
-| Pre-investment screen (VC) | IC memo, thesis fit, Heartbeat, claim matrix | `data/systems/pipeline.json`: Advance / Hold / Pass |
-| Founder verification (angel) | Founder claims with dated employment evidence | Pipeline note |
-| Vendor onboarding (procurement) | Vendor file | `vendors.json`: Approved / Exception |
-| Bank-change / BEC check (accounts payable) | Complaint-ready case file | `ap-queue.json` **payment hold**, plus a prepared (unsent) callback |
-| Adverse-information check (compliance) | Labelled dossier | Inbox entry |
+| Question | "Should we write this cheque?" | "Should we lend, and how much is sane?" |
+| Compliance track | KYB, people, fraud and adverse screening, giving **Cleared / Cleared with conditions / Not cleared / Insufficient** | Same |
+| Business track | Thesis fit, traction, funding history, team, company activity | Credit readiness grade (A–D), requested amount vs an **indicative policy cap** (labelled as illustrative) |
+| Decision | Proceed to term sheet / Proceed only with conditions / Decline / Stop the wire | Ready for underwriting / Refer / Decline / Insufficient |
+| Finished work (local, simulated) | Pipeline stage, closing checklist (conditions precedent), wire hold, IC memo | Credit file, KYB register, credit memo |
 
-## Verified demo cases (live CrustData, 31 Oct 2026)
+## Live demo cases
 
-| Case | Input | Outcome | What the agents caught |
+| Case | Market | Outcome | What the agents caught |
 |---|---|---|---|
-| **E5** India, synthetic BEC | Email from `rohit.sample@bluepinefoods-payments.in` asking to change bank details | **HOLD** → payment hold | Lookalike domain (brand + "-payments", `.in` vs `.com`). "Rohit Sample" was never at BluePine Foods (id 12347153). |
-| **E3** India pitch | Forwarded email calling the company "BluePine Industries" | **HOLD** | Name recovered by domain. Co-founder Naveen Panwar **left in 2023-10**. Measured headcount is 4, not ~20. The ₹75L Shark Tank deal is in the press but **missing from the funding record**. |
-| **E8** US follow-on | "VerbalizeIt has 45 people and spends $27K/mo on ads" | **PASS** | **Acquired by Smartling on 2016-05-19** while the record says "active". The ad spend belongs to the acquirer's domain and is excluded from Heartbeat. |
-| **E6** name only | "supplier 'Zeta' wants net-60" | **INSUFFICIENT** | 25 candidates, so no conclusions are drawn |
-
-E1, E2, E4 and E7 are also in [EXAMPLES.md](EXAMPLES.md).
+| BluePine pitch | India | **Proceed only with conditions** | Wrong company name recovered from the website. Co-founder **left in 2023-10**. 4 measured staff vs "~20". The ₹75L Shark Tank deal is in the press but **not in the funding record**, so the closing checklist asks for the cap table. |
+| BluePine closing wire (synthetic) | India | **Stop the wire** | `bluepinefoods-payments.in` is a lookalike domain, and the "CFO" was never at the company. Wire hold plus a prepared call-back. |
+| VerbalizeIt follow-on | US | **Decline: not independent** | Acquired by Smartling (2016) but still listed "active". Ad spend and traffic belong to the acquirer. |
+| Misto first screen | US | **Proceed to term sheet** | 5/5 thesis fit. The Shark deal is reported but not in the funding record, so it becomes a condition. |
+| Wicked Good Cupcakes credit line | US | **Decline** | Claims "independent" but is a subsidiary of Hickory Farms. 2 measured staff vs 150 claimed. Grade D. |
+| Tom + Chee expansion loan | US | **Decline** | Claims independence, but was acquired by Gold Star Chili (2017). 107 measured staff vs "~1,000". |
+| Zeta credit line | India | **Insufficient: KYB incomplete** | 25 companies match the name, so no conclusions are drawn |
 
 ## Run it
 
 ```bash
-cd Trust-compliance-shresth/app
+cd Trust-compliance-shresth/signalgate
 npm install
-# app/.env.local (never commit):
-#   CRUSTDATA_API_KEY=...            required
-#   LLM_PROVIDER=gemini              optional: none | gemini | openrouter
-#   LLM_MODEL=gemini-3.8-flash
-#   LLM_FALLBACK_MODELS=gemini-flash-lite-latest
-#   GEMINI_API_KEY=...               optional
-#   OPENROUTER_API_KEY=...           optional
-npm run dev                # http://localhost:3000  (UI with streamed agent trace)
-npm run case -- E5         # CLI: run an example end to end
-npm run case -- "free text request"
+# .env.local (never commit):
+#   CRUSTDATA_API_KEY=...          required
+#   TAVILY_API_KEY=...             optional (adverse media + corroboration)
+#   LLM_PROVIDER=gemini  LLM_MODEL=gemini-3.8-flash  LLM_FALLBACK_MODELS=gemini-flash-lite-latest  GEMINI_API_KEY=...
+npm run dev                        # http://localhost:3000
+npm run case -- bluepine-wire      # CLI, any example id or free text
 ```
 
-## Credits and rationing
+## How it works
 
-CrustData credits are shared with the team, so every paid call is rationed before it goes out.
+```
+Request ─► Intake agent (rules + Gemini, span-checked) ─► Investigator: CrustData identify → enrich → person search → job search
+        ─► Screening: Tavily (fallback CrustData web search) + Gemini namesake judge ─► Analyst: Heartbeat, thesis fit / credit grade
+        ─► Decision rules (deterministic, cited) ─► Case clerk: memo + local systems of record + exceptions inbox
+```
 
-**Limits** (all set in `lib/config.ts` and overridable by env):
-
-| Limit | Default |
-|---|---|
-| App total | 1,500 credits (`data/ledger.json`) |
-| Per run | 25 credits |
-| Per-endpoint calls per run | 2 enrich, 3 person search, 2 person enrich, 3 web search, 2 web fetch |
-| LLM | 6 calls per run, 30k tokens per run, 400 calls in total |
-
-**How it's enforced:**
-- **The exact charge** comes from CrustData's `x-credits-used` response header.
-- **Cache:** identical requests are served from `data/cache/` at 0 credits for 24 hours. Re-running a demo case is free.
-- **Free calls first:** `company/identify`, `job/search` (`limit:0` aggregation) and `/account/*` are free, and searches that return zero results cost 0.
-- **Over-cap steps** are skipped and shown as "rationed" in the trace. The case still completes with "not checked" findings.
-- **Observed cost:** about 0–3 credits per case (E5 ≈ 2, E3 ≈ 1.2, E8 ≈ 3, E6 = 0).
-
-## Heartbeat (activity, not legitimacy)
-
-`Heartbeat = round(Σ wᵢ·sᵢ / Σ wᵢ)`, taken only over components that have data. Coverage is `Σ wᵢ(available) / 100`.
-
-| Component | Weight | Source |
-|---|---|---|
-| Team momentum | 25 | `headcount.growth_percent` |
-| Hiring | 20 | Distinct roles in 90 days (`job/search`) |
-| Digital demand | 20 | `web_traffic` QoQ. Halved if volatile; excluded if acquired. |
-| Audience | 10 | `followers` QoQ |
-| News recency | 15 | Relevant news only |
-| Capital recency | 10 | `funding` |
-
-- **Bands:** Strong pulse, Steady, Faint or Flatline signals. "Low signal" is shown when coverage is below 0.5.
-- Heartbeat feeds the thesis fit and may raise a "review" on growth claims.
-- **It never causes a Hold by itself.**
-
-## Rules (the Verifier)
-
-| Rule | What it does |
-|---|---|
-| R-DOMAIN-FIRST | A domain match beats a name match |
-| R-NAME-RECOVERY | Tries name variants and the domain when the input name is wrong |
-| R-AMBIGUOUS | Close candidates mean no company-specific conclusions |
-| R-ACQUIRED | An acquired company returns "not independent"; signals that may belong to the acquirer are excluded |
-| R-STATUS-CONFLICT | Flags provider fields that contradict each other |
-| R-DEPARTED | A person claimed as current, but whose role has an end date |
-| R-REP-NOT-FOUND | The person asking for a payment change isn't at the company |
-| R-LOOKALIKE | Brand plus extra token, TLD swap, hyphenation, edit distance or homoglyphs |
-| R-FUNDING-GAP | A deal reported on the web but missing from the funding record is marked "conflicting sources" |
-| R-OTHER-EVENT | Namesakes and different events are rejected (LLM judge, with a rules fallback) |
-| R-SELF-DESC | The company's own description counts as self-reported support only |
-| R-VOLATILE | Traffic that swings more than 3× has its weight halved |
-| R-LOCATION | Region-aware (for example, Faridabad counts as Delhi NCR) |
-| POLICY-BANK-CHANGE | Payment authority is never inferred from public data |
+- **The decision is made by rules, not the LLM.** The LLM reads requests, judges whether an article is about this company, and drafts memos from cited checks. Each LLM step falls back from `gemini-3.8-flash` to `flash-lite` to rules.
+- **Every check cites sources** (`S1…Sn`): a CrustData record ID and field path, a Tavily/web URL, or a derived rule. In the UI, a click on any check opens its sources.
+- **Credits are rationed.** Limits per run, per endpoint, and in total for the app; the exact charge is read from `x-credits-used`; identical calls are served from cache at 0. Cases cost **0–2 CrustData credits** each.
+- **Company activity (Heartbeat)** is the weighted mean of team growth, hiring, web demand, audience, news recency and capital recency. Missing data is left out, and it is never used as a fraud signal.
 
 ## Boundaries
 
-- Read-only research through CrustData. Every "action" is a local JSON write, labelled simulated.
-- It never emails, calls or pays anyone.
-- It never claims fraud, KYC/AML clearance, beneficial ownership or creditworthiness.
-- Missing data shows up as "insufficient" or "not checked", never as guilt.
-- Synthetic demo inputs use fictitious people and lookalike domains.
+- Read-only research. Every action is a labelled local simulation.
+- It never contacts people, files reports or moves money.
+- Sanctions/PEP screening is shown as **not run**, because official lists aren't connected.
+- The indicative exposure cap is an illustrative policy, not an approved limit.
 
-## Files
-
-- `app/lib/engine.ts`: orchestrator, Verifier rules, outcomes, Clerk
-- `app/lib/crustdata.ts`: API client with rationing, cache, retries and pacing
-- `app/lib/budget.ts`: ledger and caps
-- `app/lib/intake.ts`: rules parser plus span-checked LLM extraction
-- `app/lib/llm.ts`: Gemini / OpenRouter chain with fallbacks
-- `app/lib/heartbeat.ts`, `app/lib/domain.ts`, `app/lib/actions.ts`
-- `app/app/page.tsx` and `app/app/api/*`: UI and streaming API
-- [PLAN.md](PLAN.md), [EXAMPLES.md](EXAMPLES.md), [concept/](concept/)
-
-The CrustData request pattern is adapted from [crustdata/tools](https://github.com/crustdata/tools) (MIT).
+`PLAN.md`, `EXAMPLES.md` and `concept/` describe the first iteration (v1) and are kept for history.

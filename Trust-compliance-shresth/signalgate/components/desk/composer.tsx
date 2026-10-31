@@ -15,7 +15,7 @@ export function Composer({ text, setText, onRun, running, picked, setPicked }: {
         <p className="mt-2 max-w-2xl text-muted-foreground">Paste the request as you received it — a forwarded pitch, a loan application, an email asking you to wire money. Agents verify the company and its people in CrustData&apos;s identity graph, screen for fraud and adverse news, then finish the work: a decision, an IC or credit memo, and the files updated.</p>
       </div>
 
-      <div className="rounded-xl border bg-card shadow-sm focus-within:ring-2 focus-within:ring-ring/40">
+      <div className="glass-strong glass rounded-xl focus-within:ring-2 focus-within:ring-ring/40">
         <label htmlFor="req" className="sr-only">Request</label>
         <Textarea id="req" value={text} onChange={e => { setText(e.target.value); setPicked(null); }} placeholder="e.g. “Please run diligence on acme.in before our ₹50 lakh cheque. Founders say…”" className="min-h-44 resize-y border-0 bg-transparent p-4 text-[15px] leading-relaxed shadow-none focus-visible:ring-0" />
         <div className="flex items-center justify-between gap-3 border-t px-4 py-3">
@@ -34,7 +34,7 @@ export function Composer({ text, setText, onRun, running, picked, setPicked }: {
         <div className="grid gap-3 sm:grid-cols-2">
           {EXAMPLES.map(e => (
             <button key={e.id} onClick={() => { setText(e.text); setPicked(e.id); }} disabled={running}
-              className={cn("group rounded-xl border bg-card p-4 text-left shadow-xs transition hover:border-primary/40 hover:shadow-sm focus-visible:outline-2 focus-visible:outline-ring disabled:opacity-60", picked === e.id && "border-primary ring-2 ring-primary/15")}>
+              className={cn("group glass lift rounded-xl p-4 text-left hover:border-primary/40 focus-visible:outline-2 focus-visible:outline-ring disabled:opacity-60", picked === e.id && "border-primary ring-2 ring-primary/15")}>
               <div className="flex items-center gap-2 text-xs text-muted-foreground">
                 {e.requester === "investor" ? <TrendingUp className="size-3.5 text-primary" /> : <Landmark className="size-3.5 text-primary" />}
                 <span className="font-medium text-foreground/80">{e.requester === "investor" ? "Investor" : "Lender"}</span>

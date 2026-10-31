@@ -11,6 +11,7 @@ import { CaseView } from "@/components/desk/case-view";
 import { LiveFeed, StageRail } from "@/components/desk/run-progress";
 import { DECISION_TONE } from "@/components/desk/primitives";
 import { HelpButton } from "@/components/desk/help";
+import { ThemeToggle } from "@/components/desk/theme-toggle";
 
 type Status = {
   credits: number | null; brain: string; tavily: boolean;
@@ -56,7 +57,7 @@ export default function Home() {
   return (
     <div className="flex h-dvh overflow-hidden">
       {/* sidebar */}
-      <aside className="hidden w-72 shrink-0 flex-col border-r bg-sidebar md:flex">
+      <aside className="hidden w-72 shrink-0 flex-col border-r bg-sidebar/70 backdrop-blur-xl md:flex">
         <div className="flex items-center gap-2.5 px-5 pt-5 pb-4">
           <div className="grid size-8 place-items-center rounded-lg bg-primary text-primary-foreground"><ShieldCheck className="size-4.5" /></div>
           <div><div className="font-semibold tracking-tight">SignalGate</div><div className="text-xs text-muted-foreground">Diligence desk · on CrustData</div></div>
@@ -78,7 +79,7 @@ export default function Home() {
             }) : <li className="px-2 text-xs text-muted-foreground">No cases yet.</li>}
           </ul>
         </nav>
-        <div className="px-3 pb-2"><HelpButton variant="outline" /></div>
+        <div className="flex items-center justify-between gap-2 px-3 pb-2"><HelpButton variant="outline" /><ThemeToggle /></div>
         <div className="space-y-2 border-t p-4 text-xs">
           <div className="flex items-center justify-between"><span className="flex items-center gap-1.5 text-muted-foreground"><Inbox className="size-3.5" />Exceptions inbox</span><span className="font-medium tabular-nums">{status?.inbox ?? 0}</span></div>
           <div className="flex items-center justify-between"><span className="flex items-center gap-1.5 text-muted-foreground"><Coins className="size-3.5" />Credits used / cap</span><span className="font-medium tabular-nums">{status ? Math.round(status.ledger.crustdataCredits) : "—"} / {status?.budget.total ?? "—"}</span></div>

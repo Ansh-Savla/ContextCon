@@ -60,7 +60,7 @@ export function CompanyAvatar({ name, logo, size = 40 }: { name?: string; logo?:
 export function Stat({ label, value, hint, tone, children }: { label: string; value: React.ReactNode; hint?: React.ReactNode; tone?: "ok" | "bad" | "warn" | "idle"; children?: React.ReactNode }) {
   const toneCls = tone === "ok" ? "text-ok" : tone === "bad" ? "text-bad" : tone === "warn" ? "text-warn" : tone === "idle" ? "text-idle" : "text-foreground";
   return (
-    <div className="rounded-xl border bg-card p-4 shadow-xs">
+    <div className="glass rounded-xl p-4">
       <div className="text-xs font-medium text-muted-foreground">{label}</div>
       <div className={cn("mt-1 text-2xl font-semibold tracking-tight tabular-nums", toneCls)}>{value}</div>
       {hint && <div className="mt-0.5 text-xs text-muted-foreground">{hint}</div>}

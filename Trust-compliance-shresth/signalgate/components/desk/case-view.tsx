@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { Bot, Printer, GraduationCap, Briefcase } from "lucide-react";
 import { Activity, AlertTriangle, ArrowUpRight, Building2, ClipboardCheck, Download, ExternalLink, FileText, Globe, Landmark, Radar, ShieldCheck, Sparkles, TrendingUp, Users } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -66,6 +67,7 @@ export function CaseView({ c, replay }: { c: CaseResult; replay: boolean }) {
         </div>
         <div className="flex gap-2">
           <HelpButton variant="outline" />
+          <Button variant="outline" size="sm" className="gap-1.5" onClick={() => window.open(`/memo/${c.id}`, "_blank")}><Printer className="size-4" />Print IC memo</Button>
           <Button variant="outline" size="sm" className="gap-1.5" onClick={() => download(`${c.id}-memo.md`, toMarkdown(c), "text/markdown")}><FileText className="size-4" />Memo</Button>
           <Button variant="outline" size="sm" className="gap-1.5" onClick={() => download(`${c.id}.json`, JSON.stringify(c, null, 2), "application/json")}><Download className="size-4" />JSON</Button>
         </div>
@@ -90,13 +92,13 @@ export function CaseView({ c, replay }: { c: CaseResult; replay: boolean }) {
         </div>
         <div className="grid gap-4">
           {compliance && (
-            <div className="rounded-xl border bg-card p-4">
+            <div className="glass rounded-xl p-4">
               <div className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Compliance clearance</div>
               <div className="mt-2"><DecisionPill d={compliance} /></div>
               <p className="mt-2 line-clamp-2 text-sm text-muted-foreground">{compliance.reasons[0]}</p>
             </div>
           )}
-          <div className="rounded-xl border bg-card p-4">
+          <div className="glass rounded-xl p-4">
             <div className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Completed by the case clerk</div>
             <ul className="mt-2 space-y-1.5 text-sm">
               {c.actions.map(a => <li key={a.summary} className="flex items-start gap-2"><ClipboardCheck className="mt-0.5 size-4 shrink-0 text-primary" /><span>{a.summary} <span className="whitespace-nowrap text-xs text-muted-foreground">· simulated, local</span></span></li>)}
@@ -151,6 +153,7 @@ export function CaseView({ c, replay }: { c: CaseResult; replay: boolean }) {
               <CardHeader><CardTitle className="flex items-center gap-2"><ShieldCheck className="size-4 text-primary" />Conditions before money moves</CardTitle></CardHeader>
               <CardContent>{c.conditions.length ? <ol className="list-decimal space-y-2 pl-5 text-sm">{c.conditions.map(x => <li key={x}>{x}</li>)}</ol> : <p className="text-sm text-muted-foreground">None beyond standard documentation.</p>}</CardContent>
             </Card>
+            {c.plan && <PlanCard c={c} />}
             {c.heartbeat && <HeartbeatCard c={c} open={id => open(undefined, id)} />}
           </div>
         </TabsContent>
@@ -203,7 +206,9 @@ export function CaseView({ c, replay }: { c: CaseResult; replay: boolean }) {
                   </CardHeader>
                   <CardContent className="space-y-2 text-sm">
                     {p.headline && <p className="text-muted-foreground line-clamp-2">{p.headline}</p>}
-                    {p.priorFounder?.length ? <div><span className="text-xs font-medium text-muted-foreground">Prior founder / CEO roles</span><ul className="mt-1 space-y-0.5">{p.priorFounder.map(x => <li key={x}>{x}</li>)}</ul></div> : null}
+                    {p.pastRoles?.length ? <div><span className="flex items-center gap-1 text-xs font-medium text-muted-foreground"><Briefcase className="size-3" />Career (CrustData person enrich)</span><ul className="mt-1 space-y-0.5">{p.pastRoles.map(x => <li key={x}>{x}</li>)}</ul></div> : null}
+                    {p.education?.length ? <div><span className="flex items-center gap-1 text-xs font-medium text-muted-foreground"><GraduationCap className="size-3" />Education</span><ul className="mt-1 space-y-0.5">{p.education.map(x => <li key={x}>{x}</li>)}</ul></div> : null}
+                    {p.priorFounder?.length && !p.pastRoles?.length ? <div><span className="text-xs font-medium text-muted-foreground">Prior founder / CEO roles</span><ul className="mt-1 space-y-0.5">{p.priorFounder.map(x => <li key={x}>{x}</li>)}</ul></div> : null}
                     <div className="flex items-center gap-3 text-xs text-muted-foreground">{p.id && <span className="font-mono">person #{p.id}</span>}{p.profileUrl && <a className="inline-flex items-center gap-1 text-primary hover:underline" href={p.profileUrl} target="_blank" rel="noreferrer">Profile<ExternalLink className="size-3" /></a>}</div>
                   </CardContent>
                 </Card>
@@ -515,7 +520,7 @@ function TrendsGrid({ c, credit }: { c: CaseResult; credit: boolean }) {
             <PeerBars peers={c.peers.companies} />
             <p className="px-1 text-xs text-muted-foreground">Peer set: {c.peers.basis} (CrustData company search)</p>
           </div>
-        ) : <div className="rounded-xl border bg-card p-4 text-sm text-muted-foreground">No peer set — industry or country not on record.</div>}
+        ) : <div className="glass rounded-xl p-4 text-sm text-muted-foreground">No peer set — industry or country not on record.</div>}
         <div className="grid content-start gap-4">
           <BarList title="Team mix (by role)" data={s.roles} unit="people" />
 
@@ -524,5 +529,28 @@ function TrendsGrid({ c, credit }: { c: CaseResult; credit: boolean }) {
       <GeoMap regions={s.regions} hqCountry={c.profile?.country} />
       {c.parent && <ParentCard c={c} />}
     </>
+  );
+}
+
+
+function PlanCard({ c }: { c: CaseResult }) {
+  const p = c.plan!;
+  const LABEL: Record<string, string> = { parent_lookup: "Profile the parent company", founder_deepdive: "Founder career & education", peer_benchmark: "Benchmark against peers", fetch_source: "Quote the press article", prepare_monitoring: "Prepare post-closing monitoring" };
+  return (
+    <Card>
+      <CardHeader className="flex flex-row items-start justify-between gap-3">
+        <div><CardTitle className="flex items-center gap-2"><Bot className="size-4 text-primary" />Agent plan</CardTitle><CardDescription>Follow-up lookups chosen by {p.by === "rules playbook" ? "the rules playbook" : p.by}; validated against an allow-list and the credit budget</CardDescription></div>
+      </CardHeader>
+      <CardContent>
+        <ul className="space-y-2 text-sm">
+          {p.actions.map(a => (
+            <li key={a.name} className="flex items-start gap-2.5">
+              <span className={cn("mt-0.5 grid size-5 shrink-0 place-items-center rounded-full text-[11px]", a.ran ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground")}>{a.ran ? "✓" : "–"}</span>
+              <div className="min-w-0"><div className={cn("font-medium", !a.ran && "text-muted-foreground")}>{LABEL[a.name] ?? a.name}</div><div className="text-xs text-muted-foreground">{a.why}</div></div>
+            </li>
+          ))}
+        </ul>
+      </CardContent>
+    </Card>
   );
 }

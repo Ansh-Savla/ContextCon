@@ -25,7 +25,7 @@ function Tip({ active, payload, label, unit, band }: any) {
 
 function ChartFrame({ title, sub, children, empty, summary }: { title: string; sub?: string; children: React.ReactNode; empty?: boolean; summary?: string }) {
   return (
-    <figure className="rounded-xl border bg-card p-4 shadow-xs" aria-label={summary ?? title}>
+    <figure className="glass rounded-xl p-4" aria-label={summary ?? title}>
       <figcaption className="mb-2 flex items-start justify-between gap-2">
         <div><div className="text-sm font-medium">{title}</div>{sub && <div className="text-xs text-muted-foreground">{sub}</div>}</div>
         <CrustChip />
@@ -98,7 +98,7 @@ export function RevenueBand({ data }: { data: SeriesPoint[] }) {
 export function BarList({ title, data, unit }: { title: string; data: Array<{ label: string; v: number }>; unit: string }) {
   const max = Math.max(1, ...data.map(d => d.v));
   return (
-    <figure className="rounded-xl border bg-card p-4 shadow-xs">
+    <figure className="glass rounded-xl p-4">
       <figcaption className="mb-3 flex items-start justify-between gap-2"><div className="text-sm font-medium">{title}</div><CrustChip /></figcaption>
       {data.length ? (
         <ul className="space-y-2">
@@ -119,7 +119,7 @@ export function PeerBars({ peers }: { peers: PeerCompany[] }) {
   const max = Math.max(1, ...d.map(p => p.headcount ?? 0));
   const rank = d.findIndex(p => p.isTarget) + 1;
   return (
-    <figure className="rounded-xl border bg-card p-4 shadow-xs">
+    <figure className="glass rounded-xl p-4">
       <figcaption className="mb-3 flex items-start justify-between gap-2">
         <div><div className="text-sm font-medium">Headcount vs peers</div><div className="text-xs text-muted-foreground">{rank ? `Target ranks #${rank} of ${d.length} by measured headcount` : "Peers from CrustData company search"}</div></div>
         <CrustChip />

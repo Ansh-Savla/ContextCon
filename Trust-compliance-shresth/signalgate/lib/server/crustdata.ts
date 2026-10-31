@@ -149,6 +149,10 @@ export class Crustdata {
       aggregations: [{ type: "group_by", field: "job_details.title", agg: "count", size: 200 }],
     }, `job_search count since ${since}`);
   }
+  /** Career + education for one profile (1 credit). */
+  personEnrich(url: string) {
+    return this.call<any[]>("POST", "/person/enrich", { professional_network_profile_urls: [url], fields: ["basic_profile", "experience", "education"] }, `person_enrich(${url.replace(/^https?:\/\/(www\.)?/, "").slice(0, 40)})`);
+  }
   /** Peer discovery: companies in the same industry/country/size band (0.03 credits per result). */
   companySearch(filters: unknown, limit = 10) {
     return this.call<any>("POST", "/company/search", { filters, fields: ["crustdata_company_id", "basic_info", "headcount"], limit }, `company_search (${limit} peers)`);

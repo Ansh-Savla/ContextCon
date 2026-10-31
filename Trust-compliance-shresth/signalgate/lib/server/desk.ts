@@ -116,6 +116,7 @@ export async function runDesk(raw: string, onEvent: (e: TraceEvent) => void = ()
   let peers: CaseResult["peers"];
   let monitoring: CaseResult["monitoring"];
   const pressImages: PressImage[] = [];
+  let plan: CaseResult["plan"];
   const hostOf = (u: string) => { try { return new URL(u).hostname.replace(/^www\./, ""); } catch { return "web"; } };
 
   if (identity.status === "resolved") {
@@ -336,8 +337,67 @@ export async function runDesk(raw: string, onEvent: (e: TraceEvent) => void = ()
     for (const h of relevant.filter(x => x.provider === "Tavily" && x.date).slice(0, 4)) { const d = new Date(h.date!); if (!isNaN(d.getTime())) events.push({ date: d.toISOString().slice(0, 10), kind: "press", title: h.title, detail: hostOf(h.url), source: "Tavily", url: h.url }); }
     events.sort((x, y) => x.date.localeCompare(y.date));
 
+    // ---- PLANNER: choose follow-up lookups (Gemini proposes from an allow-list; rules validate; playbook fallback)
+    const dealCheck = checks.find(k => k.rule === "FIN-DEAL");
+    const dealPress = relevant.find(n => /shark|deal|invest|lakh|crore|raised|secured/i.test(n.title) && /^https:\/\//.test(n.url) && !/google\.com\/goto/.test(n.url));
+    const founderUrls = people.filter(p => p.profileUrl && /founder|ceo|director|promoter/i.test(p.title ?? "")).slice(0, 2);
+    const ALLOWED: Record<string, { ok: boolean; cost: number; desc: string }> = {
+      parent_lookup: { ok: !!acquiredBy, cost: 2, desc: "resolve and profile the acquirer (identify + enrich)" },
+      founder_deepdive: { ok: founderUrls.length > 0, cost: founderUrls.length, desc: "career history and education of founders (person enrich)" },
+      peer_benchmark: { ok: !!((co.taxonomy?.professional_network_industries ?? [])[0] && L.country), cost: 4, desc: "find comparable companies (company search)" },
+      fetch_source: { ok: !!dealPress && !!dealCheck && dealCheck.status !== "verified", cost: 1, desc: "open the press article and quote the deal terms (web fetch)" },
+      prepare_monitoring: { ok: !checks.some(k => k.section === "fraud" && k.status === "contradicted"), cost: 0, desc: "validate a post-closing watch rule (Watcher preview)" },
+    };
+    const playbook = Object.entries(ALLOWED).filter(([, v]) => v.ok).map(([name]) => ({ name, why: "rules playbook: preconditions met" }));
+    const situation = { requester: intake.requester, acquired: acquiredBy ?? null, founders_with_profiles: founderUrls.length, deal_claim: dealCheck ? dealCheck.status : "none", press_article: dealPress?.title ?? null, industry: (co.taxonomy?.professional_network_industries ?? [])[0] ?? null, credits_left: Math.round((config.budget.creditsPerRun - budget.credits) * 100) / 100, fraud_signals: !ALLOWED.prepare_monitoring.ok };
+    const pj = await llmJson<{ actions: Array<{ name: string; why: string }> }>({
+      purpose: "Plan follow-up lookups", agent: "analyst", budget, emit, fast: true,
+      schema: { type: "OBJECT", properties: { actions: { type: "ARRAY", items: { type: "OBJECT", properties: { name: { type: "STRING", enum: Object.keys(ALLOWED) }, why: { type: "STRING" } }, required: ["name", "why"] } } }, required: ["actions"] },
+      prompt: `You are the lead analyst on a ${intake.requester === "investor" ? "pre-investment diligence" : "lender KYB and credit"} case. Choose which follow-up lookups are worth their cost now. Only choose actions whose preconditions are true. Give a one-line reason each (cite the situation).\nACTIONS: ${JSON.stringify(Object.fromEntries(Object.entries(ALLOWED).map(([k, v]) => [k, { available: v.ok, credits: v.cost, does: v.desc }])))}\nSITUATION: ${JSON.stringify(situation)}`,
+      validate: x => Array.isArray(x?.actions),
+    });
+    let chosen = pj ? pj.data.actions.filter(a => ALLOWED[a.name]?.ok) : playbook;
+    let spent = 0;
+    chosen = chosen.filter(a => { const c = ALLOWED[a.name].cost; if (spent + c > situation.credits_left) return false; spent += c; return true; });
+    const want = new Set(chosen.map(a => a.name));
+    plan = { by: pj ? pj.model : "rules playbook", actions: Object.keys(ALLOWED).filter(k => ALLOWED[k].ok).map(k => ({ name: k, why: chosen.find(a => a.name === k)?.why ?? "not chosen", ran: want.has(k) })) };
+    emit({ agent: "analyst", brain: pj ? pj.model : "rules", step: "Planner chose follow-ups", detail: chosen.length ? chosen.map(a => `${a.name} — ${a.why}`).join(" · ") : "none needed", status: "ok" });
+
+    // ---- founder deep-dive (person enrich, 1 cr each)
+    if (want.has("founder_deepdive")) {
+      for (const p of founderUrls) {
+        const r = await cd.personEnrich(p.profileUrl!);
+        const pd = r.ok ? r.data?.[0]?.matches?.[0]?.person_data : undefined;
+        if (!pd) continue;
+        const pe = ev({ kind: "crustdata", provider: "CrustData", endpoint: "/person/enrich", recordId: p.id, url: p.profileUrl, fieldPath: "experience.employment_details, education.schools", note: `Career and education: ${p.name}`, cached: r.ok ? r.cached : undefined });
+        const roles = rolesOf(pd);
+        p.pastRoles = roles.filter(x => !x.current || x.end).slice(0, 6).map(x => `${x.title ?? "Role"} · ${x.company ?? "?"}${x.start ? ` (${ym(x.start)}–${x.end ? ym(x.end) : "now"})` : ""}`);
+        p.education = ((pd.education?.schools ?? []) as any[]).slice(0, 3).map(s => [s.school, s.degree, s.field_of_study].filter(Boolean).join(" · ")).filter(Boolean);
+        if (!p.photo) p.photo = pd.basic_profile?.profile_picture_permalink ?? undefined;
+        const founded = roles.filter(x => /founder/i.test(x.title ?? "") && x.companyId !== b.crustdata_company_id);
+        const yrs = roles.filter(x => x.start).map(x => ((x.end ? Date.parse(x.end) : Date.now()) - Date.parse(x.start!)) / 3.156e10);
+        const avg = yrs.length ? Math.round((yrs.reduce((a, c) => a + c, 0) / yrs.length) * 10) / 10 : undefined;
+        check({ section: "investment", title: `Founder track record · ${p.name.replace(/^MasterChef\s+/, "")}`, observed: `${founded.length} other founder role${founded.length === 1 ? "" : "s"}${avg ? ` · average tenure ${avg} yrs` : ""}${p.education?.length ? ` · ${p.education[0]}` : ""}`, status: "info", rule: "INV-FOUNDER", reason: founded.length ? "Repeat founder — prior ventures listed on the People tab" : "First-time founder on record", evidenceIds: [pe] });
+      }
+    }
+
+    // ---- quote the press article (web fetch, 1 cr)
+    if (want.has("fetch_source") && dealPress && dealCheck) {
+      const f = await cd.webFetch(dealPress.url);
+      const page = f.ok ? (f.data ?? [])[0] : undefined;
+      if (page?.success && page.content) {
+        const text = String(page.content).replace(/<script[\s\S]*?<\/script>|<style[\s\S]*?<\/style>/gi, " ").replace(/<[^>]+>/g, " ").replace(/&nbsp;|&#160;/g, " ").replace(/&amp;/g, "&").replace(/\s+/g, " ");
+        const sentences = text.split(/(?<=[.!?])\s+/).filter(s => s.length > 30 && s.length < 400);
+        const core = norm(short).split(" ")[0];
+        const q = sentences.find(s => /(lakh|crore|₹|rs\.?\s?\d|\$\s?\d|\d+\s?%)/i.test(s) && /(shark|deal|invest|offer|equity|stake)/i.test(s) && (!core || norm(s).includes(core) || /momo|founder/i.test(s))) ?? sentences.find(s => /(lakh|crore|\$\s?\d|\d+\s?%)/i.test(s) && /(shark|deal)/i.test(s));
+        const fe = ev({ kind: "web", provider: "CrustData web", endpoint: "/web/enrich/live", url: dealPress.url, title: page.title ?? dealPress.title, value: q ?? "(no deal sentence found)", note: q ? `Quote: “${q.slice(0, 220)}”` : "Article fetched; no sentence with deal terms found", sourceDate: page.timestamp ? new Date(page.timestamp * 1000).toISOString().slice(0, 10) : undefined, cached: f.ok ? f.cached : undefined });
+        dealCheck.evidenceIds.push(fe);
+        if (q) dealCheck.observed += ` · Article says: “${q.slice(0, 200)}${q.length > 200 ? "…" : ""}”`;
+      }
+    }
+
     // ---- parent company (if acquired): identify (free) + light enrich (2 cr)
-    if (acquiredBy) {
+    if (acquiredBy && want.has("parent_lookup")) {
       const pname = acquiredBy.replace(/ \(.*\)$/, "");
       const pr = await cd.identifyByName(pname);
       const pc = pr.ok ? candidatesOf(pr.data).find(x => nameMatch(pname, x.name)) : undefined;
@@ -356,7 +416,7 @@ export async function runDesk(raw: string, onEvent: (e: TraceEvent) => void = ()
       const ind = (co.taxonomy?.professional_network_industries ?? [])[0];
       const country = L.country;
       const size = typeof hc.total === "number" ? hc.total : undefined;
-      if (ind && country) {
+      if (ind && country && want.has("peer_benchmark")) {
         const conds: any[] = [{ field: "taxonomy.professional_network_industry", type: "=", value: ind }, { field: "locations.country", type: "=", value: country }];
         if (size !== undefined) { conds.push({ field: "headcount.total", type: "=>", value: Math.max(1, Math.floor(size / 3)) }); conds.push({ field: "headcount.total", type: "=<", value: Math.max(10, size * 3) }); }
         const sr = await cd.companySearch({ op: "and", conditions: conds }, 8);
@@ -456,7 +516,7 @@ export async function runDesk(raw: string, onEvent: (e: TraceEvent) => void = ()
   emit({ agent: "verifier", brain: "rules", step: "Decision", detail: decisions.map(d => `${d.track}: ${d.label}`).join(" · "), status: "ok" });
 
   // ---------------- post-decision monitoring (CrustData Watcher preview: deliver=false, no credit, nothing created) ----------------
-  if (identity.status === "resolved" && ["proceed", "ready", "conditions", "refer"].includes(decisions[0].code) && !fraud) {
+  if (identity.status === "resolved" && ["proceed", "ready", "conditions", "refer"].includes(decisions[0].code) && !fraud && (!plan || plan.actions.some(a => a.name === "prepare_monitoring" && a.ran))) {
     const track = { op: "or", conditions: [{ field: "headcount.total", type: "changed" }, { field: "funding.last_fundraise_date", type: "changed" }, { field: "basic_info.status", type: "changed" }] };
     const labels = ["Headcount changes", "New funding round", "Company status changes (acquired, closed)"];
     const w = await cd.watchTest(track, ["basic_info", "headcount", "funding"]);
@@ -502,7 +562,7 @@ export async function runDesk(raw: string, onEvent: (e: TraceEvent) => void = ()
   emit({ agent: "clerk", step: "Work completed", detail: actions.map(a => a.summary).join(" · "), status: "ok" });
 
   const result: CaseResult = {
-    id, createdAt: new Date().toISOString(), intake, identity, profile, people, checks, series, events, parent, peers, monitoring, pressImages, decisions, conditions, heartbeat, investment, credit, memo, memoBy, actions, evidence, trace,
+    id, createdAt: new Date().toISOString(), intake, identity, profile, people, checks, series, events, parent, peers, monitoring, pressImages, plan, decisions, conditions, heartbeat, investment, credit, memo, memoBy, actions, evidence, trace,
     spend: { crustdataCredits: round(budget.credits), crustdataCalls: budget.calls, cacheHits: budget.cacheHits, tavilyCalls: budget.tavilyCalls, llmCalls: budget.llmCalls, llmTokens: budget.llmTokens, budgetPerRun: budget.creditsCap, seconds: Math.round((Date.now() - t0) / 100) / 10 },
   };
   emit({ agent: "system", step: "Done", detail: `${round(budget.credits)} CrustData credits · ${budget.cacheHits} cache hits · ${budget.tavilyCalls} Tavily · ${budget.llmCalls} LLM calls · ${result.spend.seconds}s`, status: "ok" });

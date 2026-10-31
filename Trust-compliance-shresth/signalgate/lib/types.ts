@@ -89,7 +89,7 @@ export type TraceEvent = {
 
 export type CompanyCandidate = { id: number; name?: string; domain?: string; score: number; size?: string; industry?: string; description?: string };
 
-export type Person = { id?: number; photo?: string; name: string; title?: string; since?: string; until?: string; current: boolean; profileUrl?: string; priorFounder?: string[]; headline?: string; evidenceId?: string };
+export type Person = { id?: number; photo?: string; education?: string[]; pastRoles?: string[]; name: string; title?: string; since?: string; until?: string; current: boolean; profileUrl?: string; priorFounder?: string[]; headline?: string; evidenceId?: string };
 
 export type SeriesPoint = { date: string; v: number; v2?: number };
 export type Series = { headcount: SeriesPoint[]; traffic: SeriesPoint[]; followers: SeriesPoint[]; revenue: SeriesPoint[]; openJobs: SeriesPoint[]; roles: Array<{ label: string; v: number }>; regions: Array<{ label: string; v: number }>; trafficDomain?: string; trafficExcluded?: string };
@@ -121,6 +121,7 @@ export type CaseResult = {
   peers?: { basis: string; companies: PeerCompany[]; evidenceId?: string };
   monitoring?: Monitoring;
   pressImages: PressImage[];
+  plan?: { by: string; actions: Array<{ name: string; why: string; ran: boolean }> };
   memo: string;
   memoBy: string;
   actions: LocalAction[];

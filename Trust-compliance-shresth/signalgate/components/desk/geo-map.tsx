@@ -47,7 +47,7 @@ export function GeoMap({ regions, hqCountry }: { regions: Array<{ label: string;
   const spots = data.map(d => { const f = FEATURES.find(x => x.properties.name === d.country); const c = f ? proj(geoCentroid(f as any)) : null; return c ? { ...d, x: c[0], y: c[1] } : null; }).filter(Boolean) as Array<{ country: string; v: number; x: number; y: number }>;
 
   return (
-    <figure className="rounded-xl border bg-card p-4 shadow-xs">
+    <figure className="glass rounded-xl p-4">
       <figcaption className="mb-2 flex items-start justify-between gap-2">
         <div><div className="text-sm font-medium">Where the team is</div><div className="text-xs text-muted-foreground">Bubble = measured headcount by country{hq ? ` · HQ outlined: ${hq}` : ""}</div></div>
         <CrustChip />

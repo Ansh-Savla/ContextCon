@@ -1,5 +1,7 @@
 # SignalGate project instructions
 
+**Current implementation: [`signalgate/`](signalgate/)** (Next.js 16 + Tailwind v4 + shadcn/ui). Read [`signalgate/README.md`](signalgate/README.md) first. `PLAN.md`, `EXAMPLES.md` and `concept/` describe v1 and are historical.
+
 Before planning or changing this project, read the root [`AGENTS.md`](../AGENTS.md), the shared [CrustData steering](../.codex/steering.md), this folder's [`PLAN.md`](PLAN.md), and [`UI-DESIGN.md`](UI-DESIGN.md) for visual or interface work.
 
 Follow the SignalGate scope and evidence rules in `PLAN.md`: CrustData is the required identity and company-context layer; preserve source provenance and ambiguity; keep investment fit separate from trust evidence; and do not claim fraud, KYC/AML clearance, legal compliance, beneficial ownership, payment authority, or creditworthiness without authoritative evidence and explicit scope.

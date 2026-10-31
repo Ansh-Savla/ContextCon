@@ -7,7 +7,8 @@
     "dev": "next dev -p 3000",
     "build": "next build",
     "start": "next start -p 3000",
-    "case": "tsx --env-file=.env.local scripts/case.ts"
+    "case": "tsx --env-file=.env.local scripts/case.ts",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@tailwindcss/postcss": "^4.3.3",
@@ -30,5 +31,8 @@
     "@types/react-dom": "19.3.0",
     "tsx": "4.23.15",
     "typescript": "5.9.3"
+  },
+  "engines": {
+    "node": ">=20.9.0"
   }
 }

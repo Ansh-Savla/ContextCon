@@ -1,3 +1,5 @@
+> **Historical (v1).** Superseded by the rebuilt app in [`signalgate/`](signalgate/) — see its README.
+
 # SignalGate: the Shark Tank Diligence Desk (US + India examples)
 
 Each request below is pasted as-is. The agent takes it, with no follow-up questions, to a finished deliverable and a local action, as described in [PLAN.md](PLAN.md).

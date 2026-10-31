@@ -1,3 +1,5 @@
+> **Historical (v1).** Superseded by the rebuilt app in [`signalgate/`](../signalgate/) — see its README.
+
 # SignalGate concept: what is being built
 
 **One-liner:** SignalGate is an AI diligence desk for the India and US markets. You paste a deal or vendor request about a startup. Its agents investigate it through CrustData's identity graph, then finish the job:

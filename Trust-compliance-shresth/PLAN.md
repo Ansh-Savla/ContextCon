@@ -1,3 +1,5 @@
+> **Historical (v1).** Superseded by the rebuilt app in [`signalgate/`](signalgate/) — see its README.
+
 # SignalGate build plan: Investment + Trust & Compliance diligence agent
 
 ## Context

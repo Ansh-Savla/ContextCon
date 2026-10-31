@@ -1,5 +1,7 @@
 # SignalGate UI design contract
 
+> **v2 note (31 Oct, 13:00):** the user chose a neutral premium Tailwind + shadcn/ui theme for the rebuilt app in `signalgate/`. Tokens live in `signalgate/app/globals.css` (one deep-blue accent, semantic status colours). The status-language, evidence, accessibility and "Heartbeat is not a fraud signal" rules below still apply; the warm-paper palette references describe v1.
+
 **Purpose:** Shared visual and interaction direction for Codex and Claude Code.  
 **Applies to:** `Trust-compliance-shresth/app/` and any later SignalGate interface.  
 **Primary reference:** [`concept/ui-mockup.png`](concept/ui-mockup.png), with the current implementation tokens in [`app/app/globals.css`](app/app/globals.css).

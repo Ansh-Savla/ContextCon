@@ -33,18 +33,15 @@ Built for ContextCon 03 at IIT Bombay (CrustData × YC), in the *Investing* and 
 | Tom + Chee expansion loan | US | **Decline** | Claims independence, but was acquired by Gold Star Chili (2017). 107 measured staff vs "~1,000". |
 | Zeta credit line | India | **Insufficient: KYB incomplete** | 25 companies match the name, so no conclusions are drawn |
 
-## Run it
+## Quick start
 
 ```bash
 cd Trust-compliance-shresth/signalgate
-npm install
-# .env.local (never commit):
-#   CRUSTDATA_API_KEY=...          required
-#   TAVILY_API_KEY=...             optional (adverse media + corroboration)
-#   LLM_PROVIDER=gemini  LLM_MODEL=gemini-3.8-flash  LLM_FALLBACK_MODELS=gemini-flash-lite-latest  GEMINI_API_KEY=...
-npm run dev                        # http://localhost:3000
-npm run case -- bluepine-wire      # CLI, any example id or free text
+npm install && cp .env.example .env.local   # add CRUSTDATA_API_KEY (+ optional TAVILY / GEMINI keys)
+npm run dev                                   # http://localhost:3000
 ```
+
+Full developer guide (keys, credits, code map, troubleshooting): [signalgate/README.md](signalgate/README.md).
 
 ## How it works
 
@@ -66,4 +63,12 @@ Request ─► Intake agent (rules + Gemini, span-checked) ─► Investigator: 
 - Sanctions/PEP screening is shown as **not run**, because official lists aren't connected.
 - The indicative exposure cap is an illustrative policy, not an approved limit.
 
-`PLAN.md`, `EXAMPLES.md` and `concept/` describe the first iteration (v1) and are kept for history.
+## Repository map
+
+| Path | Status |
+|---|---|
+| `signalgate/` | **Current app (v2)**: start here |
+| `README.md` | This overview |
+| `UI-DESIGN.md` | UI principles (v2 applies them on a neutral shadcn theme) |
+| `PLAN.md`, `EXAMPLES.md`, `concept/` | First iteration (v1) plan, examples and mockup, kept for history; superseded by `signalgate/` |
+| `AGENTS.md` | Instructions for coding agents working in this folder |

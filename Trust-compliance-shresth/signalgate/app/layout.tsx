@@ -15,8 +15,10 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className={`${sans.variable} ${mono.variable}`} suppressHydrationWarning>
-      <head><script dangerouslySetInnerHTML={{ __html: themeBootScript }} /></head>
-      <body className="font-sans">
+      <body className="font-sans" suppressHydrationWarning>
+        {/* Theme boot runs before anything paints. It lives in <body>, not <head>, because browser extensions
+            inject their own <script> tags into <head> and would shift React's hydration comparison. */}
+        <script suppressHydrationWarning dangerouslySetInnerHTML={{ __html: themeBootScript }} />
         <TooltipProvider delayDuration={200}>{children}</TooltipProvider>
       </body>
     </html>
